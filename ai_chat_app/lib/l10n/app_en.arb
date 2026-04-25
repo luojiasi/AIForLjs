@@ -1,0 +1,79 @@
+{
+  "@@locale": "en",
+  "appTitle": "AI Chat",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "newConversation": "New conversation",
+  "@newConversation": {
+    "description": "Button to create a new chat conversation"
+  },
+  "sendMessage": "Send",
+  "@sendMessage": {
+    "description": "Send button tooltip"
+  },
+  "inputHint": "Type a message...",
+  "@inputHint": {
+    "description": "Placeholder text in message input field"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "themeMode": "Theme mode",
+  "@themeMode": {
+    "description": "Theme mode setting label"
+  },
+  "light": "Light",
+  "@light": {
+    "description": "Light theme option"
+  },
+  "dark": "Dark",
+  "@dark": {
+    "description": "Dark theme option"
+  },
+  "system": "System",
+  "@system": {
+    "description": "Follow system theme option"
+  },
+  "apiKey": "API Key",
+  "@apiKey": {
+    "description": "API key setting label"
+  },
+  "model": "Model",
+  "@model": {
+    "description": "AI model selection label"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete action label"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel action label"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm action label"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+  "errorOccurred": "An error occurred",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+  "noMessages": "No messages yet. Start a conversation!",
+  "@noMessages": {
+    "description": "Shown when there are no messages"
+  },
+  "deleteConversation": "Delete this conversation?",
+  "@deleteConversation": {
+    "description": "Confirmation dialog for deleting a conversation"
+  },
+  "searchPlaceholder": "Search conversations...",
+  "@searchPlaceholder": {
+    "description": "Placeholder for the search input"
+  }
+}

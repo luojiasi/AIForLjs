@@ -3,7 +3,9 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  bitsdojo_window_windows
   flutter_secure_storage_windows
+  restart_app
   screen_retriever_windows
   window_manager
 )
