@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:ai_chat_app/desktop/desktop_window_controller.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -13,11 +14,18 @@ import 'package:ai_chat_app/core/services/logging/flutter_logging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
 import 'package:ai_chat_app/features/home/pages/home_page.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'providers/settings_provider.dart';
 
 import 'presentation/page/practice/01_state_management/counter_demo.dart';
 import 'presentation/page/practice/04_lifecycle/lifecycle.dart';
 import 'presentation/page/practice/05_layout/widgetlayout.dart';
 
+
+// 全局路由观察者，用于监听页面跳转/返回事件
+final RouteObserver<ModalRoute<dynamic>> routeObserver = RouteObserver<ModalRoute<dynamic>>();
+bool _didCheckUpdates = false;//确保更新检查只执行一次（首次构建）
+// bool _didEnsureAssistants = false; //确保默认助手/会话/用户名只初始化一次（等本地化就绪后）
 
 void main() async {
   await runZoned(
@@ -71,20 +79,35 @@ class AiChatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AI Chat',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: _selectHome(),
+      child: Builder(
+        builder: (context) {
+          final settings = context.watch<SettingsProvider>();
+          return DynamicColorBuilder(
+            builder: (lightDynamic, darkDynamic) {
+              return MaterialApp(
+                title: 'SYCTB',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light,
+                darkTheme: AppTheme.dark,
+                themeMode: settings.themeMode,
+                locale: settings.locale,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: _selectHome(),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

@@ -308,7 +308,7 @@ void didChangeDependencies() {
 Widget build(BuildContext context) {
   // ✅ 可以：构建 UI、读取 Provider
   final theme = Theme.of(context);
-  final count = ref.watch(counterProvider);
+  final settings = context.watch<SettingsProvider>();
 
   // ❌ 不要：耗时操作
   // final data = await api.fetchData();
