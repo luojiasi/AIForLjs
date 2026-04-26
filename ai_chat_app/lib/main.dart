@@ -5,27 +5,17 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'theme/app_theme.dart';
+import 'theme/theme_factory.dart';
+import 'theme/palettes.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 
 import 'package:ai_chat_app/core/services/logging/flutter_logging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
-import 'package:ai_chat_app/features/home/pages/home_page.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'providers/settings_provider.dart';
-
-import 'presentation/page/practice/01_state_management/counter_demo.dart';
-import 'presentation/page/practice/04_lifecycle/lifecycle.dart';
-import 'presentation/page/practice/05_layout/widgetlayout.dart';
-
-
-// 全局路由观察者，用于监听页面跳转/返回事件
-final RouteObserver<ModalRoute<dynamic>> routeObserver = RouteObserver<ModalRoute<dynamic>>();
-bool _didCheckUpdates = false;//确保更新检查只执行一次（首次构建）
-// bool _didEnsureAssistants = false; //确保默认助手/会话/用户名只初始化一次（等本地化就绪后）
+import 'core/providers/settings_provider.dart';
+import 'core/router/app_router.dart';
 
 void main() async {
   await runZoned(
@@ -88,21 +78,38 @@ class AiChatApp extends StatelessWidget {
           final settings = context.watch<SettingsProvider>();
           return DynamicColorBuilder(
             builder: (lightDynamic, darkDynamic) {
-              return MaterialApp(
+
+
+              final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+              final dynSupport = isAndroid &&(lightDynamic!=null||darkDynamic!=null);
+              final palette = ThemePalettes.byId(settings.themePaletteId);// 选中某套色板
+              final useDyn = settings.useDynamicColor && isAndroid;
+              // 传入色板的 light ColorScheme
+              final light = buildLightThemeForScheme(
+                palette.light,
+                dynamicScheme: useDyn ? lightDynamic : null,
+                pureBackground: settings.usePureBackground,
+              );
+              final dark = buildDarkThemeForScheme(
+                palette.dark,
+                dynamicScheme: useDyn ? darkDynamic : null,
+                pureBackground: settings.usePureBackground,
+              );
+              return MaterialApp.router(
                 title: 'SYCTB',
                 debugShowCheckedModeBanner: false,
-                theme: AppTheme.light,
-                darkTheme: AppTheme.dark,
-                themeMode: settings.themeMode,
-                locale: settings.locale,
+                theme: light,
+                darkTheme: dark,
+                themeMode: settings.themeMode,// 主题模式（浅色/深色/跟随系统）
+                locale: settings.locale,// 用户选择的语言（null = 跟随系统）
+                routerConfig: appRouter,// GoRouter 路由配置
                 localizationsDelegates: const [
                   AppLocalizations.delegate,
                   GlobalMaterialLocalizations.delegate,
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: AppLocalizations.supportedLocales,
-                home: _selectHome(),
+                ],// 本地化委托
+                // builder: (ctx,child){...},// 全局 builder
               );
             },
           );
@@ -113,12 +120,3 @@ class AiChatApp extends StatelessWidget {
 }
 
 
-Widget _selectHome(){
-  if(kIsWeb) return const HomePage();
-  final isDesktop =
-    defaultTargetPlatform == TargetPlatform.windows||
-    defaultTargetPlatform == TargetPlatform.macOS||
-    defaultTargetPlatform == TargetPlatform.linux;
-  return isDesktop? const DesktopHomePage():const HomePage();
-
-}

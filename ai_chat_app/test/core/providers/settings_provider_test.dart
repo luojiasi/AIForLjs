@@ -1,4 +1,4 @@
-import 'package:ai_chat_app/providers/settings_provider.dart';
+import 'package:ai_chat_app/core/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

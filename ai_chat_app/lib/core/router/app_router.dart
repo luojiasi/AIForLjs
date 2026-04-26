@@ -1,0 +1,40 @@
+import 'package:ai_chat_app/presentation/page/practice/01_state_management/counter_demo.dart';
+import 'package:ai_chat_app/presentation/page/practice/04_lifecycle/lifecycle.dart';
+import 'package:ai_chat_app/presentation/page/practice/05_layout/widgetlayout.dart';
+
+import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
+import 'package:ai_chat_app/features/home/pages/home_page.dart';
+import 'package:ai_chat_app/theme_preview_page.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+/// 全局路由观察者，用于监听页面跳转/返回事件
+final RouteObserver<ModalRoute<dynamic>> routeObserver = RouteObserver<ModalRoute<dynamic>>();
+
+/// 根据平台选择首页
+Widget _homePage() {
+  if (kIsWeb) return const HomePage();
+  final isDesktop = 
+      defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.linux;
+  return isDesktop ? const DesktopHomePage() : const HomePage();
+}
+
+/// 应用路由表
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
+final GoRouter appRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
+  initialLocation: '/',
+  observers: [routeObserver],
+  // routes: [
+  //   GoRoute(
+  //     path: '/',
+  //     builder: (context, state) => _homePage(),
+  //   ),
+  routes:[
+    GoRoute(path: '/',builder: (context, state) => const ThemePreviewPage(),)
+  ],
+);
