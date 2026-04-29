@@ -18,5 +18,20 @@
   "errorOccurred": "发生错误",
   "noMessages": "暂无消息，开始一段对话吧！",
   "deleteConversation": "确定删除此对话？",
-  "searchPlaceholder": "搜索对话..."
+  "searchPlaceholder": "搜索对话...",
+  "settingsPageBackButton":"返回",
+  "settingsPageAbout":"关于",
+  "aboutPageAppDescription":"集成大部分功能软件",
+  "aboutPageVersion":"版本",
+  "aboutPageSystem": "系统",
+  "aboutPageWebsite": "网站",
+  "aboutPageGithub": "GitHub",
+  "aboutPageLicense": "许可证",
+  "aboutPageJoinQQGroup": "加入QQ群",
+  "aboutPageJoinDiscord": "在 Discord 中加入我们",
+  "aboutPageEasterEggButton": "完美",
+  "requestLogSettingTitle": "请求日志打印",
+  "requestLogSettingSubtitle": "开启后会将请求/响应详情写入 logs/logs.txt",
+  "flutterLogSettingTitle": "应用日志打印",
+  "flutterLogSettingSubtitle": "开启后会将 Flutter 错误与 print 输出写入 logs/flutter_logs.txt"
 }

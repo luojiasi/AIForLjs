@@ -75,5 +75,26 @@
   "searchPlaceholder": "Search conversations...",
   "@searchPlaceholder": {
     "description": "Placeholder for the search input"
-  }
+  },
+  "settingsPageBackButton": "Back",
+  "@searchPlaceholder": {
+    "description": "settingsPageBackButton"
+  },
+  "settingsPageAbout":"About",
+  "@searchPlaceholder": {
+    "description": "SettingsPageAbout"
+  },
+  "aboutPageAppDescription":"Shan Yi Chat To Ai ",
+  "aboutPageVersion": "Version",
+  "aboutPageSystem": "System",
+  "aboutPageWebsite": "Website",
+  "aboutPageGithub": "GitHub",
+  "aboutPageLicense": "License",
+  "aboutPageJoinQQGroup": "Join our QQ Group",
+  "aboutPageJoinDiscord": "Join us on Discord",
+  "aboutPageEasterEggButton": "Nice!",
+  "requestLogSettingTitle": "Request Logging",
+  "requestLogSettingSubtitle": "When enabled, request/response details are written to logs/logs.txt (rotated daily).",
+  "flutterLogSettingTitle": "Flutter Logging",
+  "flutterLogSettingSubtitle": "When enabled, Flutter errors and print output are written to logs/flutter_logs.txt (rotated daily)."
 }

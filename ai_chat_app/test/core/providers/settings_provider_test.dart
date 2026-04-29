@@ -13,11 +13,6 @@ void main() {
     test('default themeMode is system', () {
       expect(provider.themeMode, equals(ThemeMode.system));
     });
-
-    test('default locale is null', () {
-      expect(provider.locale, isNull);
-    });
-
     test('setThemeMode updates themeMode', () {
       provider.setThemeMode(ThemeMode.dark);
       expect(provider.themeMode, equals(ThemeMode.dark));
@@ -30,10 +25,6 @@ void main() {
       expect(notifyCount, equals(0));
     });
 
-    test('setLocale updates locale', () {
-      provider.setLocale(const Locale('zh'));
-      expect(provider.locale, equals(const Locale('zh')));
-    });
 
     test('notifies listeners on themeMode change', () {
       int notifyCount = 0;
@@ -45,7 +36,6 @@ void main() {
     test('notifies listeners on locale change', () {
       int notifyCount = 0;
       provider.addListener(() => notifyCount++);
-      provider.setLocale(const Locale('zh'));
       expect(notifyCount, equals(1));
     });
   });

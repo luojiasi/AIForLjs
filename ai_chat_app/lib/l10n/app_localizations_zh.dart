@@ -64,4 +64,50 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchPlaceholder => '搜索对话...';
+
+  @override
+  String get settingsPageBackButton => '返回';
+
+  @override
+  String get settingsPageAbout => '关于';
+
+  @override
+  String get aboutPageAppDescription => '集成大部分功能软件';
+
+  @override
+  String get aboutPageVersion => '版本';
+
+  @override
+  String get aboutPageSystem => '系统';
+
+  @override
+  String get aboutPageWebsite => '网站';
+
+  @override
+  String get aboutPageGithub => 'GitHub';
+
+  @override
+  String get aboutPageLicense => '许可证';
+
+  @override
+  String get aboutPageJoinQQGroup => '加入QQ群';
+
+  @override
+  String get aboutPageJoinDiscord => '在 Discord 中加入我们';
+
+  @override
+  String get aboutPageEasterEggButton => '完美';
+
+  @override
+  String get requestLogSettingTitle => '请求日志打印';
+
+  @override
+  String get requestLogSettingSubtitle => '开启后会将请求/响应详情写入 logs/logs.txt';
+
+  @override
+  String get flutterLogSettingTitle => '应用日志打印';
+
+  @override
+  String get flutterLogSettingSubtitle =>
+      '开启后会将 Flutter 错误与 print 输出写入 logs/flutter_logs.txt';
 }

@@ -1,4 +1,6 @@
+import 'package:ai_chat_app/features/settings/pages/about_page.dart';
 import 'package:ai_chat_app/presentation/page/practice/01_state_management/counter_demo.dart';
+import 'package:ai_chat_app/presentation/page/practice/02_animation/animation_demo.dart';
 import 'package:ai_chat_app/presentation/page/practice/04_lifecycle/lifecycle.dart';
 import 'package:ai_chat_app/presentation/page/practice/05_layout/widgetlayout.dart';
 
@@ -30,11 +32,16 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   observers: [routeObserver],
   // routes: [
-  //   GoRoute(
-  //     path: '/',
-  //     builder: (context, state) => _homePage(),
-  //   ),
+  //   GoRoute(path: '/',builder: (context, state) => _homePage()),
   routes:[
-    GoRoute(path: '/',builder: (context, state) => const ThemePreviewPage(),)
+    GoRoute(path: '/',builder: (context, state) => const AboutPage())
   ],
 );
+  // // 替换当前页面（不会返回）
+  // context.go('/home');
+
+  // // 推入新页面（可以返回）
+  // context.push('/counter');
+
+  // // 返回上一页
+  // context.pop();

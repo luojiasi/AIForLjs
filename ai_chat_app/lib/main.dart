@@ -82,13 +82,16 @@ class AiChatApp extends StatelessWidget {
 
               final isAndroid = Theme.of(context).platform == TargetPlatform.android;
               final dynSupport = isAndroid &&(lightDynamic!=null||darkDynamic!=null);
+              WidgetsBinding.instance.addPostFrameCallback((_){
+                try{}catch(_){}
+              });
               final palette = ThemePalettes.byId(settings.themePaletteId);// 选中某套色板
               final useDyn = settings.useDynamicColor && isAndroid;
               // 传入色板的 light ColorScheme
               final light = buildLightThemeForScheme(
                 palette.light,
-                dynamicScheme: useDyn ? lightDynamic : null,
-                pureBackground: settings.usePureBackground,
+                dynamicScheme: useDyn ? lightDynamic : null,// 可选：用系统动态取色覆盖
+                pureBackground: settings.usePureBackground,// 可选：强制纯色背景
               );
               final dark = buildDarkThemeForScheme(
                 palette.dark,
@@ -101,14 +104,10 @@ class AiChatApp extends StatelessWidget {
                 theme: light,
                 darkTheme: dark,
                 themeMode: settings.themeMode,// 主题模式（浅色/深色/跟随系统）
-                locale: settings.locale,// 用户选择的语言（null = 跟随系统）
+                locale: settings.appLocaleForMaterialApp,// 用户选择的语言（null = 跟随系统）
                 routerConfig: appRouter,// GoRouter 路由配置
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],// 本地化委托
+                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates
                 // builder: (ctx,child){...},// 全局 builder
               );
             },

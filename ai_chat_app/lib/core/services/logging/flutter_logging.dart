@@ -10,8 +10,8 @@ import 'package:flutter/foundation.dart';
 class FlutterLogger{
   // 私有构造，禁止实例化，全是静态方法
   FlutterLogger._();
-  static const String _activeFileName = 'AIFORLJS_logs.txt';//当前日志文件名
-  static const String _rotatedFilePrefix = 'AIFORLJS_logs_';//轮转文件前缀
+  static const String _activeFileName = 'Flutter_logs.txt';//当前日志文件名
+  static const String _rotatedFilePrefix = 'Flutter_logs_';//轮转文件前缀
 
   static bool _enabled = false;
   static bool get enabled => _enabled;

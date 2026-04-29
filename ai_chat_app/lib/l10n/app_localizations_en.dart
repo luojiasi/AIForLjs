@@ -64,4 +64,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchPlaceholder => 'Search conversations...';
+
+  @override
+  String get settingsPageBackButton => 'Back';
+
+  @override
+  String get settingsPageAbout => 'About';
+
+  @override
+  String get aboutPageAppDescription => 'Shan Yi Chat To Ai ';
+
+  @override
+  String get aboutPageVersion => 'Version';
+
+  @override
+  String get aboutPageSystem => 'System';
+
+  @override
+  String get aboutPageWebsite => 'Website';
+
+  @override
+  String get aboutPageGithub => 'GitHub';
+
+  @override
+  String get aboutPageLicense => 'License';
+
+  @override
+  String get aboutPageJoinQQGroup => 'Join our QQ Group';
+
+  @override
+  String get aboutPageJoinDiscord => 'Join us on Discord';
+
+  @override
+  String get aboutPageEasterEggButton => 'Nice!';
+
+  @override
+  String get requestLogSettingTitle => 'Request Logging';
+
+  @override
+  String get requestLogSettingSubtitle =>
+      'When enabled, request/response details are written to logs/logs.txt (rotated daily).';
+
+  @override
+  String get flutterLogSettingTitle => 'Flutter Logging';
+
+  @override
+  String get flutterLogSettingSubtitle =>
+      'When enabled, Flutter errors and print output are written to logs/flutter_logs.txt (rotated daily).';
 }

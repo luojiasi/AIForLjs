@@ -206,11 +206,101 @@ abstract class AppLocalizations {
   /// **'Delete this conversation?'**
   String get deleteConversation;
 
-  /// Placeholder for the search input
+  /// SettingsPageAbout
   ///
   /// In en, this message translates to:
   /// **'Search conversations...'**
   String get searchPlaceholder;
+
+  /// No description provided for @settingsPageBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get settingsPageBackButton;
+
+  /// No description provided for @settingsPageAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsPageAbout;
+
+  /// No description provided for @aboutPageAppDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shan Yi Chat To Ai '**
+  String get aboutPageAppDescription;
+
+  /// No description provided for @aboutPageVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get aboutPageVersion;
+
+  /// No description provided for @aboutPageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get aboutPageSystem;
+
+  /// No description provided for @aboutPageWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get aboutPageWebsite;
+
+  /// No description provided for @aboutPageGithub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get aboutPageGithub;
+
+  /// No description provided for @aboutPageLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'License'**
+  String get aboutPageLicense;
+
+  /// No description provided for @aboutPageJoinQQGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Join our QQ Group'**
+  String get aboutPageJoinQQGroup;
+
+  /// No description provided for @aboutPageJoinDiscord.
+  ///
+  /// In en, this message translates to:
+  /// **'Join us on Discord'**
+  String get aboutPageJoinDiscord;
+
+  /// No description provided for @aboutPageEasterEggButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice!'**
+  String get aboutPageEasterEggButton;
+
+  /// No description provided for @requestLogSettingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Logging'**
+  String get requestLogSettingTitle;
+
+  /// No description provided for @requestLogSettingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, request/response details are written to logs/logs.txt (rotated daily).'**
+  String get requestLogSettingSubtitle;
+
+  /// No description provided for @flutterLogSettingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flutter Logging'**
+  String get flutterLogSettingTitle;
+
+  /// No description provided for @flutterLogSettingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, Flutter errors and print output are written to logs/flutter_logs.txt (rotated daily).'**
+  String get flutterLogSettingSubtitle;
 }
 
 class _AppLocalizationsDelegate
