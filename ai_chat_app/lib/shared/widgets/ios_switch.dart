@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart'
     show Theme; // for Material color scheme primary
-import '../../core/services/haptics.dart';
+import '../../../core/services/haptics.dart';
 import 'package:provider/provider.dart';
-import '../../core/providers/settings_provider.dart';
+import '../../../core/providers/settings_provider.dart';
 
 /// A refined, iOS‑inspired switch with subtle animations
 /// tailored to the app's visual style.

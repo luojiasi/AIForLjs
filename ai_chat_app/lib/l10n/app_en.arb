@@ -96,5 +96,77 @@
   "requestLogSettingTitle": "Request Logging",
   "requestLogSettingSubtitle": "When enabled, request/response details are written to logs/logs.txt (rotated daily).",
   "flutterLogSettingTitle": "Flutter Logging",
-  "flutterLogSettingSubtitle": "When enabled, Flutter errors and print output are written to logs/flutter_logs.txt (rotated daily)."
+  "flutterLogSettingSubtitle": "When enabled, Flutter errors and print output are written to logs/flutter_logs.txt (rotated daily).",
+  "logViewerCurrentLog": "Current Log",
+  "logViewerExport": "Export",
+  "logViewerEmpty": "No logs yet",
+  "logSettingsTitle": "Log Settings",
+  "logSettingsSaveOutput": "Save Response Output",
+  "logSettingsSaveOutputSubtitle": "Log response body content (may use significant storage)",
+  "logSettingsAutoDelete": "Auto-delete",
+  "logSettingsAutoDeleteSubtitle": "Delete logs older than specified days",
+  "logSettingsAutoDeleteDisabled": "Disabled",
+  "logSettingsAutoDeleteDays": "{count} days",
+  "@logSettingsAutoDeleteDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "logSettingsMaxSize": "Max Log Size",
+  "logSettingsMaxSizeSubtitle": "Oldest logs deleted when exceeded",
+  "logSettingsMaxSizeUnlimited": "Unlimited",
+  "storageSpaceSubLogsFlutter": "Flutter logs",
+  "storageSpaceSubLogsFlutter": "Flutter logs",
+  "storageSpaceSubLogsRequests": "Network logs",
+  "storageSpaceSubLogsOther": "Other logs",
+  "storageSpaceCategoryLogs": "Logs",
+  "logViewerTitle": "Request Logs",
+  "logViewerRequestsCount": "{count} requests",
+  "@logViewerRequestsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatMessageWidgetCopiedToClipboard": "Copied to clipboard",
+  "logViewerFieldId": "ID",
+  "logViewerFieldMethod": "Method",
+  "logViewerFieldStatus": "Status",
+  "logViewerFieldStarted": "Started",
+  "logViewerFieldEnded": "Ended",
+  "logViewerFieldDuration": "Duration",
+  "logViewerSectionSummary": "Summary",
+  "logViewerSectionParameters": "Parameters",
+  "logViewerSectionRequestHeaders": "Request Headers",
+  "logViewerSectionRequestBody": "Request Body",
+  "logViewerSectionResponseHeaders": "Response Headers",
+  "logViewerSectionResponseBody": "Response Body",
+  "logViewerSectionWarnings": "Warnings",
+  "logViewerErrorTitle": "Error",
+  "logViewerMoreCount": "+{count} more",
+  "@logViewerMoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hotkeyToggleAppVisibility": "Show/Hide App",
+  "hotkeyCloseWindow": "Close Window",
+  "hotkeyOpenSettings": "Open Settings",
+  "hotkeyNewTopic": "New Topic",
+  "hotkeySwitchModel": "Switch Model",
+  "hotkeyToggleAssistantPanel": "Toggle Assistants",
+  "hotkeyToggleTopicPanel": "Toggle Topics",
+  "hotkeysPressShortcut": "Press a shortcut",
+  "hotkeysResetDefault": "Reset to default",
+  "hotkeysClearShortcut": "Clear shortcut",
+  "hotkeysResetAll": "Reset all to defaults",
+  "androidBackgroundNotificationTitle": "SYCTB is running",
+  "androidBackgroundNotificationText": "Keeping App alive in background",
+  "desktopTrayMenuShowWindow": "Show Window",
+  "desktopTrayMenuExit": "Exit"
 }

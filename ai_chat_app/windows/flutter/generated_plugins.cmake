@@ -6,13 +6,17 @@ list(APPEND FLUTTER_PLUGIN_LIST
   bitsdojo_window_windows
   dynamic_color
   flutter_secure_storage_windows
+  hotkey_manager_windows
   restart_app
   screen_retriever_windows
+  share_plus
+  tray_manager
   url_launcher_windows
   window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
+  flutter_local_notifications_windows
   jni
 )
 

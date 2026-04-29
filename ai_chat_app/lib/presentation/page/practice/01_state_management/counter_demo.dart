@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 
-class CounterButton extends StatefulWidget {
-  const CounterButton({super.key});
+class CounterDemo extends StatefulWidget {
+  const CounterDemo({super.key});
 
   @override
-  State<CounterButton> createState() => _CounterButtonState();
+  State<CounterDemo> createState() => _CounterDemoState();
 }
 
-class _CounterButtonState extends State<CounterButton> {
+class _CounterDemoState extends State<CounterDemo> {
   int _count = 0;  // 状态变量
 
   void _increment() {

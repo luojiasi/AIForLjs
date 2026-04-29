@@ -442,7 +442,6 @@ class _NotificationWidgetState extends State<NotificationWidget>
   }
 }
 
-// Helper function for easy use
 void showAppSnackBar(
   BuildContext context, {
   required String message,

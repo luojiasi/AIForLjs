@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ai_chat_app/core/services/haptics.dart';
 import 'package:ai_chat_app/core/services/logging/flutter_logging.dart';
 import 'package:ai_chat_app/core/services/network/request_logger.dart';
@@ -193,6 +195,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _displayHapticsOnListItemTapKey ='display_haptics_on_list_item_tap_v1';
   static const String _displayHapticsIosSwitchKey ='display_haptics_ios_switch_v1';
   static const String _displayHapticsGlobalEnabledKey ='display_haptics_global_enabled_v1';
+  static const String _displayHapticsOnCardTapKey ='display_haptics_on_card_tap_v1';
   /// ======= 
   bool _hapticsOnListItemTap = true;
   bool get hapticsOnListItemTap => _hapticsOnListItemTap;
@@ -222,7 +225,115 @@ class SettingsProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_displayHapticsGlobalEnabledKey, v);
   }
+  bool _hapticsOnCardTap = true;
+  bool get hapticsOnCardTap => _hapticsOnCardTap;
+  Future<void> setHapticsOnCardTap(bool v) async {
+    if (_hapticsOnCardTap == v) return;
+    _hapticsOnCardTap = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayHapticsOnCardTapKey, v);
+  }
+
+  ///============
+  ///Android 后台
+  static const String _androidBackgroundChatModeKey ='android_background_chat_mode_v1';
+  ///============
+  AndroidBackgroundChatMode _androidBackgroundChatMode = AndroidBackgroundChatMode.off;
+  AndroidBackgroundChatMode get androidBackgroundChatMode =>_androidBackgroundChatMode;
+  Future<void> setAndroidBackgroundChatMode(AndroidBackgroundChatMode mode,)async{
+    if (_androidBackgroundChatMode == mode) return;
+    _androidBackgroundChatMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    final v = switch (mode) {
+      AndroidBackgroundChatMode.onNotify => 'on_notify',
+      AndroidBackgroundChatMode.on => 'on',
+      AndroidBackgroundChatMode.off => 'off',
+    };
+    await prefs.setString(_androidBackgroundChatModeKey, v);
+    try {
+      if (Platform.isAndroid) {
+        // Direct call; file is present in project and guards by Platform
+        // ignore: depend_on_referenced_packages
+        // ignore_for_file: unnecessary_import
+        // ignore: avoid_print
+        // Defer import here is not possible; rely on main.dart sync. This is a no-op placeholder.
+      }
+    } catch (_) {}
+  }
+  ///================
+  ///桌面专有
+  static const String _displayDesktopShowTrayKey ='display_desktop_show_tray_v1';
+  static const String _displayDesktopMinimizeToTrayOnCloseKey ='display_desktop_minimize_to_tray_on_close_v1';
+  ///================
+  bool _desktopShowTray = false;
+  bool get desktopShowTray => _desktopShowTray;
+  bool _desktopMinimizeToTrayOnClose = false;
+  bool get desktopMinimizeToTrayOnClose => _desktopMinimizeToTrayOnClose;
+  Future<void> setDesktopShowTray(bool v) async {
+    if (_desktopShowTray == v) return;
+    _desktopShowTray = v;
+    if (!_desktopShowTray && _desktopMinimizeToTrayOnClose) {
+      _desktopMinimizeToTrayOnClose = false;
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayDesktopShowTrayKey, _desktopShowTray);
+    await prefs.setBool(
+      _displayDesktopMinimizeToTrayOnCloseKey,
+      _desktopMinimizeToTrayOnClose,
+    );
+  }
+  Future<void> setDesktopMinimizeToTrayOnClose(bool v) async {
+    final next = _desktopShowTray ? v : false;
+    if (_desktopMinimizeToTrayOnClose == next) return;
+    _desktopMinimizeToTrayOnClose = next;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(
+      _displayDesktopMinimizeToTrayOnCloseKey,
+      _desktopMinimizeToTrayOnClose,
+    );
+  }
+
+  ///================
+  ///侧边栏行为 & 更新
+  static const String _displayShowAppUpdatesKey = 'display_show_app_updates_v1';
+  ///================
+  bool _showAppUpdates = true;
+  bool get showAppUpdates => _showAppUpdates;
+  Future<void> setShowAppUpdates(bool v) async {
+    if (_showAppUpdates == v) return;
+    _showAppUpdates = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayShowAppUpdatesKey, v);
+  }
 
 
-  
+
+  ///====
+  ///字体
+  ///====
+  String? _appFontLocalAlias;
+  String? _appFontFamily;
+  String? _codeFontFamily;
+  bool _appFontIsGoogle = false;
+  bool _codeFontIsGoogle = false;
+  String? _codeFontLocalAlias;
+
+  String? get appFontFamily => _effectiveAppFontAlias ?? _appFontFamily;
+  String? get appFontLocalAlias => _appFontLocalAlias;
+  String? get codeFontLocalAlias => _codeFontLocalAlias;
+  String? get _effectiveAppFontAlias =>(_appFontLocalAlias?.isNotEmpty == true) ? _appFontLocalAlias : null;
+  bool get appFontIsGoogle => _appFontIsGoogle;
+  String? get codeFontFamily => _effectiveCodeFontAlias ?? _codeFontFamily;
+  String? get _effectiveCodeFontAlias => (_codeFontLocalAlias?.isNotEmpty == true) ? _codeFontLocalAlias : null;
+  bool get codeFontIsGoogle => _codeFontIsGoogle;
+
+
+
+
 }
+enum AndroidBackgroundChatMode { off, on, onNotify }
