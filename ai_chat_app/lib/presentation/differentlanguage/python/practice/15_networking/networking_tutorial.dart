@@ -15,11 +15,20 @@ class PythonNetworkingTutorial extends StatelessWidget {
         children: [
           SectionHeader('本章内容', icon: Icons.list),
           Paragraph(
-            '① Socket 基础与 TCP/UDP  ② socket 模块详解  ③ TCP 服务器与客户端\n'
-            '④ Echo 服务器实战  ⑤ UDP 通信  ⑥ 多连接处理（threading / selectors）\n'
-            '⑦ HTTP 客户端（http.client / urllib / requests）  ⑧ 简易 Web 服务器\n'
-            '⑨ URL 解析与 DNS 查询  ⑩ SSL/TLS 安全连接  ⑪ 非阻塞 Socket\n'
-            '⑫ selectors 模块  ⑬ 聊天服务器实战  ⑭ IP 地址处理\n'
+            '① Socket 基础与 TCP/UDP\n'
+            '② socket 模块详解\n'
+            '③ TCP 服务器与客户端\n'
+            '④ Echo 服务器实战\n'
+            '⑤ UDP 通信\n'
+            '⑥ 多连接处理（threading / selectors）\n'
+            '⑦ HTTP 客户端（http.client / urllib / requests）\n'
+            '⑧ 简易 Web 服务器\n'
+            '⑨ URL 解析与 DNS 查询\n'
+            '⑩ SSL/TLS 安全连接\n'
+            '⑪ 非阻塞 Socket\n'
+            '⑫ selectors 模块\n'
+            '⑬ 聊天服务器实战\n'
+            '⑭ IP 地址处理\n'
             '⑮ 最佳实践与安全注意事项',
           ),
           TipBox(

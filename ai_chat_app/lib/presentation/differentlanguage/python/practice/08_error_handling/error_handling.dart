@@ -16,10 +16,19 @@ class PythonErrorHandling extends StatelessWidget {
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
           const Paragraph(
-            '① 错误分类  ② try/except 详解  ③ 多个异常捕获\n'
-            '④ else 和 finally  ⑤ 异常层级体系  ⑥ 自定义异常\n'
-            '⑦ 异常链（raise ... from）⑧ assert 断言  ⑨ logging 日志\n'
-            '⑩ 上下文管理器  ⑪ pdb 调试  ⑫ unittest 测试  ⑬ doctest 测试',
+            '① 错误分类\n'
+            '② try/except 详解\n'
+            '③ 多个异常捕获\n'
+            '④ else 和 finally\n'
+            '⑤ 异常层级体系\n'
+            '⑥ 自定义异常\n'
+            '⑦ 异常链（raise ... from）\n'
+            '⑧ assert 断言\n'
+            '⑨ logging 日志\n'
+            '⑩ 上下文管理器\n'
+            '⑪ pdb 调试 \n'
+            '⑫ unittest 测试\n'
+            '⑬ doctest 测试',
           ),
           const TipBox(
             '异常处理不是"逃避错误"，而是"优雅地处理错误"。'

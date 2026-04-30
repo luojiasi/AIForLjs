@@ -16,12 +16,25 @@ class PythonXMLTutorial extends StatelessWidget {
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
           const Paragraph(
-            '① XML 基础入门  ② SAX vs DOM vs ElementTree  ③ 解析 XML\n'
-            '④ 查找元素  ⑤ 遍历树  ⑥ XPath 支持  ⑦ 修改 XML\n'
-            '⑧ 构建 XML  ⑨ 写入文件  ⑩ 属性与命名空间\n'
-            '⑪ CDATA 节  ⑫ xml.dom.minidom  ⑬ xml.sax\n'
-            '⑭ lxml 第三方库  ⑮ DTD/Schema 验证  ⑯ XML 转 Dict/JSON\n'
-            '⑰ 命名空间进阶  ⑱ 大文件流式解析  ⑲ XXE 安全防护  ⑳ 实战项目',
+            '① XML 基础入门\n'
+            '② SAX vs DOM vs ElementTree  ③ 解析 XML\n'
+            '④ 查找元素\n'
+            '⑤ 遍历树\n'
+            '⑥ XPath 支持\n'
+            '⑦ 修改 XML\n'
+            '⑧ 构建 XML\n'
+            '⑨ 写入文件\n'
+            '⑩ 属性与命名空间\n'
+            '⑪ CDATA 节\n'
+            '⑫ xml.dom.minidom\n'
+            '⑬ xml.sax\n'
+            '⑭ lxml 第三方库 \n'
+            '⑮ DTD/Schema 验证\n'
+            '⑯ XML 转 Dict/JSON\n'
+            '⑰ 命名空间进阶 \n'
+            '⑱ 大文件流式解析\n'
+            '⑲ XXE 安全防护\n'
+            '⑳ 实战项目',
           ),
           const TipBox(
             'XML 虽然不如 JSON 流行，但在配置文件、Web Services (SOAP)、'

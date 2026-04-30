@@ -18,12 +18,24 @@ class PythonFileIO extends StatelessWidget {
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
           const Paragraph(
-            '① open() 与文件模式  ② 读取文件（3种方式）  ③ 写入文件\n'
-            '④ with 语句（上下文管理器）  ⑤ seek/tell 随机读写\n'
-            '⑥ 编码深度解析  ⑦ 二进制文件  ⑧ 内存IO：StringIO/BytesIO\n'
-            '⑨ pickle 序列化  ⑩ 控制台IO：input/print  ⑪ os.path 路径操作\n'
-            '⑫ pathlib（现代方案）  ⑬ shutil 文件管理  ⑭ glob 与 fnmatch 文件搜索\n'
-            '⑮ tempfile 临时文件  ⑯ CSV与JSON  ⑰ 综合示例  ⑱ 小练习',
+            '① open() 与文件模式\n'
+            '② 读取文件（3种方式）\n'
+            '③ 写入文件\n'
+            '④ with 语句（上下文管理器）\n'
+            '⑤ seek/tell 随机读写\n'
+            '⑥ 编码深度解析\n'
+            '⑦ 二进制文件\n'
+            '⑧ 内存IO：StringIO/BytesIO\n'
+            '⑨ pickle 序列化\n'
+            '⑩ 控制台IO：input/print\n'
+            '⑪ os.path 路径操作\n'
+            '⑫ pathlib（现代方案）\n'
+            '⑬ shutil 文件管理\n'
+            '⑭ glob 与 fnmatch 文件搜索\n'
+            '⑮ tempfile 临时文件\n'
+            '⑯ CSV与JSON\n'
+            '⑰ 综合示例\n'
+            '⑱ 小练习',
           ),
           const TipBox(
             '文件操作是 Python 最常用的功能之一。数据处理、日志读写、'

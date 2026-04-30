@@ -17,10 +17,16 @@ class PythonBasics extends StatelessWidget {
           children: [
             SectionHeader('本章内容', icon: Icons.list),
             Paragraph(
-              '① Python 简介与哲学  ② 安装与环境  ③ 第一个程序\n'
-              '④ 注释与文档字符串  ⑤ PEP 8 编码规范  ⑥ 变量与赋值\n'
-              '⑦ 基本数据类型（含 None/bytes）  ⑧ 运算符大全与优先级\n'
-              '⑨ 字符串进阶（f-string/转义/原始字符串）  ⑩ 输入输出\n'
+              '① Python 简介与哲学\n'
+              '② 安装与环境\n'  
+              '③ 第一个程序\n'
+              '④ 注释与文档字符串\n'
+              '⑤ PEP 8 编码规范\n'
+              '⑥ 变量与赋值\n'
+              '⑦ 基本数据类型（含 None/bytes）\n'
+              '⑧ 运算符大全与优先级\n'
+              '⑨ 字符串进阶（f-string/转义/原始字符串）\n'
+              '⑩ 输入输出\n'
               '⑪ 类型转换与类型检查',
             ),
             TipBox(

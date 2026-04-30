@@ -5,7 +5,9 @@
       "WebSearch",
       "WebFetch(domain:www.liaoxuefeng.com)",
       "WebFetch(domain:liaoxuefeng.com)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "PowerShell(ls \"D:\\\\AIForLjs\\\\ai_chat_app\\\\lib\\\\presentation\\\\differentlanguage\\\\python\\\\practice\\\\11_stdlib\\\\stdlib_modules.dart\"; \\(gc \"D:\\\\AIForLjs\\\\ai_chat_app\\\\lib\\\\presentation\\\\differentlanguage\\\\python\\\\practice\\\\11_stdlib\\\\stdlib_modules.dart\"\\).Length)",
+      "Bash(python3 *)"
     ]
   }
 }

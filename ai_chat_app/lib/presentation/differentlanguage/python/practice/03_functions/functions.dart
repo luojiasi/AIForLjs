@@ -18,9 +18,14 @@ class PythonFunctions extends StatelessWidget {
           children: [
             SectionHeader('本章内容', icon: Icons.list),
             Paragraph(
-              '① 函数定义与调用  ② 参数类型（5种）  ③ 类型注解\n'
-              '④ 作用域与闭包  ⑤ lambda 表达式  ⑥ 装饰器深入\n'
-              '⑦ functools 工具  ⑧ 递归',
+              '① 函数定义与调用\n'
+              '② 参数类型（5种）\n'
+              '③ 类型注解\n'
+              '④ 作用域与闭包\n'
+              '⑤ lambda 表达式\n'
+              '⑥ 装饰器深入\n'
+              '⑦ functools 工具\n'
+              '⑧ 递归',
             ),
             TipBox(
               '函数是 Python 中最重要的"一等公民"——你可以把函数像普通变量一样传递。',

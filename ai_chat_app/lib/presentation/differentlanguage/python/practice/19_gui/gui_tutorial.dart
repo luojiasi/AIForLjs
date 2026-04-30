@@ -15,12 +15,28 @@ class PythonGUITutorial extends StatelessWidget {
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
           const Paragraph(
-            '① Tkinter 简介  ② 主窗口设置  ③ 核心组件一览  ④ 布局管理器\n'
-            '⑤ Grid 布局  ⑥ Pack 布局  ⑦ Button 按钮  ⑧ Label 标签\n'
-            '⑨ Entry 输入框  ⑩ Text 多行文本  ⑪ Frame 框架  ⑫ Listbox & Combobox\n'
-            '⑬ Checkbutton & Radiobutton  ⑭ Scale & Spinbox  ⑮ Messagebox 消息框\n'
-            '⑯ Filedialog 文件对话框  ⑰ 颜色与字体  ⑱ 事件绑定\n'
-            '⑲ ttk 主题组件  ⑳ Menu 菜单  ㉑ Canvas 画布  ㉒ 完整项目\n'
+            '① Tkinter 简介\n'
+            '② 主窗口设置\n'
+            '③ 核心组件一览\n'
+            '④ 布局管理器\n'
+            '⑤ Grid 布局\n'
+            '⑥ Pack 布局\n'
+            '⑦ Button 按钮\n'
+            '⑧ Label 标签\n'
+            '⑨ Entry 输入框\n'
+            '⑩ Text 多行文本\n'
+            '⑪ Frame 框架\n'
+            '⑫ Listbox & Combobox\n'
+            '⑬ Checkbutton & Radiobutton\n'
+            '⑭ Scale & Spinbox\n'
+            '⑮ Messagebox 消息框\n'
+            '⑯ Filedialog 文件对话框 \n'
+            '⑰ 颜色与字体  \n'
+            '⑱ 事件绑定\n'
+            '⑲ ttk 主题组件  \n'
+            '⑳ Menu 菜单 \n'
+            '㉑ Canvas 画布\n'
+            '㉒ 完整项目\n'
             '㉓ 最佳实践',
           ),
           const TipBox(

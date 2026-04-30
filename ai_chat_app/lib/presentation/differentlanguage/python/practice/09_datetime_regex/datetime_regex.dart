@@ -16,9 +16,15 @@ class PythonDateTimeRegex extends StatelessWidget {
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
           const Paragraph(
-            '① datetime 模块  ② strftime/strptime 格式化  ③ timedelta 时间计算\n'
-            '④ timezone 与时区  ⑤ calendar 日历模块  ⑥ 正则表达式入门\n'
-            '⑦ re 函数详解  ⑧ re.compile 编译优化  ⑨ 命名组与零宽断言\n'
+            '① datetime 模块\n'
+            '② strftime/strptime 格式化\n'
+            '③ timedelta 时间计算\n'
+            '④ timezone 与时区\n'
+            '⑤ calendar 日历模块\n'
+            '⑥ 正则表达式入门\n'
+            '⑦ re 函数详解\n'
+            '⑧ re.compile 编译优化\n'
+            '⑨ 命名组与零宽断言\n'
             '⑩ 正则实战：日志解析',
           ),
           const TipBox(

@@ -24,10 +24,14 @@ class PythonDataStructures extends StatelessWidget {
             // ===== 本章导览 =====
             SectionHeader('本章内容', icon: Icons.list),
             Paragraph(
-              '① 列表详解    ② 元组与命名元组\n'
-              '③ 字典进阶    ④ 集合详解\n'
-              '⑤ 列表推导式深入  ⑥ 生成器表达式\n'
-              '⑦ 常用 collections 工具  ⑧ 排序与切片',
+              '① 列表详解\n'
+              '② 元组与命名元组\n'
+              '③ 字典进阶\n'
+              '④ 集合详解\n'
+              '⑤ 列表推导式深入\n'
+              '⑥ 生成器表达式\n'
+              '⑦ 常用 collections 工具\n'
+              '⑧ 排序与切片',
             ),
             DividerLine(),
 

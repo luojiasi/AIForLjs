@@ -18,9 +18,15 @@ class PythonControlFlow extends StatelessWidget {
           children: [
             SectionHeader('本章内容', icon: Icons.list),
             Paragraph(
-              '① 缩进原则  ② if/elif/else 条件判断  ③ match-case（3.10+）\n'
-              '④ 条件表达式（三元）  ⑤ for 循环进阶  ⑥ while 循环\n'
-              '⑦ break/continue/for-else  ⑧ pass 语句  ⑨ 布尔真值',
+              '① 缩进原则\n'
+              '② if/elif/else 条件判断\n'
+              '③ match-case（3.10+）\n'
+              '④ 条件表达式（三元）\n'
+              '⑤ for 循环进阶\n'
+              '⑥ while 循环\n'
+              '⑦ break/continue/for-else\n'
+              '⑧ pass 语句\n'
+              '⑨ 布尔真值',
             ),
             TipBox(
               'Python 的控制流程语法简洁而强大。掌握这些后，你已经能用 Python '
