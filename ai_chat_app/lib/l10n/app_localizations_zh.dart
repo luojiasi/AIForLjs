@@ -96,7 +96,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPageJoinDiscord => '在 Discord 中加入我们';
 
   @override
+  String get aboutPageStudyLearning => '学习路径';
+
+  @override
   String get aboutPageEasterEggButton => '完美';
+
+  @override
+  String get aboutPageAppName => '多功能软件应用';
 
   @override
   String get requestLogSettingTitle => '请求日志打印';

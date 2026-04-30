@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "WebSearch",
+      "WebFetch(domain:www.liaoxuefeng.com)",
+      "WebFetch(domain:liaoxuefeng.com)",
+      "Bash(python *)"
     ]
   }
 }

@@ -96,7 +96,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutPageJoinDiscord => 'Join us on Discord';
 
   @override
+  String get aboutPageStudyLearning => 'Study Learning';
+
+  @override
   String get aboutPageEasterEggButton => 'Nice!';
+
+  @override
+  String get aboutPageAppName => 'SYCTB';
 
   @override
   String get requestLogSettingTitle => 'Request Logging';

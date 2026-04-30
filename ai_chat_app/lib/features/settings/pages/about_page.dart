@@ -9,6 +9,7 @@ import 'package:ai_chat_app/l10n/app_localizations.dart';
 import 'package:ai_chat_app/shared/widgets/ios_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:haptic_feedback/haptic_feedback.dart' as hf;
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -642,6 +643,13 @@ class _AboutPageState extends State<AboutPage>{
                 svgAsset: 'assets/icons/github.svg',
                 label: l10n.aboutPageGithub,
                 onTap: () => _openUrl('https://github.com/luojiasi/AIForLjs'),
+              ),
+              _iosDivider(context),
+              _iosNavRow(
+                context,
+                icon: Lucide.BookOpen,
+                label: l10n.aboutPageStudyLearning,
+                onTap: () => context.push('/study'), // informational only
               ),
             ],
           ),

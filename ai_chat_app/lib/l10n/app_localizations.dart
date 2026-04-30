@@ -272,11 +272,23 @@ abstract class AppLocalizations {
   /// **'Join us on Discord'**
   String get aboutPageJoinDiscord;
 
+  /// No description provided for @aboutPageStudyLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Learning'**
+  String get aboutPageStudyLearning;
+
   /// No description provided for @aboutPageEasterEggButton.
   ///
   /// In en, this message translates to:
   /// **'Nice!'**
   String get aboutPageEasterEggButton;
+
+  /// No description provided for @aboutPageAppName.
+  ///
+  /// In en, this message translates to:
+  /// **'SYCTB'**
+  String get aboutPageAppName;
 
   /// No description provided for @requestLogSettingTitle.
   ///
