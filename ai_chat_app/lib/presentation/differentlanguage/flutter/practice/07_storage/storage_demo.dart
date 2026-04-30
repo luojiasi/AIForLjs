@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
-/// Flutter 教程 · 第七章：数据存储 (Storage)
+/// ============================================================
+/// Flutter 教程 · 第七章：数据存储完全指南
+/// 从简单的 Key-Value 到关系型数据库的完整存储方案
+/// 涵盖：SharedPreferences、Hive、sqflite、SecureStorage、
+///       File I/O、文件选择器、缓存策略、存储安全
+/// ============================================================
+
 class StorageDemo extends StatefulWidget {
   const StorageDemo({super.key});
   @override
@@ -43,61 +49,98 @@ class _StorageDemoState extends State<StorageDemo> {
         padding: const EdgeInsets.all(16),
         children: [
           const SectionHeader('本章内容', icon: Icons.list),
-          const Paragraph('① SharedPreferences  ② flutter_secure_storage  ③ Hive  ④ sqflite  ⑤ File I/O  ⑥ 如何选择'),
-          const DividerLine(),
-
-          // ── 1. 概览 ──
-          const SectionHeader('1. 六种存储方式概览', icon: Icons.compare),
-          const Paragraph('🔹 SharedPreferences：键值对，适合配置项（主题、语言、登录状态）\n'
-              '🔸 flutter_secure_storage：加密键值对，适合令牌、密码\n'
-              '🔹 Hive：NoSQL 纯 Dart，适合结构化数据（购物车、收藏、草稿）\n'
-              '🔸 sqflite：SQL 关系型，适合复杂查询（通讯录、聊天记录）\n'
-              '🔹 File I/O：文件读写，适合大文件（图片、日志、导出数据）\n'
-              '🔸 image_picker / file_picker：选择文件/拍照入库'),
           const Paragraph(
-            '┌──────────────────────┬──────────┬──────────┬───────────┐\n'
-            '│      方案           │   类型   │  速度    │  适合场景  │\n'
-            '├──────────────────────┼──────────┼──────────┼───────────┤\n'
-            '│ SharedPreferences   │ 键值对   │ ★★★★    │ 配置项     │\n'
-            '│ flutter_sec_storage │ 加密KV   │ ★★★     │ 令牌/密码  │\n'
-            '│ Hive                │ NoSQL    │ ★★★★★   │ 结构化数据 │\n'
-            '│ sqflite             │ SQL      │ ★★★     │ 复杂关系   │\n'
-            '│ File I/O            │ 二进制   │ ★★      │ 大文件     │\n'
-            '└──────────────────────┴──────────┴──────────┴───────────┘',
+            '① 存储方案全景对比\n'
+            '② SharedPreferences —— 轻量键值存储\n'
+            '③ flutter_secure_storage —— 加密存储\n'
+            '④ Hive —— 高性能 NoSQL 数据库\n'
+            '⑤ sqflite —— SQL 关系型数据库\n'
+            '⑥ File I/O —— 文件读写\n'
+            '⑦ 文件选择器：image_picker / file_picker\n'
+            '⑧ 存储方案决策树\n'
+            '⑨ 多级缓存架构\n'
+            '⑩ 数据迁移与版本管理',
           ),
-          const TipBox('没有"最好"的存储方式。生产项目经常混合使用多种方案，根据数据类型选择最合适的工具。', type: TipType.info),
-
           const DividerLine(),
 
-          // ── 2. SharedPreferences ──
-          const SectionHeader('2. SharedPreferences', icon: Icons.vpn_key),
-          const Paragraph('Key-Value 存储，类似浏览器 localStorage。支持 String/int/double/bool/List<String>。'),
+          // ════════════════════════════════════════════════
+          // 1. 存储方案全景对比
+          // ════════════════════════════════════════════════
+          const SectionHeader('1. 六大存储方案全景对比', icon: Icons.compare),
+          const Paragraph(
+            'Flutter 提供多种数据存储方案，每种方案各有所长。选择合适的存储方案是 App 架构的关键决策。\n\n'
+            '三大维度对比：\n'
+            '① 数据类型：简单值 vs 结构化对象 vs 文件/二进制\n'
+            '② 安全性：明文 vs 加密\n'
+            '③ 查询能力：键值查询 vs 条件查询 vs 无查询',
+          ),
+          const CodeBlock(
+            '┌──────────────────────┬──────────┬──────────┬───────────┬────────────┐\n'
+            '│      方案            │  类型    │  速度     │  安全性   │  适合场景   │\n'
+            '├──────────────────────┼──────────┼──────────┼───────────┼────────────┤\n'
+            '│ SharedPreferences    │ 键值对   │  ★★★★    │ 明文      │ 配置项      │\n'
+            '│ flutter_sec_storage  │ 加密KV   │  ★★★     │ 加密      │ 令牌/密码   │\n'
+            '│ Hive                │ NoSQL    │  ★★★★★   │ 可选加密   │ 结构化数据  │\n'
+            '│ sqflite             │ SQL      │  ★★★     │ 明文      │ 复杂关系    │\n'
+            '│ File I/O            │ 二进制   │  ★★      │ 可选加密   │ 大文件      │\n'
+            '│ image/file_picker   │ 文件选择 │  N/A     │ N/A       │ 图片/文档   │\n'
+            '└──────────────────────┴──────────┴──────────┴───────────┴────────────┘',
+            language: 'Text',
+          ),
+          const TipBox('没有"最好"的存储方案。生产项目通常混合使用多个方案：SP 存配置、Hive 存缓存、sqflite 存数据、SecureStorage 存令牌。', type: TipType.info),
+          const DividerLine(),
+
+          // ════════════════════════════════════════════════
+          // 2. SharedPreferences
+          // ════════════════════════════════════════════════
+          const SectionHeader('2. SharedPreferences（SP）', icon: Icons.vpn_key),
+          const Paragraph(
+            'SharedPreferences 是最简单的本地存储方案。类似浏览器的 localStorage，以 Key-Value 方式存储简单类型。\n\n'
+            '支持的数据类型：String、int、double、bool、List<String>\n'
+            '不支持的类型：Map、自定义对象（需序列化为 String）\n\n'
+            '底层原理：\n'
+            '• Android：存储在 /data/data/包名/shared_prefs/ 下的 XML 文件\n'
+            '• iOS：存储在 NSUserDefaults\n'
+            '• 所有数据在初始化时加载到内存 → 读取很快\n'
+            '• 每次 set 立即写回磁盘 → 频繁写入影响性能',
+          ),
           const CodeBlock(
             r'''final prefs = await SharedPreferences.getInstance();
 
-// 写入
-await prefs.setString('name', '张三');
-await prefs.setInt('age', 18);
-await prefs.setBool('isLogin', true);
+// ─ 写入 ─
+await prefs.setString('username', '张三');
+await prefs.setInt('age', 25);
+await prefs.setBool('isFirstLaunch', false);
+await prefs.setDouble('score', 98.5);
+await prefs.setStringList('tags', ['flutter', 'dart']);
 
-// 读取（注意可空，加??默认值）
-final name = prefs.getString('name') ?? '';
+// ─ 读取 ─
+final name = prefs.getString('username') ?? '';     // 必须加默认值！
 final age = prefs.getInt('age') ?? 0;
-final isLogin = prefs.getBool('isLogin') ?? false;
+final isFirst = prefs.getBool('isFirstLaunch') ?? false;
+final score = prefs.getDouble('score') ?? 0.0;
+final tags = prefs.getStringList('tags') ?? [];
 
-// 删除与检查
-await prefs.remove('name');
-await prefs.clear();
-final hasKey = prefs.containsKey('age');''',
-            language: 'Dart'),
-          const Paragraph('✅ API 极简 ❌ 仅支持简单类型，不适合大量数据。set 会同步写磁盘，频繁调用影响性能。'),
-          const Paragraph('💡 监听变化：SharedPreferences 本身不提供流式监听，但可配合 ValueNotifier 包装后监听：\n'
-              "final notifier = ValueNotifier(prefs.getString('key'));\n"
-              '使用 notifier.addListener(...) 在值变化时刷新 UI。或使用 rx_shared_preferences 包。'),
-          const TipBox('取值一定要加 ?? 默认值！否则第一次运行时返回 null。建议为每个 key 定义常量防拼写错误。', type: TipType.caution),
+// ─ 删除 ─
+await prefs.remove('username');              // 删除单个
+await prefs.clear();                         // 清空所有
+final exists = prefs.containsKey('age');     // 检查是否存在
 
-          // 交互演示
-          const SectionHeader('🧪 模拟 SharedPreferences', icon: Icons.touch_app),
+// ─ 批量操作（减少磁盘写入次数）──
+final keysToRemove = {'temp1', 'temp2'};
+// 没有原生的批量删除，需逐一 remove''',
+            language: 'Dart',
+          ),
+          const Paragraph(
+            'SharedPreferences 的最佳实践：\n'
+            '① 始终提供默认值（?? defaultValue）—— 首次运行时值为 null\n'
+            '② 用常量管理 key 名——避免拼写错误\n'
+            '③ 不要存大量数据——每次启动全部加载到内存\n'
+            '④ 不要存敏感信息——存储是明文的！',
+          ),
+          const TipBox('重要：SharedPreferences 的 set 方法是同步写入磁盘的（Android 9+ 例外）。频繁调用 set 会卡 UI。建议用批量写入或在后台线程操作。', type: TipType.caution),
+          // ─ 交互演示 ─
+          const SectionHeader('🧪 模拟 SharedPreferences 操作', icon: Icons.touch_app),
           const SizedBox(height: 8),
           TextField(controller: _nameCtl, decoration: const InputDecoration(labelText: '用户名', border: OutlineInputBorder(), prefixIcon: Icon(Icons.person))),
           const SizedBox(height: 12),
@@ -116,235 +159,361 @@ final hasKey = prefs.containsKey('age');''',
             child: Text("用户名: ${_name.isEmpty ? "(空)" : _name}\n年龄: ${_age == 0 ? "(空)" : _age}",
               style: const TextStyle(fontFamily: 'monospace', fontSize: 14, color: Colors.greenAccent, height: 1.5)),
           ),
-
           const DividerLine(),
 
-          // ── 3. flutter_secure_storage ──
+          // ════════════════════════════════════════════════
+          // 3. flutter_secure_storage
+          // ════════════════════════════════════════════════
           const SectionHeader('3. flutter_secure_storage —— 加密存储', icon: Icons.lock),
-          const Paragraph('用于 JWT 令牌、密码、API Key 等敏感信息。底层使用 Android EncryptedSharedPreferences 和 iOS Keychain，'
-              '数据写入时自动加密，读取时自动解密。仅支持 String 类型。'),
+          const Paragraph(
+            '用于存储 JWT 令牌、密码、API Key 等敏感信息。\n\n'
+            '底层原理：\n'
+            '• Android：EncryptedSharedPreferences（AES-256 加密）或用 Android Keystore\n'
+            '• iOS：Keychain（系统级安全存储，硬件安全模块）\n'
+            '• macOS：Keychain\n'
+            '• Windows：DPAPI\n'
+            '• Web：Credential Management API\n\n'
+            '重要限制：\n'
+            '• 仅支持 String 类型（其他类型需序列化）\n'
+            '• 写入比 SharedPreferences 慢（加密开销）\n'
+            '• iOS Keychain 卸载 App 后可能残留数据',
+          ),
           const CodeBlock(
             r'''final storage = const FlutterSecureStorage();
 
-await storage.write(key: 'jwt_token', value: 'eyJhbGci...');
+// ─ 写入 ─
+await storage.write(key: 'jwt_token', value: 'eyJhbGciOiJIUzI1NiIs...');
+await storage.write(key: 'api_key', value: 'sk_live_abc123...');
+
+// ─ 读取 ─
 final token = await storage.read(key: 'jwt_token') ?? '';
+final apiKey = await storage.read(key: 'api_key') ?? '';
+
+// ─ 读取所有 ─
+final all = await storage.readAll();  // Map<String, String>
+
+// ─ 删除 ─
 await storage.delete(key: 'jwt_token');
 await storage.deleteAll();
 
-// iOS 可选配置
+// ─ 检查 ─
+final hasToken = await storage.containsKey(key: 'jwt_token');
+
+// ─ iOS 高级配置 ─
 final storage = FlutterSecureStorage(
-  aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  aOptions: AndroidOptions(
+    encryptedSharedPreferences: true,  // 使用加密 SP，非必需
+  ),
   iOptions: IOSOptions(
     accessibility: KeychainAccessibility.first_unlock_this_device,
+    // 首次解锁后可访问。其他选项：
+    // first_unlock — 重启后首次解锁
+    // when_unlocked — 仅解锁时
+    // always — 始终可访问（最不安全）
   ),
 );''',
-            language: 'Dart'),
-          const Paragraph('✅ 数据自动加密 ❌ 仅支持 String，写入比 SP 稍慢（加解密开销）。'),
-          const TipBox('不要用 SharedPreferences 存密码或令牌！root/越狱设备可读取明文 XML。', type: TipType.caution),
-
+            language: 'Dart',
+          ),
+          const TipBox('绝对不要用 SharedPreferences 存密码或令牌！root/越狱设备可直接读取 XML 文件。SecureStorage 虽然保安全但仍有被破解风险——生产环境最好配合后端加密。', type: TipType.caution),
           const DividerLine(),
 
-          // ── 4. Hive ──
-          const SectionHeader('4. Hive —— NoSQL 数据库', icon: Icons.storage),
-          const Paragraph('纯 Dart 实现，超快（内存缓存），无需原生配置。支持自定义对象（TypeAdapter）。'
-              '适合：购物车、收藏、草稿等不需要复杂查询的结构化数据。'),
+          // ════════════════════════════════════════════════
+          // 4. Hive
+          // ════════════════════════════════════════════════
+          const SectionHeader('4. Hive —— 高性能 NoSQL 数据库', icon: Icons.storage),
+          const Paragraph(
+            'Hive 是纯 Dart 实现的轻量级数据库，专为 Flutter 优化。无需原生配置，读写在内存中完成。\n\n'
+            '核心概念：\n'
+            '• Box —— 类似"文件夹"或"表"，存一组键值对\n'
+            '• TypeAdapter —— 自定义对象的序列化/反序列化器\n'
+            '• HiveObject —— 内置 isInBox 等便捷方法的对象基类\n'
+            '• LazyBox —— 大数据集的按需加载版本\n\n'
+            'Hive 的优势：\n'
+            '① 极快——所有数据在内存中，写入性能远超 sqflite\n'
+            '② 纯 Dart——无需任何原生依赖，跨平台统一\n'
+            '③ 内置加密——AES-256 CBC 模式\n'
+            '④ 支持流式监听——box.listenable()\n'
+            '⑤ 支持索引和复合键',
+          ),
           const CodeBlock(
-            r'''// 初始化 + 打开 Box
-await Hive.initFlutter();
-final box = await Hive.openBox('settings');
+            r'''// ─ 初始化 ─
+await Hive.initFlutter();  // 或 Hive.init(path) 自定义路径
+await Hive.openBox('settings');
 
-// CRUD
-await box.put('name', '张三');       // 写入
-final name = box.get('name');        // 读取
-await box.putAt(0, '新值');          // 索引更新
-await box.delete('name');            // 删除
-await box.clear();                   // 清空
+// ─ 基础 CRUD ─
+final box = Hive.box('settings');
+await box.put('theme', 'dark');           // 创建/更新
+final theme = box.get('theme');           // 读取
+await box.putAt(0, 'theme', 'light');    // 按索引更新
+await box.delete('theme');                // 删除
+await box.clear();                        // 清空
 
-// 监听变化
-box.listenable().addListener(() => print('数据变化'));
+// ─ 批量操作 ─
+await box.putAll({'name': '张三', 'age': 25});
 
-// ── TypeAdapter（自定义对象）──
+// ─ 监听 ─
+box.listenable().addListener(() {
+  print('Box 数据变化！');
+});
+
+// ─ TypeAdapter（自定义对象）──
 @HiveType(typeId: 0)
-class Person extends HiveObject {
-  @HiveField(0) late String name;
-  @HiveField(1) late int age;
+class Person {
+  @HiveField(0) String name;
+  @HiveField(1) int age;
+  Person({required this.name, required this.age});
 }
-// 运行 build_runner 生成 adapter''',
-            language: 'Dart'),
-          const Paragraph('✅ 纯 Dart、速度快 ❌ 不支持复杂查询（无 WHERE/JOIN）。大数据集用 LazyBox 按需加载。'),
-          const TipBox('Hive 的 Box 打开后加载到内存。大数据集用 LazyBox（openLazyBox）避免 OOM。', type: TipType.tip),
 
+// 注册 Adapter（在 main 中，打开 Box 之前）
+Hive.registerAdapter(PersonAdapter());
+final personBox = await Hive.openBox<Person>('people');
+await personBox.put('me', Person(name: '张三', age: 25));
+final me = personBox.get('me');  // Person 类型
+
+// ─ 加密 Box ─
+final encryptionKey = Hive.generateSecureKey();
+final encryptedBox = await Hive.openBox('secrets',
+  encryptionCipher: HiveAesCipher(encryptionKey),
+);''',
+            language: 'Dart',
+          ),
+          const TipBox('Hive 数据在内存中。大量数据用 LazyBox（openLazyBox）避免 OOM。TypeAdapter 的类型 ID 一旦发布不可修改。', type: TipType.tip),
           const DividerLine(),
 
-          // ── 5. sqflite ──
+          // ════════════════════════════════════════════════
+          // 5. sqflite
+          // ════════════════════════════════════════════════
           const SectionHeader('5. sqflite —— SQL 关系型数据库', icon: Icons.table_chart),
-          const Paragraph('需要按条件查询、关联表、排序分页时用 sqflite。基于 SQLite，一个 .db 文件包含多张表，支持外键、事务、迁移。'),
+          const Paragraph(
+            '当数据需要复杂查询、关联、排序、分页时，关系型数据库是最佳选择。sqflite 是 Flutter 中最常用的 SQLite 封装。\n\n'
+            '适用场景：\n'
+            '• 通讯录（条件搜索 + 排序 + 分页）\n'
+            '• 聊天记录（按时间查询 + 关联用户表）\n'
+            '• 商品列表（多条件筛选 + 分类分组）\n'
+            '• 任何需要 WHERE / JOIN / ORDER BY / LIMIT 的场景\n\n'
+            '约束与限制：\n'
+            '• 需要写 SQL 语句\n'
+            '• 数据库迁移需要手动管理版本号\n'
+            '• 性能劣于 Hive（磁盘读取）\n'
+            '• 不支持 Web 平台（Web 用 drift 或 sqflite_common_ffi_web）',
+          ),
           const CodeBlock(
-            r"""final db = await openDatabase(
-  join(await getDatabasesPath(), 'app.db'),
+            r"""// ─ 打开数据库 ─
+final dbPath = join(await getDatabasesPath(), 'app.db');
+final db = await openDatabase(
+  dbPath,
   onCreate: (db, version) async {
     await db.execute('''
       CREATE TABLE users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL, age INTEGER
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        age INTEGER,
+        created_at TEXT DEFAULT (datetime('now'))
       )
     ''');
+    // 初始数据
+    await db.insert('users', {'name': 'Admin', 'email': 'admin@test.com', 'age': 30});
   },
-  version: 1,
+  onUpgrade: (db, oldVersion, newVersion) async {
+    if (oldVersion == 1) {
+      await db.execute('ALTER TABLE users ADD COLUMN avatar TEXT');
+    }
+    if (oldVersion == 2) {
+      await db.execute('CREATE TABLE posts(id INTEGER PRIMARY KEY, title TEXT, user_id INTEGER, FOREIGN KEY(user_id) REFERENCES users(id))');
+    }
+  },
+  version: 3,
 );
 
-// CRUD
-await db.insert('users', {'name': '张三', 'age': 18});
-final users = await db.query('users',
+// ─ CRUD ─
+// Create
+int id = await db.insert('users', {'name': '张三', 'age': 25});
+
+// Read
+List<Map> users = await db.query('users',
   where: 'age > ? AND name LIKE ?',
   whereArgs: [18, '%张%'],
-  orderBy: 'age DESC', limit: 10,
+  orderBy: 'age DESC',
+  limit: 10,
+  offset: 0,
 );
-await db.update('users', {'age': 19}, where: 'id = ?', whereArgs: [1]);
-await db.delete('users', where: 'id = ?', whereArgs: [1]);
 
-// 事务
-await db.transaction((txn) async { ... });
+// Update
+await db.update('users', {'age': 26}, where: 'id = ?', whereArgs: [id]);
 
-// 原始 SQL
-final result = await db.rawQuery('SELECT * FROM users');
-db.close();""",
-            language: 'Dart'),
-          const Paragraph('✅ 功能最强，支持复杂查询、事务、外键、索引、迁移 ❌ 需写 SQL，学习曲线稍陡。可用 floor/drift ORM 简化。'),
-          const Paragraph('💡 数据库迁移：修改表结构时必须升级 version 并在 onUpgrade 中执行 ALTER TABLE。'
-              '建议将每个版本的迁移语句写在版本号分支中，确保从任意旧版本升级路径正确。'),
-          const TipBox('whereArgs 使用 ? 占位符防 SQL 注入，切忌用 where: age = \$age 拼接字符串。同时注意 db.close() 释放资源。', type: TipType.warning),
+// Delete
+await db.delete('users', where: 'id = ?', whereArgs: [id]);
 
+// ─ 事务 ─
+await db.transaction((txn) async {
+  await txn.insert('users', {...});
+  await txn.insert('profiles', {'user_id': id, ...});
+});
+
+// ─ 原始 SQL ─
+final result = await db.rawQuery('SELECT * FROM users WHERE age > ?', [18]);
+await db.rawInsert('INSERT INTO users(name, age) VALUES(?, ?)', ['李四', 30]);
+
+// ─ 关闭 ─
+await db.close();""",
+            language: 'Dart',
+          ),
+          const TipBox('whereArgs 使用 ? 占位符防 SQL 注入，切忌字符串拼接。数据库迁移时 version 只能增加不能减少。改表结构 = version+1 + onUpgrade。', type: TipType.warning),
           const DividerLine(),
 
-          // ── 6. File I/O ──
+          // ════════════════════════════════════════════════
+          // 6. File I/O
+          // ════════════════════════════════════════════════
           const SectionHeader('6. File I/O —— 文件读写', icon: Icons.description),
-          const Paragraph('dart:io File + path_provider 获取正确目录。适合：图片、日志、JSON/CSV 导出。'),
+          const Paragraph(
+            'dart:io 的 File 类 + path_provider 包提供了完整的文件操作能力。\n\n'
+            '关键目录（通过 path_provider 获取）：\n'
+            '• getApplicationDocumentsDirectory() —— 用户文档目录（重要数据，iCloud 同步）\n'
+            '• getApplicationSupportDirectory() —— 应用支持目录（数据不 iCloud 同步）\n'
+            '• getTemporaryDirectory() —— 临时目录（系统可能随时清理）\n'
+            '• getExternalStorageDirectory() —— 外部存储（Android 专有）\n\n'
+            'File I/O 的特点：\n'
+            '• 可以存任意格式：文本、JSON、二进制（图片/视频）\n'
+            '• 需要手动管理序列化/反序列化\n'
+            '• 无查询功能——不适合需要搜索的场景',
+          ),
           const CodeBlock(
-            r'''final docDir = await getApplicationDocumentsDirectory();
-final tempDir = await getTemporaryDirectory();
-
-// 文本读写
+            r'''// ─ 文本读写 ─
+final docDir = await getApplicationDocumentsDirectory();
 final file = File('${docDir.path}/notes.txt');
-await file.writeAsString('你好');                  // 覆盖写入
-await file.writeAsString('追加', mode: FileMode.append); // 追加
-final content = await file.readAsString();          // 读取
 
-// 二进制（图片等）
-final bytes = await file.readAsBytes();
-await file.writeAsBytes(bytes);
+// 覆盖写入
+await file.writeAsString('Hello Flutter!');
+// 追加写入
+await file.writeAsString('\n第二行', mode: FileMode.append);
+// 读取
+final content = await file.readAsString();
+// 按行读取
+final lines = await file.readAsLines();
 
-// 文件信息
-final exists = await file.exists();
-final size = await file.length();
+// ─ 二进制读写（图片/视频）──
+final imageFile = File('${docDir.path}/photo.jpg');
+await imageFile.writeAsBytes(imageBytes);
+final bytes = await imageFile.readAsBytes();
 
-// 目录操作
+// ─ 文件信息 ─
+final exists = await file.exists();     // 是否存在
+final size = await file.length();       // 文件大小（字节）
+final modified = await file.lastModified(); // 最后修改时间
+
+// ─ 目录操作 ─
 final dir = Directory('${docDir.path}/data');
-await dir.create(recursive: true);
-await dir.list().forEach((e) => print(e.path));
+await dir.create(recursive: true);       // 创建目录（含父目录）
+final files = dir.listSync();            // 列出内容
+await dir.exists();                      // 目录是否存在
 
-await file.delete();''',
-            language: 'Dart'),
-          const Paragraph('✅ 通用性强，适合任意数据类型 ❌ 需自行管理序列化，无查询功能。Android 11+ 注意 Scoped Storage。'),
-          const TipBox('getApplicationDocumentsDirectory() 的数据在卸载 App 时删除。需备份的话使用外部存储或云服务。', type: TipType.info),
+// ─ 删除 ─
+await file.delete();
+await dir.delete(recursive: true);       // 递归删除
 
+// ─ 流式操作（大文件）──
+final sink = file.openWrite(mode: FileMode.append);
+sink.write('第一行\n');
+sink.writeln('第二行');
+await sink.close();''',
+            language: 'Dart',
+          ),
+          const TipBox('getApplicationDocumentsDirectory 的数据在卸载 App 时删除。Android 11+ 注意 Scoped Storage 限制。', type: TipType.info),
           const DividerLine(),
 
-          // ── 7. 文件选择器 ──
+          // ════════════════════════════════════════════════
+          // 7. 文件选择器
+          // ════════════════════════════════════════════════
           const SectionHeader('7. image_picker / file_picker', icon: Icons.photo_library),
-          const Paragraph('image_picker：从相册选择或拍照。file_picker：选择任意类型文件。两者返回路径后可用 File I/O 读写。'),
+          const Paragraph('用户选择文件或拍照后，获取文件路径再用 File I/O 读写。'),
           const CodeBlock(
-            r'''// image_picker
+            r'''// ─ image_picker ─
 final picker = ImagePicker();
 final XFile? image = await picker.pickImage(
-  source: ImageSource.gallery,
-  maxWidth: 1080, imageQuality: 85,
+  source: ImageSource.gallery,      // 或 ImageSource.camera
+  maxWidth: 1080,                   // 限制最大宽度（压缩）
+  maxHeight: 1080,
+  imageQuality: 85,                 // 0-100
 );
-final XFile? photo = await picker.pickImage(source: ImageSource.camera);
 if (image != null) {
   final bytes = await image.readAsBytes();
   final path = image.path;
 }
 
-// file_picker
+// ─ file_picker ─
 final result = await FilePicker.platform.pickFiles(
   type: FileType.custom,
   allowedExtensions: ['pdf', 'jpg', 'png'],
+  allowMultiple: true,              // 多选
 );
 if (result != null) {
   for (final file in result.files) {
-    print('${file.name} (${file.size} bytes)');
+    print('${file.name} — ${file.size} bytes');
+    final path = file.path;         // 本地路径
+    final bytes = file.bytes;       // 或直接读字节
   }
 }''',
-            language: 'Dart'),
-          const TipBox('选择图片后建议压缩：使用 imageQuality 参数或 flutter_image_compress 包，12MP 原图可压至 < 300KB。', type: TipType.tip),
-
+            language: 'Dart',
+          ),
           const DividerLine(),
 
-          // ── 8. 决策指南 ──
-          const SectionHeader('8. 存储方案决策指南', icon: Icons.help_outline),
-          const Paragraph('几个配置项（主题、语言）→ SharedPreferences\n'
-              'JWT Token / 密码 / 密钥 → flutter_secure_storage\n'
-              '用户信息 / 购物车 / 收藏 → Hive（简单）或 sqflite（需要搜索）\n'
-              '大量结构化数据 / 通讯录 / 聊天记录 → sqflite\n'
-              '图片 / 文件 / 日志导出 → File I/O\n'
-              '选择文件 / 拍照 → image_picker 或 file_picker + 上述存储\n'
-              '需要云同步 / 多人协作 → Firebase Firestore / 后端 API + 本地缓存'),
-          const Paragraph('💡 存储生命周期与清理：\n'
-              '• SharedPreferences / Hive：随 App 卸载删除，无需手动清理\n'
-              '• sqflite：数据库文件在 documents 目录，卸载时删除\n'
-              '• File I/O 文件：需自行管理，定期清理缓存目录（getTemporaryDirectory()）\n'
-              '• flutter_secure_storage：iOS 在 Keychain，卸载 App 后可能残留（需代码清除）\n'
-              '建议在设置页提供「清除缓存」功能，删除临时文件和非必要数据。'),
-          const TipBox('生产项目常见"多级缓存"策略：内存缓存（快速响应） + Hive/sqflite（本地持久化） + 后端 API（云端同步）。每层各司其职。', type: TipType.info),
-
-          const DividerLine(),
-
-          // ── 9. 综合示例 ──
-          const SectionHeader('🛠️ 综合示例：多存储混合使用', icon: Icons.build),
-          const Paragraph('实际项目中通常组合多种存储方式。下面展示一个混合使用的 SettingsManager：'),
+          // ════════════════════════════════════════════════
+          // 8. 决策树 + 综合示例
+          // ════════════════════════════════════════════════
+          const SectionHeader('8. 存储方案决策树', icon: Icons.help_outline),
+          const Paragraph(
+            '按以下决策树选择最合适的存储方案：\n\n'
+            '是敏感信息（Token/密码）？→ flutter_secure_storage\n'
+            '否 → 是简单配置（几个键值对）？→ SharedPreferences\n'
+            '否 → 需要复杂查询（WHERE/JOIN/ORDER）？→ sqflite\n'
+            '否 → 结构化数据但不需要查询？→ Hive\n'
+            '否 → 文件/图片/大二进制？→ File I/O\n\n'
+            '生产项目常见"多级缓存"架构：\n'
+            '内存缓存（最快，自动过期）→ Hive/sqflite（本地持久化）→ 后端 API（云端数据源）',
+          ),
           const CodeBlock(
-            r'''class SettingsManager {
-  /// 主题（纯配置 → SharedPreferences）
-  static Future<ThemeMode> getTheme() async {
+            r'''// ─ 综合示例：混合使用多种存储 ─
+class AppStorage {
+  /// 配置项 → SharedPreferences
+  static Future<bool> getDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
-    return ThemeMode.values[prefs.getInt('theme') ?? 0];
+    return prefs.getBool('darkMode') ?? false;
   }
 
-  /// JWT 令牌（敏感 → flutter_secure_storage）
+  /// 令牌 → SecureStorage
   static Future<String?> getToken() async {
     return await const FlutterSecureStorage().read(key: 'jwt');
   }
 
-  /// 用户草稿（结构化 → Hive）
-  static Future<void> saveDraft(Draft draft) async {
-    final box = await Hive.openBox<Draft>('drafts');
-    await box.put('current', draft);
+  /// 缓存 → Hive（快速读写）
+  static Future<void> cachePosts(List<Post> posts) async {
+    final box = await Hive.openBox<Post>('cache');
+    await box.putAll({for (final p in posts) p.id.toString(): p});
   }
 
-  /// 聊天记录（复杂查询 → sqflite）
-  static Future<List<Message>> getMessages(String chatId) async {
-    final db = await openDatabase(/*...*/);
-    final maps = await db.query('messages',
-      where: 'chat_id = ?', whereArgs: [chatId],
-      orderBy: 'created_at DESC',
-    );
-    return maps.map((m) => Message.fromMap(m)).toList();
+  /// 聊天记录 → sqflite（复杂查询）
+  static Future<List<Message>> searchMessages(String keyword) async {
+    final db = await openDatabase(...);
+    return (await db.rawQuery(
+      'SELECT * FROM messages WHERE content LIKE ? ORDER BY created_at DESC',
+      ['%$keyword%'],
+    )).map((m) => Message.fromMap(m)).toList();
   }
 }''',
-            language: 'Dart'),
-          const Paragraph('注意每种存储的使用场景：SP 存简单配置、Secure Storage 存敏感数据、'
-              'Hive 存需要快速读写的结构化数据、sqflite 存需要复杂查询的关系数据。'),
-          const TipBox('混合使用时注意初始化顺序：path_provider → Hive.initFlutter → 打开数据库 → 读取配置。main.dart 中做好初始化。', type: TipType.info),
+            language: 'Dart',
+          ),
 
           const DividerLine(),
           const SectionHeader('✏️ 小练习', icon: Icons.edit),
-          const Paragraph('1. 用 SharedPreferences 实现「记住登录状态」—— 启动时检查 isLogin 跳过登录页\n'
-              '2. 用 Hive 存待办事项列表（ToDo 模型：id, title, isDone, createdAt + TypeAdapter）\n'
-              '3. 用 sqflite 创建通讯录（增删改查 + 按姓名模糊搜索）\n'
-              '4. 用 flutter_secure_storage 存 API Key，登录时读取并附加到请求头\n'
-              '5. 用 path_provider + File I/O 实现日志记录器，每次运行追加一行时间戳'),
-          const TipBox('sqflite 练习注意数据库版本管理——改表结构必须升级 version 并在 onUpgrade 中执行迁移 SQL。', type: TipType.tip),
+          const Paragraph(
+            '1. 用 SharedPreferences 实现"记住登录状态"——启动时检查 isLogin\n'
+            '2. 用 Hive 存待办事项列表（ToDo 模型 + TypeAdapter，支持增删改）\n'
+            '3. 用 sqflite 创建通讯录（按姓名模糊搜索、按年龄排序、分页加载）\n'
+            '4. 用 flutter_secure_storage 存 API Key，请求时自动附加到 Header\n'
+            '5. 用 path_provider + File I/O 实现日志记录器，每次运行追加一行\n'
+            '6. 实现多级缓存：先从 Hive 读 → 展示 → 网络更新 → 写回 Hive',
+          ),
           const SizedBox(height: 32),
         ],
       ),

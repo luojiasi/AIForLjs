@@ -79,7 +79,8 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   observers: [routeObserver],
   routes: [
-    GoRoute(path: '/', builder: (context, state) => _homePage()),
+    // GoRoute(path: '/', builder: (context, state) => _homePage()),
+    GoRoute(path: '/',builder: (context, state) => const AboutPage()),
     GoRoute(path: '/study', builder: (context, state) => const StudyHome()),
 
     // Flutter 教程
@@ -96,10 +97,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/flutter/10', builder: (context, state) => const FlutterWidgetBasics()),
     GoRoute(path: '/flutter/11', builder: (context, state) => const ProviderDemo()),
     GoRoute(path: '/flutter/12', builder: (context, state) => const ThemeDemo()),
-    GoRoute(path: '/flutter/08/profile/:id', builder: (context, state) =>
-      ProfilePage(userId: state.pathParameters['id'] ?? '')),
-    GoRoute(path: '/flutter/08/search', builder: (context, state) =>
-      SearchPage(query: state.uri.queryParameters['q'] ?? '', page: state.uri.queryParameters['page'] ?? '1')),
+    GoRoute(path: '/flutter/08/profile/:id', builder: (context, state) =>ProfilePage(userId: state.pathParameters['id'] ?? '')),
+    GoRoute(path: '/flutter/08/search', builder: (context, state) =>SearchPage(query: state.uri.queryParameters['q'] ?? '', page: state.uri.queryParameters['page'] ?? '1')),
 
     // Python 教程
     GoRoute(path: '/python', builder: (context, state) => const PythonHub()),
