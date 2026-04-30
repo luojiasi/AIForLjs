@@ -1,9 +1,9 @@
+import 'package:ai_chat_app/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../l10n/app_localizations.dart';
 
 /// Desktop tray + window close behaviour controller.
 ///

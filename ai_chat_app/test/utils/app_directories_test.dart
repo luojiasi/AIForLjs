@@ -44,7 +44,7 @@ void main() {
   });
 
   test('getAvatarDirectory returns path ending with /avatars', () async {
-    final dir = await AppDirectories.getAvatarDirectory();
+    final dir = await AppDirectories.getAvatarsDirectory();
     expect(dir.path, endsWith('/avatars'));
   });
 }

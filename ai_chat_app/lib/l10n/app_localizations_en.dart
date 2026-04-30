@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'AI Chat';
+  String get appTitle => 'Welcome To SYCTB';
 
   @override
   String get newConversation => 'New conversation';
@@ -276,4 +276,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get desktopTrayMenuExit => 'Exit';
+
+  @override
+  String get desktopNavChatTooltip => 'Chat';
+
+  @override
+  String get desktopNavTranslateTooltip => 'Translate';
+
+  @override
+  String get desktopNavStorageTooltip => 'Storage';
+
+  @override
+  String get desktopNavGlobalSearchTooltip => 'Global Search';
+
+  @override
+  String get desktopNavThemeToggleTooltip => 'Theme';
+
+  @override
+  String get desktopNavSettingsTooltip => 'Settings';
+
+  @override
+  String get desktopAvatarMenuUseEmoji => 'Use emoji';
+
+  @override
+  String get backupPageUsername => 'Username';
+
+  @override
+  String get backupPagePassword => 'Password';
+
+  @override
+  String get sideDrawerNicknameHint => 'Enter new nickname';
+
+  @override
+  String get sideDrawerRename => 'Rename';
+
+  @override
+  String get sideDrawerEnterLink => 'Enter Link';
+
+  @override
+  String get sideDrawerImportFromQQ => 'Import from QQ';
+
+  @override
+  String get sideDrawerReset => 'Reset';
+
+  @override
+  String get sideDrawerEmojiDialogTitle => 'Choose Emoji';
+
+  @override
+  String get sideDrawerEmojiDialogHint => 'Type or paste any emoji';
+
+  @override
+  String get sideDrawerImageUrlDialogTitle => 'Enter Image URL';
+
+  @override
+  String get sideDrawerImageUrlDialogHint =>
+      'e.g. https://example.com/avatar.png';
+
+  @override
+  String get sideDrawerQQAvatarDialogTitle => 'Import from QQ';
+
+  @override
+  String get sideDrawerQQAvatarInputHint => 'Enter QQ number (5-12 digits)';
+
+  @override
+  String get sideDrawerQQAvatarFetchFailed =>
+      'Failed to fetch random QQ avatar. Please try again.';
+
+  @override
+  String get sideDrawerRandomQQ => 'Random QQ';
+
+  @override
+  String get sideDrawerGalleryOpenError =>
+      'Unable to open gallery. Try entering an image URL.';
+
+  @override
+  String get sideDrawerGeneralImageError =>
+      'Something went wrong. Try entering an image URL.';
+
+  @override
+  String get sideDrawerSetNicknameTitle => 'Set Nickname';
+
+  @override
+  String get sideDrawerNicknameLabel => 'Nickname';
+
+  @override
+  String get desktopAvatarMenuReset => 'Reset avatar';
+
+  @override
+  String get sideDrawerCancel => 'Cancel';
+
+  @override
+  String get sideDrawerOK => 'OK';
+
+  @override
+  String get sideDrawerSave => 'Save';
+
+  @override
+  String get assistantEditEmojiDialogTitle => 'Choose Emoji';
+
+  @override
+  String get assistantEditEmojiDialogHint => 'Type or paste any emoji';
+
+  @override
+  String get assistantEditEmojiDialogCancel => 'Cancel';
+
+  @override
+  String get assistantEditEmojiDialogSave => 'Save';
+
+  @override
+  String get desktopAvatarMenuChangeFromImage => 'Change from image…';
 }

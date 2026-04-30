@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:ai_chat_app/desktop/desktop_chat_page.dart';
+import 'package:ai_chat_app/desktop/desktop_nav_rail.dart';
 import 'package:ai_chat_app/desktop/hotkeys/hotkey_event_bus.dart';
+import 'package:ai_chat_app/desktop/window_title_bar.dart';
 import 'package:ai_chat_app/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -128,15 +132,114 @@ class _DesktopHomePageState extends State<DesktopHomePage>{
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    const minWidth = 960.0;
+    const minHeight = 640.0;
+    final isWindows = defaultTargetPlatform == TargetPlatform.windows;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.appTitle)),
-      body: Center(
-        child: Text(
-          l10n.newConversation,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context,constraints){
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        final needsWidthPad = w < minWidth;
+        final needsHeightPad = h < minHeight;
+        Widget body =Row(
+          children: [
+            // 左侧导航栏
+            DesktopNavRail(
+              activeIndex: _tabIndex,
+              globalSearchActive: _globalSearchActive,
+              // onTapChat: () {
+              //   setState(() {
+              //     _tabIndex = 0;
+              //     _globalSearchActive = false;
+              //   });
+              //   ChatActionBus.instance.fire(ChatAction.exitGlobalSearch);
+              //   // 切换到聊天页时聚焦输入框
+              //   ChatActionBus.instance.fire(ChatAction.focusInput);
+              // },
+              // onTapGlobalSearch: () {
+              //   setState(() {
+              //     _tabIndex = 0;
+              //     _globalSearchActive = true;
+              //   });
+              //   ChatActionBus.instance.fire(ChatAction.enterGlobalSearch);
+              // },
+              // onTapTranslate: () {
+              //   setState(() {
+              //     _tabIndex = 1;
+              //     _globalSearchActive = false;
+              //   });
+              //   ChatActionBus.instance.fire(ChatAction.exitGlobalSearch);
+              // },
+              // onTapStorage: () => setState(() {
+              //   _tabIndex = 2;
+              //   _globalSearchActive = false;
+              //   _storageVisited = true;
+              //   ChatActionBus.instance.fire(ChatAction.exitGlobalSearch);
+              // }),
+              onTapSettings: () {
+                setState(() {
+                  _tabIndex = 3;
+                  _globalSearchActive = false;
+                });
+                // ChatActionBus.instance.fire(ChatAction.exitGlobalSearch);
+              },
+            ),
+            // 右侧内容区，保持所有页面存活
+            Expanded(
+              // IndexedStack 而非 switch/if：切换 Tab 时所有子页面保持挂载状态，聊天流不会因切到设置页而被取消
+              child: IndexedStack(
+                index: _tabIndex,
+                children: [
+                  const DesktopChatPage(),
+                  // const DesktopTranslatePage(key: ValueKey('translate_page')),
+                  // _storageVisited
+                  //   ? const StorageSpacePage(key: ValueKey('storage_space_page'),embedded: true,)
+                  //   : const SizedBox.shrink(),
+                  // DesktopSettingsPage(key: const ValueKey('settings_page'),initialProviderKey: widget.initialProviderKey,),
+                ],
+              ),
+            ),
+          ],
+        );
+
+        final content = 
+          isWindows
+            ? Column(
+                children: [
+                  WindowTitleBar(
+                    leftChildren: [
+                      SizedBox(width: DesktopNavRail.width / 2 - 8 - 6 - 12),
+                      const _TitleBarLeading(),
+                    ],
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        body,
+                        // Inject the lazily-built settings page into the IndexedStack when needed
+                        // to pass initialProviderKey without dropping chat state.
+                        if (_tabIndex == 3) const SizedBox.shrink(),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : body;
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: minWidth,
+              minHeight: minHeight,
+            ),
+            child: SizedBox(
+              width: needsWidthPad ? minWidth : w,
+              height: needsHeightPad ? minHeight : h,
+              child: content,
+            ),
+          ),
+        );
+      }
     );
   }
 
@@ -163,9 +266,9 @@ class _TitleBarLeading extends StatelessWidget{
       children: [
         //图标
         Image.asset(
-          'assents/icons/app_icon.png',
-          width: 16,
-          height: 16,
+          'assets/app_icon.png',
+          width: 32,
+          height: 32,
           filterQuality: FilterQuality.medium,
         ),
         const SizedBox(width: 8,),

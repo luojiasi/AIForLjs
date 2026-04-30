@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'AI 聊天';
+  String get appTitle => '欢迎来到SYCTB';
 
   @override
   String get newConversation => '新建对话';
@@ -272,4 +272,110 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get desktopTrayMenuExit => '退出';
+
+  @override
+  String get desktopNavChatTooltip => '聊天';
+
+  @override
+  String get desktopNavTranslateTooltip => '翻译';
+
+  @override
+  String get desktopNavStorageTooltip => '存储';
+
+  @override
+  String get desktopNavGlobalSearchTooltip => '全局搜索';
+
+  @override
+  String get desktopNavThemeToggleTooltip => '主题切换';
+
+  @override
+  String get desktopNavSettingsTooltip => '设置';
+
+  @override
+  String get desktopAvatarMenuUseEmoji => '使用表情符号';
+
+  @override
+  String get backupPageUsername => '用户名';
+
+  @override
+  String get backupPagePassword => '密码';
+
+  @override
+  String get sideDrawerNicknameHint => '输入新的昵称';
+
+  @override
+  String get sideDrawerRename => '重命名';
+
+  @override
+  String get sideDrawerEnterLink => '输入链接';
+
+  @override
+  String get sideDrawerImportFromQQ => 'QQ头像';
+
+  @override
+  String get sideDrawerReset => '重置';
+
+  @override
+  String get sideDrawerEmojiDialogTitle => '选择表情';
+
+  @override
+  String get sideDrawerEmojiDialogHint => '输入或粘贴任意表情';
+
+  @override
+  String get sideDrawerImageUrlDialogTitle => '输入图片链接';
+
+  @override
+  String get sideDrawerImageUrlDialogHint =>
+      '例如: https://example.com/avatar.png';
+
+  @override
+  String get sideDrawerQQAvatarDialogTitle => '使用QQ头像';
+
+  @override
+  String get sideDrawerQQAvatarInputHint => '输入QQ号码（5-12位）';
+
+  @override
+  String get sideDrawerQQAvatarFetchFailed => '获取随机QQ头像失败，请重试';
+
+  @override
+  String get sideDrawerRandomQQ => '随机QQ';
+
+  @override
+  String get sideDrawerGalleryOpenError => '无法打开相册，试试输入图片链接';
+
+  @override
+  String get sideDrawerGeneralImageError => '发生错误，试试输入图片链接';
+
+  @override
+  String get sideDrawerSetNicknameTitle => '设置昵称';
+
+  @override
+  String get sideDrawerNicknameLabel => '昵称';
+
+  @override
+  String get desktopAvatarMenuReset => '重置头像';
+
+  @override
+  String get sideDrawerCancel => '取消';
+
+  @override
+  String get sideDrawerOK => '确定';
+
+  @override
+  String get sideDrawerSave => '保存';
+
+  @override
+  String get assistantEditEmojiDialogTitle => '选择表情';
+
+  @override
+  String get assistantEditEmojiDialogHint => '输入或粘贴任意表情';
+
+  @override
+  String get assistantEditEmojiDialogCancel => '取消';
+
+  @override
+  String get assistantEditEmojiDialogSave => '保存';
+
+  @override
+  String get desktopAvatarMenuChangeFromImage => '从图片更换…';
 }

@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:ai_chat_app/core/providers/hotkey_provider.dart';
 import 'package:ai_chat_app/core/providers/update_provider.dart';
+import 'package:ai_chat_app/core/providers/user_provider.dart';
 import 'package:ai_chat_app/core/services/android_background.dart';
 import 'package:ai_chat_app/core/services/notification_service.dart';
 import 'package:ai_chat_app/core/services/system_fonts.dart';
 import 'package:ai_chat_app/desktop/desktop_tray_controller.dart';
 import 'package:ai_chat_app/desktop/desktop_window_controller.dart';
 import 'package:ai_chat_app/features/settings/pages/snackbar.dart';
+import 'package:ai_chat_app/utils/sandbox_path_resolver.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +47,7 @@ void main() async {
       }catch(_){}
       await _initDesktopWindow();
       // iOS 沙盒路径解析，修正绝对路径问题
-      // await SandboxPathResolver.init();
+      await SandboxPathResolver.init();
       // Android 启用边到边显示，内容延伸到系统栏下方
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       runApp(const AiChatApp());
@@ -56,9 +58,6 @@ void main() async {
       }
     )
   );
-  // runApp(const MaterialApp(
-  //   home: Scaffold(body: Center(child: LifecycleDemo(),),),
-  // ));
 }
 
 Future<void> _initDesktopWindow() async{
@@ -82,6 +81,7 @@ class AiChatApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
       child: Builder(
         builder: (context) {

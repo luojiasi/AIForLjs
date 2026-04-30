@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// The title of the application
   ///
   /// In en, this message translates to:
-  /// **'AI Chat'**
+  /// **'Welcome To SYCTB'**
   String get appTitle;
 
   /// Button to create a new chat conversation
@@ -613,6 +613,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit'**
   String get desktopTrayMenuExit;
+
+  /// No description provided for @desktopNavChatTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get desktopNavChatTooltip;
+
+  /// No description provided for @desktopNavTranslateTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get desktopNavTranslateTooltip;
+
+  /// No description provided for @desktopNavStorageTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get desktopNavStorageTooltip;
+
+  /// No description provided for @desktopNavGlobalSearchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Global Search'**
+  String get desktopNavGlobalSearchTooltip;
+
+  /// No description provided for @desktopNavThemeToggleTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get desktopNavThemeToggleTooltip;
+
+  /// No description provided for @desktopNavSettingsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get desktopNavSettingsTooltip;
+
+  /// No description provided for @desktopAvatarMenuUseEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Use emoji'**
+  String get desktopAvatarMenuUseEmoji;
+
+  /// No description provided for @backupPageUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get backupPageUsername;
+
+  /// No description provided for @backupPagePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get backupPagePassword;
+
+  /// No description provided for @sideDrawerNicknameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new nickname'**
+  String get sideDrawerNicknameHint;
+
+  /// No description provided for @sideDrawerRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get sideDrawerRename;
+
+  /// No description provided for @sideDrawerEnterLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Link'**
+  String get sideDrawerEnterLink;
+
+  /// No description provided for @sideDrawerImportFromQQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from QQ'**
+  String get sideDrawerImportFromQQ;
+
+  /// No description provided for @sideDrawerReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get sideDrawerReset;
+
+  /// No description provided for @sideDrawerEmojiDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Emoji'**
+  String get sideDrawerEmojiDialogTitle;
+
+  /// No description provided for @sideDrawerEmojiDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste any emoji'**
+  String get sideDrawerEmojiDialogHint;
+
+  /// No description provided for @sideDrawerImageUrlDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Image URL'**
+  String get sideDrawerImageUrlDialogTitle;
+
+  /// No description provided for @sideDrawerImageUrlDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://example.com/avatar.png'**
+  String get sideDrawerImageUrlDialogHint;
+
+  /// No description provided for @sideDrawerQQAvatarDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from QQ'**
+  String get sideDrawerQQAvatarDialogTitle;
+
+  /// No description provided for @sideDrawerQQAvatarInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter QQ number (5-12 digits)'**
+  String get sideDrawerQQAvatarInputHint;
+
+  /// No description provided for @sideDrawerQQAvatarFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch random QQ avatar. Please try again.'**
+  String get sideDrawerQQAvatarFetchFailed;
+
+  /// No description provided for @sideDrawerRandomQQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Random QQ'**
+  String get sideDrawerRandomQQ;
+
+  /// No description provided for @sideDrawerGalleryOpenError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open gallery. Try entering an image URL.'**
+  String get sideDrawerGalleryOpenError;
+
+  /// No description provided for @sideDrawerGeneralImageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try entering an image URL.'**
+  String get sideDrawerGeneralImageError;
+
+  /// No description provided for @sideDrawerSetNicknameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Nickname'**
+  String get sideDrawerSetNicknameTitle;
+
+  /// No description provided for @sideDrawerNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get sideDrawerNicknameLabel;
+
+  /// No description provided for @desktopAvatarMenuReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset avatar'**
+  String get desktopAvatarMenuReset;
+
+  /// No description provided for @sideDrawerCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get sideDrawerCancel;
+
+  /// No description provided for @sideDrawerOK.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get sideDrawerOK;
+
+  /// No description provided for @sideDrawerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get sideDrawerSave;
+
+  /// No description provided for @assistantEditEmojiDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Emoji'**
+  String get assistantEditEmojiDialogTitle;
+
+  /// No description provided for @assistantEditEmojiDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste any emoji'**
+  String get assistantEditEmojiDialogHint;
+
+  /// No description provided for @assistantEditEmojiDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get assistantEditEmojiDialogCancel;
+
+  /// No description provided for @assistantEditEmojiDialogSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get assistantEditEmojiDialogSave;
+
+  /// No description provided for @desktopAvatarMenuChangeFromImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change from image…'**
+  String get desktopAvatarMenuChangeFromImage;
 }
 
 class _AppLocalizationsDelegate

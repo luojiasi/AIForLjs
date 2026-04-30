@@ -29,7 +29,7 @@ class AppDirectories {
     return Directory('${root.path}/images');
   }
   ///获取软件avatars的位置
-  static Future<Directory> getAvatarDirectory() async{
+  static Future<Directory> getAvatarsDirectory() async{
     final root = await getAppDataDirectory();
     return Directory('${root.path}/avatars');
   }

@@ -79,7 +79,7 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   observers: [routeObserver],
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const AboutPage()),
+    GoRoute(path: '/', builder: (context, state) => _homePage()),
     GoRoute(path: '/study', builder: (context, state) => const StudyHome()),
 
     // Flutter 教程
