@@ -45,6 +45,8 @@ import 'package:ai_chat_app/presentation/differentlanguage/dart/practice/07_dart
 import 'package:ai_chat_app/presentation/differentlanguage/python/practice/22_web_dev/web_dev_tutorial.dart' as py_web;
 
 import 'package:ai_chat_app/presentation/studyhome.dart';
+import 'package:ai_chat_app/presentation/commonproblems/commonproblems_home.dart';
+import 'package:ai_chat_app/presentation/commonproblems/brand_device_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/flutter/flutter_hub.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python/python_hub.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/dart/dart_hub.dart';
@@ -135,5 +137,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/dart/05', builder: (context, state) => const dart_oop.DartOOP()),
     GoRoute(path: '/dart/06', builder: (context, state) => const DartAsync()),
     GoRoute(path: '/dart/07', builder: (context, state) => const dart3.Dart3Features()),
+
+    // 常见问题（设备参数与故障）
+    GoRoute(path: '/commonproblems', builder: (context, state) => const CommonProblemsHome()),
+    GoRoute(path: '/commonproblems/:brand/:device', builder: (context, state) =>
+      BrandDevicePage(
+        brand: state.pathParameters['brand'] ?? '',
+        device: state.pathParameters['device'] ?? '',
+      )),
   ],
 );

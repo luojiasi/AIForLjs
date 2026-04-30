@@ -651,6 +651,13 @@ class _AboutPageState extends State<AboutPage>{
                 label: l10n.aboutPageStudyLearning,
                 onTap: () => context.push('/study'), // informational only
               ),
+              _iosDivider(context),
+              _iosNavRow(
+                context,
+                icon: Lucide.Wand2,
+                label: '故障排除',
+                onTap: () => context.push('/commonproblems'), // informational only
+              ),
             ],
           ),
 
