@@ -3,6 +3,288 @@ library dart_fn;
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Interactive demos
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FunctionParamDemo extends StatefulWidget {
+  const _FunctionParamDemo();
+
+  @override
+  State<_FunctionParamDemo> createState() => _FunctionParamDemoState();
+}
+
+class _FunctionParamDemoState extends State<_FunctionParamDemo> {
+  String _name = '张三';
+  int _age = 25;
+  String _city = '北京';
+  String _paramMode = 'positional';
+
+  String get _codeText {
+    switch (_paramMode) {
+      case 'named':
+        return 'String greet({required String name, required int age, required String city}) =>\n'
+            '    \'你好，\$name，今年\$age岁，来自\$city\';\n\n'
+            '// 调用：\ngreet(name: \'$_name\', age: $_age, city: \'$_city\');';
+      case 'optional':
+        return 'String greet(String name, int age, [String city = \'未知\']) =>\n'
+            '    \'你好，\$name，今年\$age岁，来自\$city\';\n\n'
+            '// 调用（city 可省略）：\ngreet(\'$_name\', $_age);';
+      default:
+        return 'String greet(String name, int age, String city) =>\n'
+            '    \'你好，\$name，今年\$age岁，来自\$city\';\n\n'
+            '// 调用：\ngreet(\'$_name\', $_age, \'$_city\');';
+    }
+  }
+
+  String get _outputText =>
+      '你好，$_name，今年${_age}岁，来自${_paramMode == 'optional' ? '未知' : _city}';
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '参数类型演示',
+      subtitle: '体验位置参数、命名参数、可选参数的区别',
+      children: [
+        ParamChoiceChips<String>(
+          label: '参数模式',
+          value: _paramMode,
+          options: const [
+            ('positional', '位置参数'),
+            ('named', '命名参数'),
+            ('optional', '可选参数'),
+          ],
+          onChanged: (v) => setState(() => _paramMode = v),
+        ),
+        ParamTextField(
+          label: '姓名',
+          value: _name,
+          onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v),
+          maxLength: 10,
+        ),
+        ParamIntSlider(
+          label: '年龄',
+          value: _age,
+          min: 1,
+          max: 100,
+          unit: '岁',
+          onChanged: (v) => setState(() => _age = v),
+        ),
+        if (_paramMode != 'optional')
+          ParamTextField(
+            label: '城市',
+            value: _city,
+            onChanged: (v) => setState(() => _city = v.isEmpty ? '北京' : v),
+            maxLength: 10,
+          ),
+        LiveCodeBlock(_codeText),
+        LiveOutputBox(_outputText),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ClosureCounterDemo extends StatefulWidget {
+  const _ClosureCounterDemo();
+
+  @override
+  State<_ClosureCounterDemo> createState() => _ClosureCounterDemoState();
+}
+
+class _ClosureCounterDemoState extends State<_ClosureCounterDemo> {
+  int _start = 0;
+  int _step = 1;
+  int _clicks = 0;
+
+  int get _counterValue => _start + _clicks * _step;
+
+  String get _codeText =>
+      'int makeCounter(int start, int step) {\n'
+      '  int count = start;  // 闭包捕获的变量\n'
+      '  return () {\n'
+      '    count += step;\n'
+      '    return count;\n'
+      '  };\n'
+      '}\n'
+      'final counter = makeCounter($_start, $_step);\n'
+      '// 点击 $_clicks 次后:\n'
+      'print(counter());  // $_counterValue';
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '闭包计数器演示',
+      subtitle: '闭包如何捕获并保持外部变量的状态',
+      children: [
+        ParamIntSlider(
+          label: '起始值',
+          value: _start,
+          min: -10,
+          max: 50,
+          onChanged: (v) => setState(() {
+            _start = v;
+            _clicks = 0;
+          }),
+        ),
+        ParamIntSlider(
+          label: '步长',
+          value: _step,
+          min: 1,
+          max: 10,
+          onChanged: (v) => setState(() {
+            _step = v;
+            _clicks = 0;
+          }),
+        ),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: () => setState(() => _clicks++),
+              icon: const Icon(Icons.add),
+              label: Text('+$_step'),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () => setState(() => _clicks = 0),
+              child: const Text('Reset'),
+            ),
+          ],
+        ),
+        LiveCodeBlock(_codeText),
+        LiveOutputBox('当前值: $_counterValue\n已点击: $_clicks 次'),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FunctionalChainDemo extends StatefulWidget {
+  const _FunctionalChainDemo();
+
+  @override
+  State<_FunctionalChainDemo> createState() => _FunctionalChainDemoState();
+}
+
+class _FunctionalChainDemoState extends State<_FunctionalChainDemo> {
+  final List<int> _nums = [1, 2, 3, 4, 5, 6, 7, 8];
+  bool _filterEven = false;
+  int _multiplyFactor = 2;
+  bool _showSum = false;
+
+  List<int> get _result {
+    final filtered =
+        _filterEven ? _nums.where((n) => n % 2 == 0) : _nums.where((_) => true);
+    return filtered.map((n) => n * _multiplyFactor).toList();
+  }
+
+  int get _sum => _result.fold(0, (acc, n) => acc + n);
+
+  String get _codeText {
+    final filterLine = _filterEven
+        ? '  .where((n) => n % 2 == 0)  // 筛选偶数'
+        : '  // .where(...)  未启用筛选';
+    final sumLine = _showSum
+        ? '\nfinal sum = result.fold(0, (acc, n) => acc + n);\nprint(sum);  // $_sum'
+        : '';
+    return 'final nums = [1, 2, 3, 4, 5, 6, 7, 8];\n'
+        'final result = nums\n'
+        '$filterLine\n'
+        '  .map((n) => n * $_multiplyFactor)  // 乘以 $_multiplyFactor\n'
+        '  .toList();\nprint(result);  // ${_result}'
+        '$sumLine';
+  }
+
+  String get _outputText {
+    final base = '结果: $_result';
+    return _showSum ? '$base\n总和: $_sum' : base;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inputNums = _filterEven ? _nums.where((n) => n % 2 == 0).toList() : _nums;
+
+    return InteractivePlayground(
+      title: '函数式链式操作演示',
+      subtitle: '用 where / map / fold 处理集合数据',
+      children: [
+        ParamSwitch(
+          label: '筛选偶数',
+          value: _filterEven,
+          onChanged: (v) => setState(() => _filterEven = v),
+          trueLabel: '开启',
+          falseLabel: '关闭',
+        ),
+        ParamIntSlider(
+          label: '乘以因子',
+          value: _multiplyFactor,
+          min: 1,
+          max: 5,
+          onChanged: (v) => setState(() => _multiplyFactor = v),
+        ),
+        ParamSwitch(
+          label: '显示总和',
+          value: _showSum,
+          onChanged: (v) => setState(() => _showSum = v),
+          trueLabel: '开启',
+          falseLabel: '关闭',
+        ),
+        // Visual pipeline
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('变换管道', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Flexible(
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: inputNums
+                          .map((n) => Chip(
+                                label: Text('$n'),
+                                visualDensity: VisualDensity.compact,
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Icon(Icons.arrow_forward),
+                  ),
+                  Flexible(
+                    child: Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: _result
+                          .map((n) => Chip(
+                                label: Text('$n'),
+                                visualDensity: VisualDensity.compact,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primaryContainer,
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        LiveCodeBlock(_codeText),
+        LiveOutputBox(_outputText),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Dart 函数教程页面
 /// 涵盖：函数定义、参数类型、函数类型、匿名函数、闭包、
 /// Tear-off、IIFE、生成器、函数式编程
@@ -379,7 +661,10 @@ void main() {
               '翻倍: (2, 4, 6, 8, 10, 12)\n'
               '偶数: (2, 4, 6)\n总和: 21\n乘积: 720'),
 
-          DividerLine(),
+          const _FunctionParamDemo(),
+          const _ClosureCounterDemo(),
+          const _FunctionalChainDemo(),
+          const DividerLine(),
           SectionHeader('本章练习', icon: Icons.assignment),
           Paragraph('1. 写一个箭头函数计算两个数的乘积。'),
           Paragraph('2. 写一个函数，接收命名参数 name 和 age，age 默认值 0。'),

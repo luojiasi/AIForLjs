@@ -3,6 +3,224 @@ library dart_cf;
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 成绩等级分支演示
+class _ScoreGradeDemo extends StatefulWidget {
+  const _ScoreGradeDemo();
+  @override
+  State<_ScoreGradeDemo> createState() => _ScoreGradeDemoState();
+}
+
+class _ScoreGradeDemoState extends State<_ScoreGradeDemo> {
+  int _score = 85;
+  bool _useSwitchExpr = false;
+
+  String get _grade {
+    if (_score >= 90) return 'A（优秀）';
+    if (_score >= 80) return 'B（良好）';
+    if (_score >= 60) return 'C（及格）';
+    return 'D（不及格）';
+  }
+
+  Color get _gradeColor {
+    if (_score >= 90) return Colors.green;
+    if (_score >= 80) return Colors.blue;
+    if (_score >= 60) return Colors.orange;
+    return Colors.red;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📊 成绩等级判断演示',
+      subtitle: '拖动滑块，对比 if/else 和 switch 表达式（Dart 3）',
+      children: [
+        ParamIntSlider(label: '分数', value: _score, min: 0, max: 100, onChanged: (v) => setState(() => _score = v), unit: '分'),
+        ParamSwitch(label: '使用 switch 表达式', value: _useSwitchExpr, onChanged: (v) => setState(() => _useSwitchExpr = v), trueLabel: 'switch（Dart 3）', falseLabel: 'if/else'),
+        const SizedBox(height: 8),
+        // 分支可视化
+        ...[
+          ('score >= 90', 'A（优秀）', _score >= 90),
+          ('score >= 80', 'B（良好）', _score >= 80 && _score < 90),
+          ('score >= 60', 'C（及格）', _score >= 60 && _score < 80),
+          ('else', 'D（不及格）', _score < 60),
+        ].map((item) {
+          final (cond, result, active) = item;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: active ? _gradeColor.withOpacity(0.15) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: active ? _gradeColor : Colors.grey.withOpacity(0.2), width: active ? 2 : 1),
+            ),
+            child: Row(children: [
+              Icon(active ? Icons.arrow_right : Icons.remove, size: 20, color: active ? _gradeColor : Colors.grey[400]),
+              const SizedBox(width: 8),
+              Expanded(child: Text(cond == 'else' ? 'else → "$result"' : '$cond → "$result"', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: active ? FontWeight.bold : FontWeight.normal))),
+            ]),
+          );
+        }),
+        LiveCodeBlock(
+          _useSwitchExpr
+              ? '// Dart 3 switch 表达式\n'
+                  'final grade = switch (score) {\n'
+                  '  >= 90 => "A（优秀）",\n'
+                  '  >= 80 => "B（良好）",\n'
+                  '  >= 60 => "C（及格）",\n'
+                  '  _     => "D（不及格）",\n'
+                  '};\n'
+                  'print(grade);  // $_grade'
+              : '// 传统 if/else\n'
+                  'if (score >= 90) {\n'
+                  '  grade = "A（优秀）";\n'
+                  '} else if (score >= 80) {\n'
+                  '  grade = "B（良好）";\n'
+                  '} else if (score >= 60) {\n'
+                  '  grade = "C（及格）";\n'
+                  '} else {\n'
+                  '  grade = "D（不及格）";\n'
+                  '}',
+        ),
+        LiveOutputBox('score = $_score → grade = $_grade'),
+      ],
+    );
+  }
+}
+
+/// for 循环演示
+class _DartForLoopDemo extends StatefulWidget {
+  const _DartForLoopDemo();
+  @override
+  State<_DartForLoopDemo> createState() => _DartForLoopDemoState();
+}
+
+class _DartForLoopDemoState extends State<_DartForLoopDemo> {
+  int _count = 5;
+  String _loopType = 'for';
+  bool _useWhere = false;
+
+  List<int> get _items => List.generate(_count, (i) => i + 1);
+  List<int> get _filtered => _items.where((n) => n % 2 == 0).toList();
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _useWhere ? _filtered : _items;
+    return InteractivePlayground(
+      title: '🔄 Dart 循环类型对比',
+      subtitle: '切换不同循环写法，观察迭代行为',
+      children: [
+        ParamIntSlider(label: '元素数量', value: _count, min: 3, max: 10, onChanged: (v) => setState(() => _count = v)),
+        ParamChoiceChips(
+          label: '循环类型',
+          value: _loopType,
+          options: [('for', 'for 循环'), ('for-in', 'for-in'), ('forEach', '.forEach()'), ('map', '.map()')],
+          onChanged: (v) => setState(() => _loopType = v),
+        ),
+        if (_loopType != 'map')
+          ParamSwitch(label: '过滤偶数（.where()）', value: _useWhere, onChanged: (v) => setState(() => _useWhere = v)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 6, runSpacing: 6,
+          children: items.map((n) => Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Center(child: Text('$n', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary))),
+          )).toList(),
+        ),
+        LiveCodeBlock(_buildCode(items)),
+        LiveOutputBox(items.map((n) => _loopType == 'map' ? '${n * n}' : '$n').join('  ')),
+      ],
+    );
+  }
+
+  String _buildCode(List<int> items) {
+    final nums = 'List<int> nums = ${_items};${_useWhere ? '\nfinal filtered = nums.where((n) => n % 2 == 0);' : ''}';
+    final src = _useWhere ? 'filtered' : 'nums';
+    switch (_loopType) {
+      case 'for': return '$nums\nfor (int i = 0; i < $src.length; i++) {\n  print($src[i]);\n}';
+      case 'for-in': return '$nums\nfor (final n in $src) {\n  print(n);\n}';
+      case 'forEach': return '$nums\n$src.forEach(print);';
+      case 'map': return 'final nums = ${_items};\nfinal squares = nums.map((n) => n * n);\nprint(squares.toList());';
+      default: return '';
+    }
+  }
+}
+
+/// switch 星期演示
+class _DayOfWeekDemo extends StatefulWidget {
+  const _DayOfWeekDemo();
+  @override
+  State<_DayOfWeekDemo> createState() => _DayOfWeekDemoState();
+}
+
+class _DayOfWeekDemoState extends State<_DayOfWeekDemo> {
+  int _day = 1;
+
+  String get _dayName {
+    switch (_day) {
+      case 1: return '星期一（Monday）';
+      case 2: return '星期二（Tuesday）';
+      case 3: return '星期三（Wednesday）';
+      case 4: return '星期四（Thursday）';
+      case 5: return '星期五（Friday）';
+      case 6: return '星期六（Saturday）🎉';
+      case 7: return '星期日（Sunday）🎉';
+      default: return '无效日期';
+    }
+  }
+
+  bool get _isWeekend => _day >= 6;
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📅 switch 表达式：星期转换',
+      subtitle: '拖动滑块选择日期，看 switch 表达式的模式匹配',
+      children: [
+        ParamIntSlider(label: '星期数字', value: _day, min: 1, max: 7, onChanged: (v) => setState(() => _day = v)),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: _isWeekend ? Colors.orange.withOpacity(0.15) : Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _isWeekend ? Colors.orange.withOpacity(0.5) : Colors.blue.withOpacity(0.3), width: 2),
+          ),
+          child: Column(children: [
+            Text(_dayName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const SizedBox(height: 6),
+            Text(_isWeekend ? '🎉 周末，不上班！' : '💼 工作日，加油！', style: TextStyle(fontSize: 14, color: _isWeekend ? Colors.orange[700] : Colors.blue[700])),
+          ]),
+        ),
+        LiveCodeBlock(
+          '// Dart 3 switch 表达式\n'
+          'final dayName = switch ($_day) {\n'
+          '  1 => "星期一（Monday）",\n'
+          '  2 => "星期二（Tuesday）",\n'
+          '  3 => "星期三（Wednesday）",\n'
+          '  4 => "星期四（Thursday）",\n'
+          '  5 => "星期五（Friday）",\n'
+          '  6 => "星期六（Saturday）🎉",\n'
+          '  7 => "星期日（Sunday）🎉",\n'
+          '  _ => "无效日期",\n'
+          '};\n'
+          'print(dayName);',
+        ),
+        LiveOutputBox('$_dayName\n${_isWeekend ? '今天是周末！' : '今天是工作日。'}'),
+      ],
+    );
+  }
+}
+
 /// Dart 控制流程教程页面
 /// 涵盖：条件语句、switch 表达式、循环、break/continue/标签、
 /// 断言、异常处理、模式匹配
@@ -373,6 +591,11 @@ void processData(int value) {
               '自定义异常通常继承 Exception 类。'),
 
           DividerLine(),
+          // ===== 交互式演示 =====
+          const _ScoreGradeDemo(),
+          const _DartForLoopDemo(),
+          const _DayOfWeekDemo(),
+          const DividerLine(),
           SectionHeader('本章练习', icon: Icons.assignment),
           Paragraph('1. 写 if/else 判断成绩等级：90+ 为 A，80+ 为 B，60+ 为 C，其余为 D。'),
           Paragraph('2. 用 switch 表达式将星期数字（1-7）转为中文星期名称。'),

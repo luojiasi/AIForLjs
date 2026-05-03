@@ -1,6 +1,251 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// Demo 1: 日期时间运算
+// ─────────────────────────────────────────────────────────────
+class _DateTimeCalcDemo extends StatefulWidget {
+  const _DateTimeCalcDemo();
+
+  @override
+  State<_DateTimeCalcDemo> createState() => _DateTimeCalcDemoState();
+}
+
+class _DateTimeCalcDemoState extends State<_DateTimeCalcDemo> {
+  int _year = 2025;
+  int _month = 1;
+  int _day = 1;
+  int _addDays = 30;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseDate = DateTime(_year, _month, _day);
+    final mm = _month.toString().padLeft(2, '0');
+    final dd = _day.toString().padLeft(2, '0');
+    final baseDateStr = '$_year-$mm-$dd';
+    final futureDate = baseDate.add(Duration(days: _addDays));
+    final fmm = futureDate.month.toString().padLeft(2, '0');
+    final fdd = futureDate.day.toString().padLeft(2, '0');
+    final futureDateStr = '${futureDate.year}-$fmm-$fdd';
+    final weekday = baseDate.weekday;
+    const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    final dayOfWeek = weekdayNames[weekday];
+    final isWeekend = weekday >= 6;
+
+    return InteractivePlayground(
+      title: 'datetime 日期运算',
+      children: [
+        ParamIntSlider(
+          label: '年份',
+          value: _year,
+          min: 2020,
+          max: 2030,
+          onChanged: (v) => setState(() => _year = v),
+        ),
+        ParamIntSlider(
+          label: '月份',
+          value: _month,
+          min: 1,
+          max: 12,
+          onChanged: (v) => setState(() => _month = v),
+        ),
+        ParamIntSlider(
+          label: '日期',
+          value: _day,
+          min: 1,
+          max: 28,
+          onChanged: (v) => setState(() => _day = v),
+        ),
+        ParamIntSlider(
+          label: '加天数',
+          value: _addDays,
+          min: 1,
+          max: 365,
+          unit: '天',
+          onChanged: (v) => setState(() => _addDays = v),
+        ),
+        LiveCodeBlock('''
+from datetime import datetime, timedelta
+
+dt = datetime($_year, $_month, $_day)
+print(dt.strftime("%Y-%m-%d"))     # $baseDateStr
+print(dt.strftime("%A"))           # $dayOfWeek
+
+future = dt + timedelta(days=$_addDays)
+print(future.strftime("%Y-%m-%d")) # $futureDateStr
+
+# 判断是否为周末
+is_weekend = dt.weekday() >= 5    # $isWeekend
+'''),
+        LiveOutputBox(
+          '基准日期: $baseDateStr ($dayOfWeek)\n'
+          '${isWeekend ? "周末" : "工作日"}\n'
+          '+$_addDays天后: $futureDateStr',
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Demo 2: 正则表达式匹配
+// ─────────────────────────────────────────────────────────────
+class _RegexMatchDemo extends StatefulWidget {
+  const _RegexMatchDemo();
+
+  @override
+  State<_RegexMatchDemo> createState() => _RegexMatchDemoState();
+}
+
+class _RegexMatchDemoState extends State<_RegexMatchDemo> {
+  String _pattern = r'\d+';
+  String _text = 'abc123def456';
+  String _mode = 'findall';
+
+  static const _presetPatterns = [
+    (label: r'\d+', desc: '数字'),
+    (label: r'[a-z]+', desc: '小写字母'),
+    (label: r'\w+', desc: '单词'),
+    (label: r'[A-Z]', desc: '大写字母'),
+  ];
+
+  static const _modes = ['match', 'search', 'findall'];
+
+  List<String> _computeMatches() {
+    try {
+      final re = RegExp(_pattern);
+      if (_mode == 'match') {
+        final m = re.matchAsPrefix(_text);
+        return m != null ? [m.group(0)!] : [];
+      } else if (_mode == 'search') {
+        final m = re.firstMatch(_text);
+        return m != null ? [m.group(0)!] : [];
+      } else {
+        return re.allMatches(_text).map((m) => m.group(0)!).toList();
+      }
+    } catch (_) {
+      return [];
+    }
+  }
+
+  List<TextSpan> _buildHighlightedSpans() {
+    try {
+      final re = RegExp(_pattern);
+      final spans = <TextSpan>[];
+      final matches = re.allMatches(_text).toList();
+      if (matches.isEmpty) {
+        return [TextSpan(text: _text)];
+      }
+      int cursor = 0;
+      for (final m in matches) {
+        if (m.start > cursor) {
+          spans.add(TextSpan(text: _text.substring(cursor, m.start)));
+        }
+        spans.add(TextSpan(
+          text: m.group(0),
+          style: const TextStyle(
+            backgroundColor: Color(0xFFFFE082),
+            color: Color(0xFF4A148C),
+            fontWeight: FontWeight.bold,
+          ),
+        ));
+        cursor = m.end;
+      }
+      if (cursor < _text.length) {
+        spans.add(TextSpan(text: _text.substring(cursor)));
+      }
+      return spans;
+    } catch (_) {
+      return [TextSpan(text: _text)];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final matches = _computeMatches();
+    final matchesList = matches.map((s) => "'$s'").join(', ');
+    final firstMatch = matches.isNotEmpty ? matches.first : 'None';
+    final modeDesc = {
+      'match': '从字符串开头匹配',
+      'search': '搜索第一个匹配',
+      'findall': '查找所有匹配',
+    }[_mode]!;
+    final resultLine = _mode == 'findall'
+        ? "print(result)  # [$matchesList]"
+        : "print(result.group())  # $firstMatch";
+
+    return InteractivePlayground(
+      title: 're 正则表达式',
+      children: [
+        ParamChoiceChips<String>(
+          label: '预设模式',
+          value: _pattern,
+          options: _presetPatterns.map((p) => (p.label, p.desc)).toList(),
+          onChanged: (v) => setState(() => _pattern = v),
+        ),
+        ParamTextField(
+          label: '正则模式',
+          value: _pattern,
+          maxLength: 40,
+          onChanged: (v) => setState(() => _pattern = v),
+        ),
+        ParamTextField(
+          label: '测试文本',
+          value: _text,
+          maxLength: 40,
+          onChanged: (v) => setState(() => _text = v),
+        ),
+        ParamChoiceChips<String>(
+          label: '匹配模式',
+          value: _mode,
+          options: _modes.map((m) => (m, m)).toList(),
+          onChanged: (v) => setState(() => _mode = v),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('匹配高亮:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                    children: _buildHighlightedSpans(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        LiveCodeBlock('''
+import re
+
+pattern = r'$_pattern'
+text = '$_text'
+
+# $modeDesc
+result = re.$_mode(pattern, text)
+$resultLine
+'''),
+        LiveOutputBox(
+          matches.isEmpty
+              ? '无匹配结果'
+              : '匹配到 ${matches.length} 个结果:\n${matches.map((s) => "  \"$s\"").join("\n")}',
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 /// Python 第9章：日期时间与正则表达式（扩展版）
 /// 涵盖 datetime/timedelta/timezone/strftime/strptime/calendar
 /// zoneinfo/re 模块/re.compile/命名组/零宽断言/正则实战
@@ -546,6 +791,12 @@ print(Counter(levels))
             "在线用户: ['1001', '1002']\n"
             "Counter({'INFO': 2, 'ERROR': 1, 'WARN': 1})",
           ),
+
+          // ── 互动演示 ──
+          const DividerLine(),
+          const SectionHeader('🎮 互动演示', icon: Icons.play_circle_outline),
+          const _DateTimeCalcDemo(),
+          const _RegexMatchDemo(),
 
           // ── 小练习 ──
           const DividerLine(),

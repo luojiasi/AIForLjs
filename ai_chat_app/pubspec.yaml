@@ -91,7 +91,6 @@ flutter:
   assets:
     - assets/
     - assets/icons/
-    - assets/themes/
 # flutter_launcher_icons:
 #   android:true
 #   ios:true

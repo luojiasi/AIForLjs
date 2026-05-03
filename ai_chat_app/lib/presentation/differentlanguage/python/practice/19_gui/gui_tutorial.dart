@@ -1,6 +1,120 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// Tkinter 布局模拟演示
+class _TkinterLayoutDemo extends StatefulWidget {
+  const _TkinterLayoutDemo();
+  @override
+  State<_TkinterLayoutDemo> createState() => _TkinterLayoutDemoState();
+}
+
+class _TkinterLayoutDemoState extends State<_TkinterLayoutDemo> {
+  String _layout = 'pack';
+  String _widgetType = 'Button';
+  int _widgetCount = 3;
+  String _side = 'top'; // for pack
+  bool _fillX = false;
+
+  static const _widgetColors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red];
+
+  @override
+  Widget build(BuildContext context) {
+    final widgets = List.generate(_widgetCount, (i) => Container(
+      margin: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: _widgetColors[i % _widgetColors.length].withOpacity(0.3),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: _widgetColors[i % _widgetColors.length]),
+      ),
+      child: Text('$_widgetType ${i + 1}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+    ));
+
+    Widget preview;
+    if (_layout == 'pack') {
+      preview = _side == 'left' || _side == 'right'
+          ? Row(
+              mainAxisAlignment: _side == 'right' ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: widgets,
+            )
+          : Column(
+              mainAxisAlignment: _side == 'bottom' ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: _fillX ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
+              children: widgets,
+            );
+    } else if (_layout == 'grid') {
+      final cols = 2;
+      preview = Column(children: List.generate((_widgetCount / cols).ceil(), (row) =>
+        Row(children: List.generate(cols, (col) {
+          final idx = row * cols + col;
+          return idx < _widgetCount ? Expanded(child: widgets[idx]) : const Expanded(child: SizedBox());
+        }))
+      ));
+    } else {
+      // place - absolute positioning simulation
+      preview = Stack(children: [
+        ...List.generate(_widgetCount, (i) => Positioned(
+          left: (i * 30.0).clamp(0, 160),
+          top: (i * 25.0).clamp(0, 100),
+          child: widgets[i],
+        )),
+        const SizedBox(width: 200, height: 120),
+      ]);
+    }
+
+    return InteractivePlayground(
+      title: '🖼️ Tkinter 布局管理演示',
+      subtitle: '切换布局管理器（pack/grid/place），观察 widget 排列效果',
+      children: [
+        ParamChoiceChips<String>(
+          label: '布局管理器',
+          value: _layout,
+          options: [('pack', 'pack'), ('grid', 'grid（网格）'), ('place', 'place（绝对定位）')],
+          onChanged: (v) => setState(() => _layout = v),
+        ),
+        ParamChoiceChips<String>(
+          label: 'Widget 类型',
+          value: _widgetType,
+          options: [('Button', 'Button'), ('Label', 'Label'), ('Entry', 'Entry'), ('Frame', 'Frame')],
+          onChanged: (v) => setState(() => _widgetType = v),
+        ),
+        ParamIntSlider(label: 'Widget 数量', value: _widgetCount, min: 1, max: 5, onChanged: (v) => setState(() => _widgetCount = v)),
+        if (_layout == 'pack')
+          ParamChoiceChips<String>(
+            label: 'side（方向）',
+            value: _side,
+            options: [('top', 'top'), ('bottom', 'bottom'), ('left', 'left'), ('right', 'right')],
+            onChanged: (v) => setState(() => _side = v),
+          ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          height: 130,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: preview,
+        ),
+        LiveCodeBlock(
+          'import tkinter as tk\n\nroot = tk.Tk()\n\n'
+          '${List.generate(_widgetCount, (i) => '${_widgetType.toLowerCase()}${i+1} = tk.${_widgetType}(root, text="${_widgetType} ${i+1}")').join('\n')}\n\n'
+          '${List.generate(_widgetCount, (i) {
+            final w = '${_widgetType.toLowerCase()}${i+1}';
+            return switch (_layout) {
+              'pack' => '$w.pack(side="$_side"${_fillX ? ', fill="x"' : ''})',
+              'grid' => '$w.grid(row=${i ~/ 2}, column=${i % 2})',
+              _ => '$w.place(x=${(i*30).clamp(0,160)}, y=${(i*25).clamp(0,100)})',
+            };
+          }).join('\n')}\n\nroot.mainloop()',
+        ),
+      ],
+    );
+  }
+}
+
 /// Python 第19章：GUI编程（Tkinter 完整教程）
 /// 涵盖：主窗口/核心组件/布局管理/事件绑定/ttk/Canvas/完整项目
 class PythonGUITutorial extends StatelessWidget {
@@ -1862,6 +1976,7 @@ turtle.done()
             '直到长度小于阈值。这是理解递归最直观的视觉化例子之一。',
             type: TipType.tip,
           ),
+          const _TkinterLayoutDemo(),
           const DividerLine(),
 
           // ── 小练习 ──

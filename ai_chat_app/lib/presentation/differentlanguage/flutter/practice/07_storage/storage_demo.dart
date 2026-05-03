@@ -1,6 +1,135 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// SharedPreferences 模拟演示：可视化 K-V 存储的读写删操作
+class _SharedPrefsSimDemo extends StatefulWidget {
+  const _SharedPrefsSimDemo();
+  @override
+  State<_SharedPrefsSimDemo> createState() => _SharedPrefsSimDemoState();
+}
+
+class _SharedPrefsSimDemoState extends State<_SharedPrefsSimDemo> {
+  final Map<String, dynamic> _store = {'isDarkMode': false, 'username': '张三', 'loginCount': 3};
+  String _key = 'username';
+  String _value = '';
+  String _type = 'String';
+  String _lastOp = '';
+
+  static const _typeOptions = ['String', 'int', 'bool', 'double'];
+
+  dynamic get _parsedValue {
+    switch (_type) {
+      case 'int': return int.tryParse(_value) ?? 0;
+      case 'bool': return _value.toLowerCase() == 'true';
+      case 'double': return double.tryParse(_value) ?? 0.0;
+      default: return _value;
+    }
+  }
+
+  void _write() {
+    if (_key.isEmpty) return;
+    setState(() {
+      _store[_key] = _parsedValue;
+      _lastOp = '✅ set$_type("$_key", ${_parsedValue.toString()})';
+    });
+  }
+
+  void _read() {
+    if (!_store.containsKey(_key)) {
+      setState(() => _lastOp = '⚠️ "$_key" 不存在，返回 null');
+      return;
+    }
+    final v = _store[_key];
+    setState(() => _lastOp = '📖 get${v.runtimeType}("$_key") = $v');
+  }
+
+  void _delete() {
+    if (_store.containsKey(_key)) {
+      setState(() {
+        _store.remove(_key);
+        _lastOp = '🗑️ remove("$_key") 成功';
+      });
+    } else {
+      setState(() => _lastOp = '⚠️ "$_key" 不存在');
+    }
+  }
+
+  Color _typeColor(dynamic v) {
+    if (v is bool) return Colors.orange;
+    if (v is int) return Colors.blue;
+    if (v is double) return Colors.teal;
+    return Colors.purple;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🗄️ SharedPreferences 模拟演示',
+      subtitle: '模拟 SharedPreferences 的读写删操作，观察 Key-Value 存储的实时变化',
+      children: [
+        // 当前存储内容
+        const Text('当前存储内容:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const SizedBox(height: 6),
+        if (_store.isEmpty)
+          const Center(child: Text('（空）', style: TextStyle(color: Colors.grey)))
+        else
+          Wrap(spacing: 6, runSpacing: 6, children: _store.entries.map((e) {
+            final color = _typeColor(e.value);
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: color.withOpacity(0.3))),
+              child: Text('"${e.key}": ${e.value} (${e.value.runtimeType})',
+                style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: color)),
+            );
+          }).toList()),
+        const SizedBox(height: 10),
+        // 操作区域
+        Row(children: [
+          Expanded(child: TextField(
+            decoration: const InputDecoration(labelText: 'Key', border: OutlineInputBorder(), isDense: true, contentPadding: EdgeInsets.all(10)),
+            onChanged: (v) => setState(() => _key = v),
+            controller: TextEditingController(text: _key)..selection = TextSelection.fromPosition(TextPosition(offset: _key.length)),
+          )),
+          const SizedBox(width: 8),
+          Expanded(child: TextField(
+            decoration: const InputDecoration(labelText: 'Value', border: OutlineInputBorder(), isDense: true, contentPadding: EdgeInsets.all(10)),
+            onChanged: (v) => setState(() => _value = v),
+          )),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            value: _type, items: _typeOptions.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+            onChanged: (v) => setState(() => _type = v!),
+            isDense: true,
+          ),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton(onPressed: _write, child: const Text('set (写入)')),
+          const SizedBox(width: 8),
+          OutlinedButton(onPressed: _read, child: const Text('get (读取)')),
+          const SizedBox(width: 8),
+          OutlinedButton(onPressed: _delete,
+            style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('remove (删除)')),
+        ]),
+        if (_lastOp.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+            child: Text(_lastOp, style: const TextStyle(fontFamily: 'monospace', fontSize: 13)),
+          ),
+        ],
+        LiveOutputBox('存储条目数: ${_store.length}\n键: ${_store.keys.join(', ')}\n上次操作: ${_lastOp.isEmpty ? '(无)' : _lastOp}'),
+      ],
+    );
+  }
+}
+
 /// ============================================================
 /// Flutter 教程 · 第七章：数据存储完全指南
 /// 从简单的 Key-Value 到关系型数据库的完整存储方案
@@ -504,6 +633,7 @@ class AppStorage {
             language: 'Dart',
           ),
 
+          const _SharedPrefsSimDemo(),
           const DividerLine(),
           const SectionHeader('✏️ 小练习', icon: Icons.edit),
           const Paragraph(

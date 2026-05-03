@@ -2,6 +2,199 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// Navigator 路由栈可视化演示
+class _RouteStackDemo extends StatefulWidget {
+  const _RouteStackDemo();
+  @override
+  State<_RouteStackDemo> createState() => _RouteStackDemoState();
+}
+
+class _RouteStackDemoState extends State<_RouteStackDemo> {
+  final List<String> _stack = ['HomeScreen'];
+  int _nextId = 2;
+
+  static const _pageNames = ['DetailPage', 'ProfilePage', 'SearchPage', 'SettingsPage', 'CartPage'];
+  void _push(String name) {
+    if (_stack.length >= 6) return;
+    setState(() => _stack.add('$name #$_nextId'));
+    _nextId++;
+  }
+
+  void _pop() {
+    if (_stack.length <= 1) return;
+    setState(() => _stack.removeLast());
+  }
+
+  void _popUntilHome() => setState(() {
+    while (_stack.length > 1) _stack.removeLast();
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🗺️ Navigator 路由栈可视化',
+      subtitle: '点击 Push/Pop 按钮观察路由栈的变化，理解栈结构的导航逻辑',
+      children: [
+        // 按钮行
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          ..._pageNames.take(3).map((name) => ElevatedButton.icon(
+            onPressed: _stack.length < 6 ? () => _push(name) : null,
+            icon: const Icon(Icons.add, size: 14),
+            label: Text('Push $name', style: const TextStyle(fontSize: 12)),
+          )),
+          OutlinedButton.icon(
+            onPressed: _stack.length > 1 ? _pop : null,
+            icon: const Icon(Icons.arrow_back, size: 14),
+            label: const Text('Pop', style: TextStyle(fontSize: 12)),
+          ),
+          OutlinedButton.icon(
+            onPressed: _stack.length > 1 ? _popUntilHome : null,
+            icon: const Icon(Icons.home, size: 14),
+            label: const Text('popUntilHome', style: TextStyle(fontSize: 12)),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        // 路由栈可视化（从上往下，顶部是栈顶）
+        ...List.generate(_stack.length, (i) {
+          final isTop = i == _stack.length - 1;
+          final name = _stack[_stack.length - 1 - i];
+          const clrs = [Colors.blue, Colors.purple, Colors.teal, Colors.orange, Colors.pink, Colors.green];
+          final color = clrs[(_stack.length - 1 - i) % clrs.length];
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: EdgeInsets.only(left: i * 8.0, bottom: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isTop ? color.withOpacity(0.25) : color.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: isTop ? color : color.withOpacity(0.3), width: isTop ? 2 : 1),
+            ),
+            child: Row(children: [
+              Icon(isTop ? Icons.smartphone : Icons.layers, size: 16, color: color),
+              const SizedBox(width: 8),
+              Expanded(child: Text(name, style: TextStyle(fontWeight: isTop ? FontWeight.bold : FontWeight.normal, color: isTop ? color : Colors.grey[700]))),
+              if (isTop) Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: color.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
+                child: const Text('当前页面', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ]),
+          );
+        }),
+        const SizedBox(height: 8),
+        LiveCodeBlock(
+          '// 当前栈深度: ${_stack.length}\n'
+          '// 栈顶（当前页面）: ${_stack.last}\n\n'
+          'Navigator.push(context,\n'
+          '  MaterialPageRoute(builder: (_) => DetailPage()),\n'
+          ');\n\n'
+          'Navigator.pop(context);  // 返回上一页\n\n'
+          'Navigator.popUntil(context,\n'
+          '  ModalRoute.withName("/home"),\n'
+          ');  // 一路返回到首页',
+        ),
+        LiveOutputBox('路由栈深度: ${_stack.length}\n当前页: ${_stack.last}\n栈（bottom→top）: ${_stack.join(' → ')}'),
+      ],
+    );
+  }
+}
+
+/// GoRouter 路由树演示
+class _GoRouterDemo extends StatefulWidget {
+  const _GoRouterDemo();
+  @override
+  State<_GoRouterDemo> createState() => _GoRouterDemoState();
+}
+
+class _GoRouterDemoState extends State<_GoRouterDemo> {
+  String _currentPath = '/';
+  final List<String> _history = ['/'];
+  bool _isLoggedIn = false;
+
+  static const _routes = [
+    ('/', '首页 (Home)'),
+    ('/products', '商品列表'),
+    ('/products/42', '商品详情 #42'),
+    ('/profile', '个人中心（需登录）'),
+    ('/settings', '设置页'),
+    ('/cart', '购物车'),
+  ];
+
+  void _navigate(String path) {
+    if ((path == '/profile') && !_isLoggedIn) {
+      setState(() {
+        _history.add('/login?redirect=$path');
+        _currentPath = '/login?redirect=$path';
+      });
+      return;
+    }
+    setState(() {
+      _history.add(path);
+      _currentPath = path;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🚦 GoRouter 导航演示',
+      subtitle: '点击路由按钮，观察路径变化和守卫跳转',
+      children: [
+        ParamSwitch(label: '登录状态', value: _isLoggedIn, onChanged: (v) => setState(() => _isLoggedIn = v),
+          trueLabel: '已登录', falseLabel: '未登录'),
+        const SizedBox(height: 8),
+        Wrap(spacing: 6, runSpacing: 6, children: _routes.map(((String path, String label) r) =>
+          ActionChip(
+            label: Text(r.$2, style: const TextStyle(fontSize: 12)),
+            onPressed: () => _navigate(r.$1),
+            backgroundColor: _currentPath == r.$1 ? Theme.of(context).colorScheme.primaryContainer : null,
+          )
+        ).toList()),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Icon(Icons.link, size: 16, color: Colors.blue),
+              const SizedBox(width: 6),
+              Text('当前路径: $_currentPath', style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'monospace', fontSize: 13)),
+            ]),
+            const SizedBox(height: 6),
+            Text('历史: ${_history.join(' → ')}', style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace')),
+          ]),
+        ),
+        LiveCodeBlock(
+          'final router = GoRouter(\n'
+          '  redirect: (context, state) {\n'
+          '    if (!isLoggedIn && state.uri.path == "/profile") {\n'
+          '      return "/login?redirect=\${state.uri.path}";\n'
+          '    }\n'
+          '    return null;\n'
+          '  },\n'
+          '  routes: [\n'
+          '    GoRoute(path: "/", builder: (_, __) => HomePage()),\n'
+          '    GoRoute(path: "/profile", builder: (_, __) => ProfilePage()),\n'
+          '    GoRoute(path: "/products/:id", builder: (_, state) {\n'
+          '      return ProductPage(id: state.pathParameters["id"]!);\n'
+          '    }),\n'
+          '  ],\n'
+          ');\n\n'
+          'context.go("$_currentPath");  // 导航到当前路径',
+        ),
+      ],
+    );
+  }
+}
+
 /// ============================================================
 /// Flutter 教程 · 第八章：路由导航完全指南
 /// 从 Navigator 到 GoRouter，从基础跳转到 Deep Linking
@@ -524,6 +717,9 @@ GoRoute(
             'ShellRoute 嵌套，DeepLink 直通',
           ),
 
+          const _RouteStackDemo(),
+          const _GoRouterDemo(),
+          const DividerLine(),
           const SectionHeader('✏️ 小练习', icon: Icons.edit),
           const Paragraph(
             '1. 用 Navigator.push/pop 实现「选择城市」页面，返回城市名\n'

@@ -1,6 +1,346 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ============================================================
+// Interactive Demo: _ListManipDemo
+// ============================================================
+class _ListManipDemo extends StatefulWidget {
+  const _ListManipDemo();
+
+  @override
+  State<_ListManipDemo> createState() => _ListManipDemoState();
+}
+
+class _ListManipDemoState extends State<_ListManipDemo> {
+  List<String> _items = ['苹果', '香蕉', '橘子', '葡萄', '西瓜'];
+  String _operation = 'add';
+  final String _newItem = '芒果';
+
+  static const List<(String, String)> _ops = [
+    ('add', '添加'),
+    ('remove', '删除首个'),
+    ('sort', '排序'),
+    ('reverse', '反转'),
+    ('reset', '重置'),
+  ];
+
+  void _applyOperation() {
+    setState(() {
+      switch (_operation) {
+        case 'add':
+          _items.add(_newItem);
+          break;
+        case 'remove':
+          if (_items.isNotEmpty) _items.removeAt(0);
+          break;
+        case 'sort':
+          _items.sort();
+          break;
+        case 'reverse':
+          _items = _items.reversed.toList();
+          break;
+        case 'reset':
+          _items = ['苹果', '香蕉', '橘子', '葡萄', '西瓜'];
+          break;
+      }
+    });
+  }
+
+  String get _codeSnippet {
+    switch (_operation) {
+      case 'add':
+        return "items.add('$_newItem');";
+      case 'remove':
+        return 'items.removeAt(0); // 删除第一个元素';
+      case 'sort':
+        return 'items.sort(); // 字母顺序排序';
+      case 'reverse':
+        return 'items = items.reversed.toList();';
+      case 'reset':
+        return "items = ['苹果', '香蕉', '橘子', '葡萄', '西瓜'];";
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: 'List 操作演示',
+      subtitle: '交互式体验 List 的常用操作方法',
+      children: [
+        ParamChoiceChips<String>(
+          label: '选择操作',
+          value: _operation,
+          options: _ops,
+          onChanged: (v) => setState(() => _operation = v),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            for (int i = 0; i < _items.length; i++)
+              Chip(label: Text('[$i] ${_items[i]}')),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: _applyOperation,
+          child: const Text('执行操作'),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_codeSnippet),
+        LiveOutputBox('${_items.length} 个元素: ${_items.join(', ')}'),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// Interactive Demo: _SetMapDemo
+// ============================================================
+class _SetMapDemo extends StatefulWidget {
+  const _SetMapDemo();
+
+  @override
+  State<_SetMapDemo> createState() => _SetMapDemoState();
+}
+
+class _SetMapDemoState extends State<_SetMapDemo> {
+  final Set<int> _setA = {1, 2, 3, 4, 5};
+  final Set<int> _setB = {3, 4, 5, 6, 7};
+  String _operation = '&';
+
+  static const List<(String, String)> _ops = [
+    ('&', '交集 ∩'),
+    ('|', '并集 ∪'),
+    ('-', '差集 A-B'),
+    ('contains', '包含关系'),
+  ];
+
+  Set<int> get _result {
+    switch (_operation) {
+      case '&':
+        return _setA.intersection(_setB);
+      case '|':
+        return _setA.union(_setB);
+      case '-':
+        return _setA.difference(_setB);
+      case 'contains':
+        return _setA.where((e) => _setB.contains(e)).toSet();
+      default:
+        return {};
+    }
+  }
+
+  String get _codeSnippet {
+    switch (_operation) {
+      case '&':
+        return 'var result = setA.intersection(setB);\n// 两个集合共同拥有的元素';
+      case '|':
+        return 'var result = setA.union(setB);\n// 两个集合所有元素的合并';
+      case '-':
+        return 'var result = setA.difference(setB);\n// 在 A 中但不在 B 中的元素';
+      case 'contains':
+        return 'var inBoth = setA.where((e) => setB.contains(e)).toSet();\n// setA 中同时存在于 setB 的元素';
+      default:
+        return '';
+    }
+  }
+
+  String get _outputLabel {
+    switch (_operation) {
+      case '&':
+        return '交集';
+      case '|':
+        return '并集';
+      case '-':
+        return '差集 A-B';
+      case 'contains':
+        return 'A 中属于 B 的元素';
+      default:
+        return '结果';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = _result;
+    return InteractivePlayground(
+      title: 'Set 集合运算演示',
+      subtitle: '交互式体验 Set 的集合运算',
+      children: [
+        ParamChoiceChips<String>(
+          label: '选择运算',
+          value: _operation,
+          options: _ops,
+          onChanged: (v) => setState(() => _operation = v),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('集合 A', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${_setA}'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('集合 B', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${_setB}'),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_outputLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text('$result'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_codeSnippet),
+        LiveOutputBox('$_outputLabel: $result'),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// Interactive Demo: _CollectionMethodsDemo
+// ============================================================
+class _CollectionMethodsDemo extends StatefulWidget {
+  const _CollectionMethodsDemo();
+
+  @override
+  State<_CollectionMethodsDemo> createState() => _CollectionMethodsDemoState();
+}
+
+class _CollectionMethodsDemoState extends State<_CollectionMethodsDemo> {
+  final List<int> _numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+  String _method = 'where';
+  int _threshold = 3;
+  int _factor = 2;
+
+  static const List<(String, String)> _methods = [
+    ('where', 'where 筛选'),
+    ('map', 'map 转换'),
+    ('fold', 'fold 归约'),
+    ('take', 'take 截取'),
+    ('skip', 'skip 跳过'),
+  ];
+
+  dynamic get _result {
+    switch (_method) {
+      case 'where':
+        return _numbers.where((n) => n > _threshold).toList();
+      case 'map':
+        return _numbers.map((n) => n * _factor).toList();
+      case 'fold':
+        return _numbers.fold(0, (acc, n) => acc + n);
+      case 'take':
+        return _numbers.take(_threshold).toList();
+      case 'skip':
+        return _numbers.skip(_threshold).toList();
+      default:
+        return [];
+    }
+  }
+
+  String get _codeSnippet {
+    switch (_method) {
+      case 'where':
+        return 'var result = numbers.where((n) => n > $_threshold).toList();\n// 筛选大于 $_threshold 的元素';
+      case 'map':
+        return 'var result = numbers.map((n) => n * $_factor).toList();\n// 每个元素乘以 $_factor';
+      case 'fold':
+        return 'var result = numbers.fold(0, (acc, n) => acc + n);\n// 从初始值 0 开始累加所有元素';
+      case 'take':
+        return 'var result = numbers.take($_threshold).toList();\n// 取前 $_threshold 个元素';
+      case 'skip':
+        return 'var result = numbers.skip($_threshold).toList();\n// 跳过前 $_threshold 个元素';
+      default:
+        return '';
+    }
+  }
+
+  String get _outputText {
+    final r = _result;
+    if (_method == 'fold') return '所有元素之和: $r';
+    return '$r';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showThreshold = ['where', 'take', 'skip'].contains(_method);
+    final showFactor = _method == 'map';
+    return InteractivePlayground(
+      title: '集合函数式方法演示',
+      subtitle: '交互式体验 map / where / fold / take / skip',
+      children: [
+        ParamChoiceChips<String>(
+          label: '选择方法',
+          value: _method,
+          options: _methods,
+          onChanged: (v) => setState(() => _method = v),
+        ),
+        if (showThreshold)
+          ParamIntSlider(
+            label: '阈值 (threshold)',
+            value: _threshold,
+            min: 1,
+            max: 7,
+            onChanged: (v) => setState(() => _threshold = v),
+          ),
+        if (showFactor)
+          ParamIntSlider(
+            label: '倍数 (factor)',
+            value: _factor,
+            min: 2,
+            max: 5,
+            onChanged: (v) => setState(() => _factor = v),
+          ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_codeSnippet),
+        LiveOutputBox(_outputText),
+      ],
+    );
+  }
+}
+
 /// Dart 集合类型教程页面
 /// 涵盖：List、Set、Map、泛型、集合操作符、不可变集合、Iterable 惰性求值
 class DartCollections extends StatelessWidget {
@@ -569,6 +909,9 @@ void main() {
               '名字排序: [Alice, Bob, Charlie]\n'
               '忽略大小写: [Apple, banana, cherry]'),
 
+          const _ListManipDemo(),
+          const _SetMapDemo(),
+          const _CollectionMethodsDemo(),
           DividerLine(),
           SectionHeader('小练习', icon: Icons.assignment),
           Paragraph('1. 创建一个 List.generate 列表 [0,2,4,6,8]，取前 3 个元素。'),

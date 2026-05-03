@@ -1,6 +1,289 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 文件读写模拟器
+class _FileSimulatorDemo extends StatefulWidget {
+  const _FileSimulatorDemo();
+  @override
+  State<_FileSimulatorDemo> createState() => _FileSimulatorDemoState();
+}
+
+class _FileSimulatorDemoState extends State<_FileSimulatorDemo> {
+  String _mode = 'r';
+  String _encoding = 'utf-8';
+  String _newLine = 'New line added!';
+  final String _originalContent = 'Hello, Python!\nThis is line 2.\nLine 3 here.';
+  late String _fileState;
+
+  @override
+  void initState() {
+    super.initState();
+    _fileState = _originalContent;
+  }
+
+  void _execute() {
+    setState(() {
+      if (_mode == 'w') {
+        _fileState = _newLine;
+      } else if (_mode == 'a') {
+        _fileState = '$_fileState\n$_newLine';
+      }
+      // 'r' mode just reads, no state change needed
+    });
+  }
+
+  void _reset() {
+    setState(() {
+      _fileState = _originalContent;
+    });
+  }
+
+  String get _liveCode {
+    final body = _mode == 'r'
+        ? 'content = f.read()\nprint(content)'
+        : _mode == 'w'
+            ? 'f.write("$_newLine")'
+            : 'f.write("$_newLine\\n")';
+    return "with open('example.txt', '$_mode', encoding='$_encoding') as f:\n    $body";
+  }
+
+  String get _displayContent {
+    if (_mode == 'r') return _fileState;
+    return _fileState;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📂 文件读写模拟器',
+      subtitle: '选择模式，模拟 open() 的读写行为，观察文件内容变化',
+      children: [
+        ParamChoiceChips<String>(
+          label: '文件模式',
+          value: _mode,
+          options: const [
+            ('r', '读取'),
+            ('w', '写入(覆盖)'),
+            ('a', '追加'),
+          ],
+          onChanged: (v) => setState(() => _mode = v),
+        ),
+        if (_mode == 'w' || _mode == 'a')
+          ParamTextField(
+            label: '写入内容',
+            value: _newLine,
+            hint: '输入要写入/追加的内容',
+            onChanged: (v) => setState(() => _newLine = v.isEmpty ? '' : v),
+            maxLength: 40,
+          ),
+        const SizedBox(height: 8),
+        // 文件内容预览
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade700),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '📄 example.txt',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade400,
+                  fontFamily: 'monospace',
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _mode == 'r' ? _originalContent : _displayContent,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9CDCFE),
+                  fontFamily: 'monospace',
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: _execute,
+              icon: const Icon(Icons.play_arrow, size: 16),
+              label: const Text('执行文件操作'),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _reset,
+              child: const Text('重置'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_liveCode),
+        LiveOutputBox(_displayContent),
+      ],
+    );
+  }
+}
+
+/// CSV 与 JSON 格式演示
+class _CsvJsonDemo extends StatefulWidget {
+  const _CsvJsonDemo();
+  @override
+  State<_CsvJsonDemo> createState() => _CsvJsonDemoState();
+}
+
+class _CsvJsonDemoState extends State<_CsvJsonDemo> {
+  String _dataType = 'csv';
+  String _name = '王五';
+  int _age = 28;
+  String _city = '广州';
+
+  final List<Map<String, dynamic>> _defaultItems = const [
+    {'name': '张三', 'age': 25, 'city': '北京'},
+    {'name': '李四', 'age': 30, 'city': '上海'},
+  ];
+
+  late List<Map<String, dynamic>> _items;
+
+  @override
+  void initState() {
+    super.initState();
+    _items = List<Map<String, dynamic>>.from(_defaultItems);
+  }
+
+  void _addItem() {
+    setState(() {
+      _items.add({'name': _name, 'age': _age, 'city': _city});
+    });
+  }
+
+  void _clearItems() {
+    setState(() {
+      _items = List<Map<String, dynamic>>.from(_defaultItems);
+    });
+  }
+
+  String get _csvDisplay {
+    final buf = StringBuffer();
+    buf.writeln('name,age,city');
+    for (final item in _items) {
+      buf.writeln('${item['name']},${item['age']},${item['city']}');
+    }
+    return buf.toString().trimRight();
+  }
+
+  String get _jsonDisplay {
+    final buf = StringBuffer();
+    buf.writeln('[');
+    for (int i = 0; i < _items.length; i++) {
+      final item = _items[i];
+      final comma = i < _items.length - 1 ? ',' : '';
+      buf.writeln('  {"name": "${item['name']}", "age": ${item['age']}, "city": "${item['city']}"}$comma');
+    }
+    buf.write(']');
+    return buf.toString();
+  }
+
+  String get _liveCode {
+    if (_dataType == 'csv') {
+      return "import csv\n\n# 写入 CSV\nwith open('data.csv', 'w', newline='', encoding='utf-8') as f:\n    writer = csv.DictWriter(f, fieldnames=['name', 'age', 'city'])\n    writer.writeheader()\n    writer.writerows(data)\n\n# 读取 CSV\nwith open('data.csv', 'r', encoding='utf-8') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        print(row)";
+    } else {
+      return "import json\n\n# 写入 JSON\nwith open('data.json', 'w', encoding='utf-8') as f:\n    json.dump(data, f, ensure_ascii=False, indent=2)\n\n# 读取 JSON\nwith open('data.json', 'r', encoding='utf-8') as f:\n    loaded = json.load(f)\n    for item in loaded:\n        print(item)";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final display = _dataType == 'csv' ? _csvDisplay : _jsonDisplay;
+    return InteractivePlayground(
+      title: '📊 CSV / JSON 格式演示',
+      subtitle: '添加记录，实时预览 CSV 和 JSON 的格式化输出',
+      children: [
+        ParamChoiceChips<String>(
+          label: '数据格式',
+          value: _dataType,
+          options: const [
+            ('csv', 'CSV格式'),
+            ('json', 'JSON格式'),
+          ],
+          onChanged: (v) => setState(() => _dataType = v),
+        ),
+        ParamTextField(
+          label: '姓名',
+          value: _name,
+          hint: '输入姓名',
+          onChanged: (v) => setState(() => _name = v.isEmpty ? '' : v),
+          maxLength: 8,
+        ),
+        ParamIntSlider(
+          label: '年龄',
+          value: _age,
+          min: 1,
+          max: 99,
+          onChanged: (v) => setState(() => _age = v),
+        ),
+        ParamTextField(
+          label: '城市',
+          value: _city,
+          hint: '输入城市',
+          onChanged: (v) => setState(() => _city = v.isEmpty ? '' : v),
+          maxLength: 8,
+        ),
+        const SizedBox(height: 8),
+        // 数据预览
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade700),
+          ),
+          child: Text(
+            display,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFCE9178),
+              fontFamily: 'monospace',
+              height: 1.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: _addItem,
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('添加记录'),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: _clearItems,
+              child: const Text('清空'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_liveCode),
+        LiveOutputBox('${_items.length} 条记录'),
+      ],
+    );
+  }
+}
+
 /// Python 第7章：IO编程（完整版）
 /// 涵盖：open/文件模式/三种读取方式/写入/with/seek/编码/
 /// codecs/BOM/行尾/二进制/内存IO(StringIO/BytesIO)/pickle序列化/
@@ -1221,9 +1504,15 @@ print(json.dumps({'answer': 42}))  # '{"answer": 42}'
           ),
 
           // ═══════════════════════════════════════════════════════════
+          // 交互式演示
+          // ═══════════════════════════════════════════════════════════
+          const _FileSimulatorDemo(),
+          const _CsvJsonDemo(),
+          const DividerLine(),
+
+          // ═══════════════════════════════════════════════════════════
           // 第18节：小练习
           // ═══════════════════════════════════════════════════════════
-          const DividerLine(),
           const SectionHeader('18. 小练习', icon: Icons.edit),
           const StepItem(step: 1, title: '文件复制工具', description: '实现一个 copy_file 函数，支持分块复制大文件，保留进度提示。使用 shutil 验证结果。'),
           const StepItem(step: 2, title: '日志统计', description: '读取一个日志文件，统计其中 ERROR/WARN/INFO 各有多少条。用 JSON 格式导出统计结果。'),

@@ -1,5 +1,381 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
+
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 线程池并发演示
+class _ThreadPoolDemo extends StatefulWidget {
+  const _ThreadPoolDemo();
+  @override
+  State<_ThreadPoolDemo> createState() => _ThreadPoolDemoState();
+}
+
+class _ThreadPoolDemoState extends State<_ThreadPoolDemo> {
+  int _threadCount = 4;
+  int _taskDuration = 2;
+  bool _usePool = true;
+  List<String> _threadStates = [];
+  bool _running = false;
+  String _resultMessage = '';
+
+  Timer? _timer;
+  int _elapsedMs = 0;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _reset() {
+    _timer?.cancel();
+    setState(() {
+      _threadStates = [];
+      _running = false;
+      _resultMessage = '';
+      _elapsedMs = 0;
+    });
+  }
+
+  void _start() {
+    if (_running) return;
+    _timer?.cancel();
+    setState(() {
+      _running = true;
+      _resultMessage = '';
+      _elapsedMs = 0;
+      _threadStates = List.filled(_threadCount, 'pending');
+    });
+
+    final int totalMs = _taskDuration * 1000;
+    const int tickMs = 500;
+    int ticks = 0;
+    final int maxTicks = (totalMs ~/ tickMs) + 1;
+
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      ticks++;
+      setState(() {
+        _elapsedMs += tickMs;
+        if (_usePool) {
+          // All threads run concurrently
+          for (int i = 0; i < _threadCount; i++) {
+            if (ticks == 1) {
+              _threadStates[i] = 'running';
+            } else if (_elapsedMs >= totalMs) {
+              _threadStates[i] = 'done';
+            }
+          }
+        } else {
+          // Sequential: one thread at a time
+          final int threadIndex = (ticks - 1) ~/ (totalMs ~/ tickMs);
+          for (int i = 0; i < _threadCount; i++) {
+            if (i < threadIndex) {
+              _threadStates[i] = 'done';
+            } else if (i == threadIndex) {
+              _threadStates[i] = 'running';
+            } else {
+              _threadStates[i] = 'pending';
+            }
+          }
+        }
+
+        final bool allDone = _threadStates.every((s) => s == 'done');
+        if (allDone || (_usePool && ticks >= maxTicks) || (!_usePool && ticks >= maxTicks * _threadCount)) {
+          timer.cancel();
+          for (int i = 0; i < _threadCount; i++) {
+            _threadStates[i] = 'done';
+          }
+          _running = false;
+          final int poolTime = _taskDuration;
+          final int seqTime = _threadCount * _taskDuration;
+          if (_usePool) {
+            _resultMessage = '线程池模式完成！总耗时 ≈ $_taskDuration 秒（并行）\n对比顺序模式 ≈ $seqTime 秒';
+          } else {
+            _resultMessage = '顺序模式完成！总耗时 ≈ $seqTime 秒\n对比线程池模式 ≈ $poolTime 秒（并行）';
+          }
+        }
+      });
+    });
+  }
+
+  Color _stateColor(String state) {
+    switch (state) {
+      case 'running':
+        return Colors.blue;
+      case 'done':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _stateLabel(String state) {
+    switch (state) {
+      case 'running':
+        return '运行中';
+      case 'done':
+        return '完成';
+      default:
+        return '等待';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final code =
+        'from concurrent.futures import ThreadPoolExecutor\n'
+        'import time\n\n'
+        'def task(n):\n'
+        '    time.sleep($_taskDuration)\n'
+        '    return f"任务{n}完成"\n\n'
+        'with ThreadPoolExecutor(max_workers=$_threadCount) as executor:\n'
+        '    futures = [executor.submit(task, i) for i in range($_threadCount)]\n'
+        '    results = [f.result() for f in futures]\n'
+        'print(f"总耗时: ~\$_taskDuration秒（并行）")';
+
+    return InteractivePlayground(
+      title: '🧵 线程池并发演示',
+      subtitle: '模拟 ThreadPoolExecutor 并行执行多个任务',
+      children: [
+        ParamIntSlider(
+          label: '线程数量',
+          value: _threadCount,
+          min: 2,
+          max: 8,
+          onChanged: _running ? (_) {} : (v) => setState(() { _threadCount = v; _reset(); }),
+        ),
+        ParamIntSlider(
+          label: '任务时长',
+          value: _taskDuration,
+          min: 1,
+          max: 5,
+          unit: '秒',
+          onChanged: _running ? (_) {} : (v) => setState(() { _taskDuration = v; _reset(); }),
+        ),
+        ParamSwitch(
+          label: '使用线程池',
+          value: _usePool,
+          trueLabel: '并行（ThreadPoolExecutor）',
+          falseLabel: '顺序执行',
+          onChanged: _running ? (_) {} : (v) => setState(() { _usePool = v; _reset(); }),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: _running ? null : _start,
+              icon: const Text('▶', style: TextStyle(fontSize: 14)),
+              label: const Text('启动演示'),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: _reset,
+              child: const Text('重置'),
+            ),
+            if (_running) ...[
+              const SizedBox(width: 12),
+              const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(width: 6),
+              Text('${(_elapsedMs / 1000).toStringAsFixed(1)}s', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ],
+        ),
+        if (_threadStates.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ...List.generate(_threadCount, (i) {
+            final state = i < _threadStates.length ? _threadStates[i] : 'pending';
+            final color = _stateColor(state);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 60,
+                    child: Text('线程 ${i + 1}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: color.withOpacity(0.5)),
+                    ),
+                    child: Text(_stateLabel(state), style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(width: 8),
+                  if (state == 'running')
+                    Expanded(child: LinearProgressIndicator(color: color, backgroundColor: color.withOpacity(0.15)))
+                  else if (state == 'done')
+                    Expanded(child: LinearProgressIndicator(value: 1.0, color: color, backgroundColor: color.withOpacity(0.15)))
+                  else
+                    Expanded(child: LinearProgressIndicator(value: 0.0, color: color, backgroundColor: Colors.grey.withOpacity(0.15))),
+                ],
+              ),
+            );
+          }),
+        ],
+        if (_resultMessage.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: Text(_resultMessage, style: const TextStyle(fontSize: 12, color: Colors.green)),
+          ),
+        ],
+        LiveCodeBlock(code),
+      ],
+    );
+  }
+}
+
+/// GIL（全局解释器锁）演示
+class _GilDemo extends StatefulWidget {
+  const _GilDemo();
+  @override
+  State<_GilDemo> createState() => _GilDemoState();
+}
+
+class _GilDemoState extends State<_GilDemo> {
+  String _taskType = 'cpu';
+  int _workers = 4;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isCpu = _taskType == 'cpu';
+
+    // Performance table data: (label, singleThread, threading, multiprocessing)
+    final rows = isCpu
+        ? [
+            ('单线程', '1.0x', '基准'),
+            ('多线程', '~1.0x', 'GIL 限制，几乎无提速'),
+            ('多进程', '~${_workers}x', '绕开 GIL，线性提速'),
+          ]
+        : [
+            ('单线程', '1.0x', '基准'),
+            ('多线程', '~${_workers}x', 'I/O 期间释放 GIL，有效并发'),
+            ('多进程', '~${_workers}x', '有效但开销更大'),
+          ];
+
+    final String code = isCpu
+        ? '# CPU 密集型 —— 推荐多进程\n'
+          'from concurrent.futures import ProcessPoolExecutor\n'
+          'import math\n\n'
+          'def cpu_task(n):\n'
+          '    # 纯计算，持续持有 GIL\n'
+          '    return sum(math.sqrt(i) for i in range(10**6))\n\n'
+          'with ProcessPoolExecutor(max_workers=$_workers) as ex:\n'
+          '    results = list(ex.map(cpu_task, range($_workers)))\n'
+          '# 多进程可获得约 ${_workers}x 加速'
+        : '# I/O 密集型 —— 多线程即可\n'
+          'from concurrent.futures import ThreadPoolExecutor\n'
+          'import time\n\n'
+          'def io_task(url):\n'
+          '    # I/O 等待时自动释放 GIL\n'
+          '    time.sleep(1)  # 模拟网络请求\n'
+          '    return f"完成: {url}"\n\n'
+          'with ThreadPoolExecutor(max_workers=$_workers) as ex:\n'
+          '    results = list(ex.map(io_task, urls[:$_workers]))\n'
+          '# 多线程可获得约 ${_workers}x 加速';
+
+    final String explanation = isCpu
+        ? 'GIL（全局解释器锁）原理：\n\n'
+          '• CPython 中同一时刻只有一个线程执行 Python 字节码\n'
+          '• CPU 密集型任务：线程竞争 GIL → 多线程效果 ≈ 单线程\n'
+          '• 多进程方案：每个进程有独立的 GIL → 真正并行\n'
+          '• $_workers 个进程理论加速比：约 ${_workers}x\n\n'
+          '推荐：CPU 密集型 → multiprocessing / ProcessPoolExecutor'
+        : 'GIL 与 I/O 密集型任务：\n\n'
+          '• 线程在等待 I/O（网络/磁盘）时会主动释放 GIL\n'
+          '• 其他线程趁机执行 → 实现真正的并发\n'
+          '• $_workers 个线程理论加速比：约 ${_workers}x\n'
+          '• 多进程也能用，但进程创建开销更大，得不偿失\n\n'
+          '推荐：I/O 密集型 → threading / ThreadPoolExecutor';
+
+    return InteractivePlayground(
+      title: '🔒 GIL 全局解释器锁演示',
+      subtitle: '理解 GIL 对 CPU 密集型 vs I/O 密集型任务的不同影响',
+      children: [
+        ParamChoiceChips<String>(
+          label: '任务类型',
+          value: _taskType,
+          options: const [('cpu', 'CPU 密集型'), ('io', 'I/O 密集型')],
+          onChanged: (v) => setState(() => _taskType = v),
+        ),
+        ParamIntSlider(
+          label: '工作者数量',
+          value: _workers,
+          min: 2,
+          max: 8,
+          onChanged: (v) => setState(() => _workers = v),
+        ),
+        const SizedBox(height: 8),
+        // Performance comparison table
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.25)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                ),
+                child: Row(
+                  children: const [
+                    Expanded(flex: 3, child: Text('并发方式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                    Expanded(flex: 2, child: Text('加速比', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                    Expanded(flex: 5, child: Text('说明', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+              ...rows.asMap().entries.map((entry) {
+                final i = entry.key;
+                final row = entry.value;
+                final bool isLast = i == rows.length - 1;
+                final Color rowColor = i == 0
+                    ? Colors.grey.withOpacity(0.05)
+                    : isCpu
+                        ? (i == 2 ? Colors.green.withOpacity(0.07) : Colors.red.withOpacity(0.05))
+                        : (i == 1 ? Colors.green.withOpacity(0.07) : Colors.orange.withOpacity(0.05));
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: rowColor,
+                    borderRadius: isLast
+                        ? const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10))
+                        : null,
+                    border: Border(top: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.1))),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(flex: 3, child: Text(row.$1, style: const TextStyle(fontSize: 12))),
+                      Expanded(flex: 2, child: Text(row.$2, style: const TextStyle(fontSize: 12, fontFamily: 'monospace', fontWeight: FontWeight.w600))),
+                      Expanded(flex: 5, child: Text(row.$3, style: const TextStyle(fontSize: 11, color: Colors.grey))),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+        LiveCodeBlock(code),
+        LiveOutputBox(explanation),
+      ],
+    );
+  }
+}
 
 /// Python 第17章：进程和线程
 /// 涵盖：进程与线程、threading 模块、同步原语、线程池、GIL、multiprocessing 模块、
@@ -2077,6 +2453,12 @@ faulthandler.dump_traceback_later(30)  # 30秒后打印堆栈''',
             '1. 尽可能避免共享状态 —— 用 Queue 传递消息\n'
             '2. 必须共享时，用 with lock 保护 —— 别手动 acquire/release',
           ),
+          const DividerLine(),
+
+          // ===== Interactive Demos =====
+          const SectionHeader('互动演示', icon: Icons.play_circle_outline),
+          const _ThreadPoolDemo(),
+          const _GilDemo(),
           const DividerLine(),
 
           // ===== Exercises =====

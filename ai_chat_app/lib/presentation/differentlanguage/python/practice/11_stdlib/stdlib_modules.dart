@@ -1,6 +1,362 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Demo: collections 模块
+// ─────────────────────────────────────────────────────────────────────────────
+class _CollectionsModuleDemo extends StatefulWidget {
+  const _CollectionsModuleDemo();
+
+  @override
+  State<_CollectionsModuleDemo> createState() => _CollectionsModuleDemoState();
+}
+
+class _CollectionsModuleDemoState extends State<_CollectionsModuleDemo> {
+  String _collectionType = 'Counter';
+  String _text = 'hello world python';
+
+  String _buildCode() {
+    switch (_collectionType) {
+      case 'Counter':
+        return '''from collections import Counter
+
+text = "$_text"
+words = text.split()
+counter = Counter(words)
+
+# 最常见的前5个词
+most_common = counter.most_common(5)
+for word, count in most_common:
+    print(f"{word}: {count}")''';
+      case 'defaultdict':
+        return '''from collections import defaultdict
+
+# defaultdict(int) 缺失键自动返回 0
+dd = defaultdict(int)
+words = "$_text".split()
+for word in words:
+    dd[word] += 1
+
+print(dict(dd))
+
+# defaultdict(list) 缺失键自动返回 []
+dd2 = defaultdict(list)
+dd2['fruits'].append('apple')
+dd2['fruits'].append('banana')
+dd2['vegs'].append('carrot')
+print(dict(dd2))''';
+      case 'deque':
+        return '''from collections import deque
+
+# maxlen=3 的双端队列
+dq = deque([1, 2, 3], maxlen=3)
+print("初始:", list(dq))      # [1, 2, 3]
+
+dq.append(4)                  # 右侧追加，左侧 1 被移除
+print("append(4):", list(dq)) # [2, 3, 4]
+
+dq.appendleft(0)              # 左侧追加，右侧 4 被移除
+print("appendleft(0):", list(dq)) # [0, 2, 3]
+
+dq.pop()                      # 移除右侧
+print("pop():", list(dq))     # [0, 2]
+
+dq.popleft()                  # 移除左侧
+print("popleft():", list(dq)) # [2]''';
+      case 'OrderedDict':
+        return '''from collections import OrderedDict
+
+# OrderedDict 记住插入顺序
+od = OrderedDict()
+od['banana'] = 3
+od['apple'] = 4
+od['pear'] = 1
+od['orange'] = 2
+
+for key, value in od.items():
+    print(f"{key}: {value}")
+
+# 移动到末尾
+od.move_to_end('banana')
+print("\\n移动 banana 到末尾:")
+for key, value in od.items():
+    print(f"{key}: {value}")''';
+      default:
+        return '';
+    }
+  }
+
+  String _buildOutput() {
+    switch (_collectionType) {
+      case 'Counter':
+        final words = _text.trim().isEmpty ? <String>[] : _text.trim().split(RegExp(r'\s+'));
+        final freq = <String, int>{};
+        for (final w in words) {
+          freq[w] = (freq[w] ?? 0) + 1;
+        }
+        final sorted = freq.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+        final top5 = sorted.take(5);
+        if (top5.isEmpty) return '(无输入文本)';
+        return top5.map((e) => '${e.key}: ${e.value}').join('\n');
+      case 'defaultdict':
+        final words = _text.trim().isEmpty ? <String>[] : _text.trim().split(RegExp(r'\s+'));
+        final freq = <String, int>{};
+        for (final w in words) {
+          freq[w] = (freq[w] ?? 0) + 1;
+        }
+        final buf = StringBuffer();
+        buf.writeln('defaultdict(int) 词频:');
+        buf.writeln(freq.toString());
+        buf.writeln();
+        buf.writeln("defaultdict(list) 示例:");
+        buf.writeln("{'fruits': ['apple', 'banana'], 'vegs': ['carrot']}");
+        return buf.toString().trimRight();
+      case 'deque':
+        return '初始:       [1, 2, 3]\n'
+            'append(4):  [2, 3, 4]\n'
+            'appendleft(0): [0, 2, 3]\n'
+            'pop():      [0, 2]\n'
+            'popleft():  [2]';
+      case 'OrderedDict':
+        return 'banana: 3\napple: 4\npear: 1\norange: 2\n\n'
+            '移动 banana 到末尾:\n'
+            'apple: 4\npear: 1\norange: 2\nbanana: 3';
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: 'collections 模块演示',
+      children: [
+        ParamChoiceChips<String>(
+          label: '集合类型',
+          value: _collectionType,
+          options: const [
+            ('Counter', 'Counter 计数器'),
+            ('defaultdict', 'defaultdict'),
+            ('deque', 'deque 双端队列'),
+            ('OrderedDict', 'OrderedDict 有序字典'),
+          ],
+          onChanged: (v) => setState(() => _collectionType = v),
+        ),
+        if (_collectionType == 'Counter' || _collectionType == 'defaultdict')
+          ParamTextField(
+            label: '输入文本',
+            value: _text,
+            onChanged: (v) => setState(() => _text = v),
+          ),
+        LiveCodeBlock(_buildCode(), language: 'python'),
+        LiveOutputBox(_buildOutput()),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Demo: itertools 模块
+// ─────────────────────────────────────────────────────────────────────────────
+class _ItertoolsDemo extends StatefulWidget {
+  const _ItertoolsDemo();
+
+  @override
+  State<_ItertoolsDemo> createState() => _ItertoolsDemoState();
+}
+
+class _ItertoolsDemoState extends State<_ItertoolsDemo> {
+  String _function = 'combinations';
+  int _n = 3;
+  int _r = 2;
+
+  static const _allItems = ['A', 'B', 'C', 'D'];
+
+  List<String> get _items => _allItems.take(_n).toList();
+
+  // Simple combinations implementation (no repetition)
+  List<List<T>> _combinations<T>(List<T> pool, int r) {
+    final result = <List<T>>[];
+    if (r > pool.length || r <= 0) return result;
+    final indices = List<int>.generate(r, (i) => i);
+    result.add([for (final i in indices) pool[i]]);
+    while (true) {
+      int i = r - 1;
+      while (i >= 0 && indices[i] == i + pool.length - r) {
+        i--;
+      }
+      if (i < 0) break;
+      indices[i]++;
+      for (int j = i + 1; j < r; j++) {
+        indices[j] = indices[j - 1] + 1;
+      }
+      result.add([for (final idx in indices) pool[idx]]);
+    }
+    return result;
+  }
+
+  // Simple permutations implementation
+  List<List<T>> _permutations<T>(List<T> pool, int r) {
+    final result = <List<T>>[];
+    if (r > pool.length || r <= 0) return result;
+    final indices = List<int>.generate(pool.length, (i) => i);
+    final cycles = List<int>.generate(r, (i) => pool.length - i);
+    result.add([for (int i = 0; i < r; i++) pool[indices[i]]]);
+    while (true) {
+      bool found = false;
+      for (int i = r - 1; i >= 0; i--) {
+        cycles[i]--;
+        if (cycles[i] == 0) {
+          final tmp = indices[i];
+          for (int j = i; j < indices.length - 1; j++) {
+            indices[j] = indices[j + 1];
+          }
+          indices[indices.length - 1] = tmp;
+          cycles[i] = pool.length - i;
+        } else {
+          final j = indices.length - cycles[i];
+          final tmp = indices[i];
+          indices[i] = indices[j];
+          indices[j] = tmp;
+          result.add([for (int k = 0; k < r; k++) pool[indices[k]]]);
+          found = true;
+          break;
+        }
+      }
+      if (!found) break;
+    }
+    return result;
+  }
+
+  String _buildCode() {
+    final itemsStr = _items.map((e) => "'$e'").join(', ');
+    switch (_function) {
+      case 'combinations':
+        return '''import itertools
+
+items = [$itemsStr]
+result = list(itertools.combinations(items, $_r))
+print(f"C({_n},{_r}) = {len(result)} 种")
+for combo in result:
+    print(combo)''';
+      case 'permutations':
+        return '''import itertools
+
+items = [$itemsStr]
+result = list(itertools.permutations(items, $_r))
+print(f"P({_n},{_r}) = {len(result)} 种")
+for perm in result:
+    print(perm)''';
+      case 'chain':
+        return '''import itertools
+
+list1 = [1, 2, 3]
+list2 = ['a', 'b', 'c']
+list3 = [True, False]
+
+# chain 将多个可迭代对象串联成一个
+chained = list(itertools.chain(list1, list2, list3))
+print(chained)
+# [1, 2, 3, 'a', 'b', 'c', True, False]
+
+# chain.from_iterable 从嵌套结构展开
+nested = [[1, 2], [3, 4], [5, 6]]
+flat = list(itertools.chain.from_iterable(nested))
+print(flat)
+# [1, 2, 3, 4, 5, 6]''';
+      case 'groupby':
+        return '''import itertools
+
+# groupby 对连续相同值分组（需预先排序）
+data = [1, 1, 2, 2, 3, 3, 3, 1]
+data.sort()  # 先排序
+for key, group in itertools.groupby(data):
+    print(f"{key}: {list(group)}")
+
+# 按字符串首字母分组
+words = ['apple', 'ant', 'banana', 'bear', 'cat']
+words.sort()
+for letter, grp in itertools.groupby(words, key=lambda w: w[0]):
+    print(f"{letter}: {list(grp)}")''';
+      default:
+        return '';
+    }
+  }
+
+  String _buildOutput() {
+    switch (_function) {
+      case 'combinations':
+        final combos = _combinations(_items, _r);
+        final buf = StringBuffer();
+        buf.writeln('C($_n,$_r) = ${combos.length} 种');
+        for (final c in combos) {
+          buf.writeln("(${c.map((e) => "'$e'").join(', ')})");
+        }
+        return buf.toString().trimRight();
+      case 'permutations':
+        final perms = _permutations(_items, _r);
+        final buf = StringBuffer();
+        buf.writeln('P($_n,$_r) = ${perms.length} 种');
+        for (final p in perms) {
+          buf.writeln("(${p.map((e) => "'$e'").join(', ')})");
+        }
+        return buf.toString().trimRight();
+      case 'chain':
+        return "[1, 2, 3, 'a', 'b', 'c', True, False]\n[1, 2, 3, 4, 5, 6]";
+      case 'groupby':
+        return '1: [1, 1]\n2: [2, 2]\n3: [3, 3, 3]\na: [\'apple\', \'ant\']\nb: [\'banana\', \'bear\']\nc: [\'cat\']';
+      default:
+        return '';
+    }
+  }
+
+  bool get _showNR =>
+      _function == 'combinations' || _function == 'permutations';
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: 'itertools 模块演示',
+      children: [
+        ParamChoiceChips<String>(
+          label: '函数',
+          value: _function,
+          options: const [
+            ('combinations', 'combinations 组合'),
+            ('permutations', 'permutations 排列'),
+            ('chain', 'chain 串联'),
+            ('groupby', 'groupby 分组'),
+          ],
+          onChanged: (v) => setState(() => _function = v),
+        ),
+        if (_showNR)
+          ParamIntSlider(
+            label: '元素数量 n',
+            value: _n,
+            min: 2,
+            max: 4,
+            onChanged: (v) => setState(() {
+              _n = v;
+              if (_r > _n) _r = _n;
+            }),
+          ),
+        if (_showNR)
+          ParamIntSlider(
+            label: '选取数量 r',
+            value: _r,
+            min: 1,
+            max: 3,
+            onChanged: (v) => setState(() => _r = v > _n ? _n : v),
+          ),
+        LiveCodeBlock(_buildCode(), language: 'python'),
+        LiveOutputBox(_buildOutput()),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 /// Python 第11章：常用内建模块
 /// 涵盖 datetime、collections、base64、struct、hashlib、hmac
 /// itertools、contextlib、urllib、HTMLParser、json
@@ -813,6 +1169,14 @@ data_with_none = {'a': 1, 'b': None, 'c': {'d': None, 'e': 2}}
 print(json.dumps(clean_none(data_with_none)))
 # {"a": 1, "c": {"e": 2}}
 ''', language: 'python'),
+          const DividerLine(),
+
+          // ── 交互演示：collections ──
+          const _CollectionsModuleDemo(),
+          const DividerLine(),
+
+          // ── 交互演示：itertools ──
+          const _ItertoolsDemo(),
           const DividerLine(),
 
           // ── 总结 ──

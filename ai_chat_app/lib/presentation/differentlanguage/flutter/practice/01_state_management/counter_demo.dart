@@ -28,7 +28,7 @@ class _SharedCounterParentState extends State<_SharedCounterParent> {
 class _KeyedItem extends StatelessWidget {
   final String label;
   final Color color;
-  const _KeyedItem({required this.label, required this.color, super.key});
+  const _KeyedItem({required this.label, required this.color});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -84,11 +84,9 @@ class _CounterDemoState extends State<CounterDemo> {
   int _count = 0;
   bool _showLifecycleTip = false;
   bool _isSwitched = false;
-  String _textInput = '';
   Color _selectedColor = Colors.blue;
   List<String> _todoItems = ['学Flutter', '写Demo', '理解状态管理'];
   String _newTodoText = '';
-  bool _showKeyDemo = false;
   List<_DemoListItemData> _keyDemoItems = [
     _DemoListItemData(id: 'A', title: '苹果'),
     _DemoListItemData(id: 'B', title: '香蕉'),

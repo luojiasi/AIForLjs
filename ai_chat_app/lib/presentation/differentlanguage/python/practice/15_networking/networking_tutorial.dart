@@ -1,6 +1,186 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 互动演示：HTTP 请求模拟器
+// ─────────────────────────────────────────────────────────────
+class _HttpRequestSimDemo extends StatefulWidget {
+  const _HttpRequestSimDemo();
+  @override
+  State<_HttpRequestSimDemo> createState() => _HttpRequestSimDemoState();
+}
+
+class _HttpRequestSimDemoState extends State<_HttpRequestSimDemo> {
+  String _method = 'GET';
+  String _url = 'https://api.example.com/users';
+  int _statusCode = 200;
+  bool _loading = false;
+  String _responseJson = '';
+
+  static const _responses = <String, (int, String)>{
+    'GET|/users': (200, '[{"id":1,"name":"张三"},{"id":2,"name":"李四"}]'),
+    'POST|/users': (201, '{"id":3,"name":"王五","created":true}'),
+    'GET|/users/1': (200, '{"id":1,"name":"张三","email":"zhang@example.com"}'),
+    'DELETE|/users/1': (204, '{}'),
+  };
+
+  static const _urlOptions = [
+    'https://api.example.com/users',
+    'https://api.example.com/users/1',
+  ];
+
+  String get _urlPath {
+    if (_url.endsWith('/users')) return '/users';
+    if (_url.endsWith('/users/1')) return '/users/1';
+    return '/users';
+  }
+
+  Color get _statusColor {
+    if (_statusCode >= 200 && _statusCode < 300) return Colors.greenAccent;
+    if (_statusCode >= 400) return Colors.redAccent;
+    return Colors.orangeAccent;
+  }
+
+  String get _statusText {
+    switch (_statusCode) {
+      case 200: return '200 OK';
+      case 201: return '201 Created';
+      case 204: return '204 No Content';
+      case 404: return '404 Not Found';
+      default: return '$_statusCode';
+    }
+  }
+
+  void _sendRequest() {
+    setState(() {
+      _loading = true;
+      _responseJson = '';
+    });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      final key = '$_method|$_urlPath';
+      final result = _responses[key] ?? (200, '{"message":"ok"}');
+      setState(() {
+        _loading = false;
+        _statusCode = result.$1;
+        _responseJson = result.$2;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: 'HTTP 请求模拟器',
+      subtitle: '模拟 Python requests 库发送 HTTP 请求',
+      children: [
+        // Method selector
+        ParamChoiceChips<String>(
+          label: '请求方法',
+          value: _method,
+          options: const [
+            ('GET', 'GET'),
+            ('POST', 'POST'),
+            ('PUT', 'PUT'),
+            ('DELETE', 'DELETE'),
+          ],
+          onChanged: (v) => setState(() => _method = v),
+        ),
+        // URL selector
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('请求 URL', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            ..._urlOptions.map((url) => RadioListTile<String>(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(url, style: const TextStyle(fontSize: 12, fontFamily: 'monospace')),
+              value: url,
+              groupValue: _url,
+              onChanged: (v) => setState(() => _url = v!),
+            )),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Send button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _loading ? null : _sendRequest,
+            icon: _loading
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.send, size: 16),
+            label: Text(_loading ? '请求中...' : '发送请求'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Response visualization
+        if (_responseJson.isNotEmpty || _loading) ...[
+          Row(
+            children: [
+              const Text('响应状态：', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              if (!_loading)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _statusColor.withOpacity(0.6)),
+                  ),
+                  child: Text(
+                    _statusText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: _statusColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _responseJson,
+                style: const TextStyle(
+                  color: Color(0xFF4CAF50),
+                  fontSize: 13,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
+        // Python code snippet
+        LiveCodeBlock(
+          '''import requests
+
+# 发送 $_method 请求
+url = "$_url"
+response = requests.${_method.toLowerCase()}(url)
+
+print(f"状态码: {response.status_code}")
+print(f"响应内容: {response.json()}")
+
+# 错误处理
+response.raise_for_status()  # 非 2xx 抛出异常''',
+          language: 'python',
+        ),
+      ],
+    );
+  }
+}
+
 /// Python 第15章：网络编程（Network Programming）
 /// 涵盖：Socket 基础、TCP/UDP、HTTP 客户端、Web 服务器、SSL/TLS、多路复用等
 class PythonNetworkingTutorial extends StatelessWidget {
@@ -1343,6 +1523,10 @@ class SecureServer:
             '  • 及时更新 Python 版本和依赖库，修复已知的安全漏洞',
           ),
           DividerLine(),
+
+          // ===== 互动演示 =====
+          const _HttpRequestSimDemo(),
+          const DividerLine(),
 
           // ===== 总结 =====
           SectionHeader('总结', icon: Icons.summarize),

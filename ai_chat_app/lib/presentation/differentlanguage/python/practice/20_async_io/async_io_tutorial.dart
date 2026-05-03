@@ -1,5 +1,106 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
+
+/// asyncio 任务执行模拟演示
+class _AsyncTaskSimDemo extends StatefulWidget {
+  const _AsyncTaskSimDemo();
+  @override
+  State<_AsyncTaskSimDemo> createState() => _AsyncTaskSimDemoState();
+}
+
+class _AsyncTaskSimDemoState extends State<_AsyncTaskSimDemo> {
+  List<int> _durations = [2, 3, 1];
+  String _mode = 'concurrent';
+  List<String> _states = ['pending', 'pending', 'pending'];
+  bool _running = false;
+  int _elapsed = 0;
+  int _tick = 0;
+  Timer? _timer;
+
+  void _run() {
+    setState(() { _running = true; _states = List.filled(_durations.length, 'pending'); _elapsed = 0; _tick = 0; });
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (t) {
+      if (!mounted) { t.cancel(); return; }
+      _tick++;
+      setState(() {
+        _elapsed = (_tick * 0.5).ceil();
+        for (int i = 0; i < _durations.length; i++) {
+          if (_mode == 'concurrent') {
+            _states[i] = _tick >= _durations[i] * 2 ? 'done' : _tick >= 1 ? 'running' : 'pending';
+          } else {
+            int startTime = _durations.take(i).fold(0, (a, b) => a + b) * 2;
+            _states[i] = _tick >= startTime + _durations[i] * 2 ? 'done' : _tick >= startTime ? 'running' : 'pending';
+          }
+        }
+        if (_states.every((s) => s == 'done')) { t.cancel(); _running = false; _timer = null; }
+      });
+    });
+  }
+
+  @override
+  void dispose() { _timer?.cancel(); super.dispose(); }
+
+  Color _stateColor(String s) => s == 'done' ? Colors.green : s == 'running' ? Colors.blue : Colors.grey;
+  IconData _stateIcon(String s) => s == 'done' ? Icons.check_circle : s == 'running' ? Icons.hourglass_top : Icons.circle_outlined;
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '⏱️ asyncio 任务模拟',
+      subtitle: '对比并发（asyncio.gather）和串行（await）的执行效率',
+      children: [
+        ParamChoiceChips<String>(label: '执行模式', value: _mode,
+          options: [('concurrent', 'asyncio.gather（并发）'), ('sequential', 'await（串行）')],
+          onChanged: (v) { if (!_running) setState(() => _mode = v); }),
+        ParamIntSlider(label: '任务1时长', value: _durations[0], min: 1, max: 5, unit: '秒', onChanged: (v) { if (!_running) setState(() { _durations[0] = v; }); }),
+        ParamIntSlider(label: '任务2时长', value: _durations[1], min: 1, max: 5, unit: '秒', onChanged: (v) { if (!_running) setState(() { _durations[1] = v; }); }),
+        ParamIntSlider(label: '任务3时长', value: _durations[2], min: 1, max: 5, unit: '秒', onChanged: (v) { if (!_running) setState(() { _durations[2] = v; }); }),
+        const SizedBox(height: 8),
+        ...List.generate(3, (i) => Container(
+          margin: const EdgeInsets.only(bottom: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(color: _stateColor(_states[i]).withOpacity(0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: _stateColor(_states[i]).withOpacity(0.4))),
+          child: Row(children: [
+            Icon(_stateIcon(_states[i]), size: 18, color: _stateColor(_states[i])),
+            const SizedBox(width: 8),
+            Expanded(child: Text('任务 ${i + 1}（${_durations[i]}s）', style: const TextStyle(fontWeight: FontWeight.w500))),
+            if (_states[i] == 'running') const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            if (_states[i] == 'done') const Icon(Icons.check_circle, color: Colors.green, size: 16),
+          ]),
+        )),
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton.icon(onPressed: _running ? null : _run, icon: const Icon(Icons.play_arrow, size: 16), label: Text(_running ? '运行中...' : '▶ 启动模拟')),
+          const SizedBox(width: 8),
+          TextButton(onPressed: () => setState(() { _states = List.filled(3, 'pending'); _elapsed = 0; _tick = 0; }), child: const Text('重置')),
+        ]),
+        LiveCodeBlock(
+          _mode == 'concurrent'
+              ? 'import asyncio\n\n'
+                'async def task(n, delay):\n'
+                '    await asyncio.sleep(delay)\n'
+                '    return f"task{n} done"\n\n'
+                'results = await asyncio.gather(\n'
+                '    task(1, ${_durations[0]}),\n'
+                '    task(2, ${_durations[1]}),\n'
+                '    task(3, ${_durations[2]}),\n'
+                ')\n'
+                '# 总耗时 = ${_durations.reduce((a,b) => a > b ? a : b)}秒（最慢任务）'
+              : 'import asyncio\n\n'
+                'async def main():\n'
+                '    await asyncio.sleep(${_durations[0]})  # 任务1\n'
+                '    await asyncio.sleep(${_durations[1]})  # 任务2\n'
+                '    await asyncio.sleep(${_durations[2]})  # 任务3\n'
+                '# 总耗时 = ${_durations.fold(0, (a,b) => a+b)}秒（累加）',
+        ),
+        LiveOutputBox(_states.every((s) => s == 'done')
+            ? '全部完成！总耗时: ${_elapsed}秒\n${_mode == 'concurrent' ? '并发优势：3个任务只用了最慢那个的时间' : '串行执行：每个任务依次等待'}'
+            : _running ? '执行中... $_elapsed秒' : '点击「启动」观察执行过程'),
+      ],
+    );
+  }
+}
 
 class PythonAsyncIOTutorial extends StatelessWidget {
   const PythonAsyncIOTutorial({super.key});
@@ -2495,7 +2596,9 @@ async def process_large_file(filename):
           // =================================================================
           // Summary
           // =================================================================
+          const _AsyncTaskSimDemo(),
           const DividerLine(),
+
           const SectionHeader('本章总结', icon: Icons.summarize),
           const Paragraph(
             '本章详细介绍了Python异步IO的核心概念和实践。我们从协程的基础概念出发，'

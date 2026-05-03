@@ -87,14 +87,13 @@ class _ChapterCard extends StatelessWidget {
   final String title;
   final String desc;
   final String? route;
-  final VoidCallback? onTap;
 
   const _ChapterCard({
-    required this.num, required this.title, required this.desc, this.route, this.onTap,
+    required this.num, required this.title, required this.desc, this.route,
   });
 
   const _ChapterCard.ext({
-    required this.num, required this.title, required this.desc, this.route, this.onTap,
+    required this.num, required this.title, required this.desc, this.route,
   });
 
   @override
@@ -110,7 +109,7 @@ class _ChapterCard extends StatelessWidget {
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(desc, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
         trailing: const Icon(Icons.chevron_right),
-        onTap: onTap ?? (route != null ? () => context.push(route!) : null),
+        onTap: route != null ? () => context.push(route!) : null,
       ),
     );
   }

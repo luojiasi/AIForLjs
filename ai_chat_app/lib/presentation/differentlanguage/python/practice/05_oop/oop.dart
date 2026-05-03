@@ -1,6 +1,150 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ===== 交互式演示：类构建器 =====
+class _ClassBuilderDemo extends StatefulWidget {
+  const _ClassBuilderDemo();
+
+  @override
+  State<_ClassBuilderDemo> createState() => _ClassBuilderDemoState();
+}
+
+class _ClassBuilderDemoState extends State<_ClassBuilderDemo> {
+  String _className = 'Person';
+  String _name = '张三';
+  int _age = 25;
+  bool _showMethod = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final strOutput = "$_className('$_name', $_age)";
+
+    final codeStr = '''class $_className:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def greet(self):
+        return f"你好，我是{self.name}，{self.age}岁"${_showMethod ? '''
+
+    def __str__(self):
+        return f"$_className(\'$_name\', {$_age})"''' : ''}
+
+p = $_className("$_name", $_age)
+print(p.name)    # $_name
+print(p.age)     # $_age
+print(p.greet()) # 你好，我是$_name，$_age岁''';
+
+    final outputStr = 'p.name = $_name\np.age = $_age\np.greet() = "你好，我是$_name，$_age岁"'
+        '${_showMethod ? '\nstr(p) = "$strOutput"' : ''}';
+
+    return InteractivePlayground(
+      title: '类构建器',
+      subtitle: '修改类名和属性，观察对象实例化的变化',
+      children: [
+        ParamTextField(
+          label: '类名',
+          value: _className,
+          maxLength: 12,
+          onChanged: (v) => setState(() => _className = v.isEmpty ? 'Person' : v),
+        ),
+        ParamTextField(
+          label: '姓名',
+          value: _name,
+          maxLength: 10,
+          onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v),
+        ),
+        ParamIntSlider(
+          label: '年龄',
+          value: _age,
+          min: 1,
+          max: 100,
+          unit: '岁',
+          onChanged: (v) => setState(() => _age = v),
+        ),
+        ParamSwitch(
+          label: '__str__ 方法',
+          value: _showMethod,
+          trueLabel: '显示',
+          falseLabel: '隐藏',
+          onChanged: (v) => setState(() => _showMethod = v),
+        ),
+        LiveCodeBlock(codeStr),
+        LiveOutputBox(outputStr),
+      ],
+    );
+  }
+}
+
+// ===== 交互式演示：继承链可视化 =====
+class _InheritanceChainDemo extends StatefulWidget {
+  const _InheritanceChainDemo();
+
+  @override
+  State<_InheritanceChainDemo> createState() => _InheritanceChainDemoState();
+}
+
+class _InheritanceChainDemoState extends State<_InheritanceChainDemo> {
+  String _animalType = 'Dog';
+  String _petName = '小白';
+
+  static const _sounds = {'Dog': '汪汪', 'Cat': '喵喵', 'Bird': '叽叽'};
+  static const _emojis = {'Dog': '🐕', 'Cat': '🐈', 'Bird': '🐦'};
+
+  @override
+  Widget build(BuildContext context) {
+    final sound = _sounds[_animalType]!;
+    final emoji = _emojis[_animalType]!;
+
+    final codeStr = '''class Animal:
+    def __init__(self, name):
+        self.name = name
+    def speak(self):
+        return "..."
+
+class $_animalType(Animal):
+    def speak(self):
+        return "$sound"  # 重写父类方法
+
+pet = $_animalType("$_petName")
+print(pet.name)   # $_petName
+print(pet.speak())  # $sound
+print(isinstance(pet, Animal))  # True''';
+
+    final outputStr = '继承链: Animal → $_animalType → 实例\n'
+        'MRO: [$_animalType, Animal, object]\n'
+        'pet.name = $_petName\n'
+        'pet.speak() = "$sound"\n'
+        'isinstance(pet, Animal) = True\n'
+        '实例: $emoji $_petName (${_animalType})';
+
+    return InteractivePlayground(
+      title: '继承链可视化',
+      subtitle: '选择动物类型，观察继承和方法重写',
+      children: [
+        ParamChoiceChips<String>(
+          label: '动物类型',
+          value: _animalType,
+          options: const [
+            ('Dog', '🐕 狗'),
+            ('Cat', '🐈 猫'),
+            ('Bird', '🐦 鸟'),
+          ],
+          onChanged: (v) => setState(() => _animalType = v),
+        ),
+        ParamTextField(
+          label: '宠物名',
+          value: _petName,
+          maxLength: 10,
+          onChanged: (v) => setState(() => _petName = v.isEmpty ? '小白' : v),
+        ),
+        LiveCodeBlock(codeStr),
+        LiveOutputBox(outputStr),
+      ],
+    );
+  }
+}
+
 /// Python 面向对象编程 —— 第五课（完整扩展版）
 class PythonOOP extends StatelessWidget {
   const PythonOOP({super.key});
@@ -574,6 +718,11 @@ process(DBReader())
               '静态类型检查（mypy）和抽象基类（ABC）可以弥补这个缺点。',
               type: TipType.warning,
             ),
+            DividerLine(),
+
+            // ===== 交互式演示 =====
+            const _ClassBuilderDemo(),
+            const _InheritanceChainDemo(),
             DividerLine(),
 
             // ===== 小练习 =====

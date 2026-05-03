@@ -1,6 +1,190 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// XML 文档构建演示
+class _XmlBuilderDemo extends StatefulWidget {
+  const _XmlBuilderDemo();
+  @override
+  State<_XmlBuilderDemo> createState() => _XmlBuilderDemoState();
+}
+
+class _XmlBuilderDemoState extends State<_XmlBuilderDemo> {
+  String _rootTag = 'bookstore';
+  List<Map<String, String>> _books = [
+    {'title': 'Python编程', 'author': '张三', 'price': '59.9'},
+    {'title': 'Flutter实战', 'author': '李四', 'price': '79.9'},
+  ];
+  String _title = '';
+  String _author = '';
+  String _price = '29.9';
+
+  final _titleCtrl = TextEditingController();
+  final _authorCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController(text: '29.9');
+
+  String get _xml {
+    final buf = StringBuffer();
+    buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+    buf.writeln('<$_rootTag>');
+    for (final b in _books) {
+      buf.writeln('  <book>');
+      buf.writeln('    <title>${b['title']}</title>');
+      buf.writeln('    <author>${b['author']}</author>');
+      buf.writeln('    <price>${b['price']}</price>');
+      buf.writeln('  </book>');
+    }
+    buf.write('</$_rootTag>');
+    return buf.toString();
+  }
+
+  void _addBook() {
+    if (_title.isEmpty || _author.isEmpty) return;
+    setState(() {
+      _books = [
+        ..._books,
+        {'title': _title, 'author': _author, 'price': _price.isEmpty ? '0.0' : _price},
+      ];
+      _title = '';
+      _author = '';
+      _price = '29.9';
+      _titleCtrl.clear();
+      _authorCtrl.clear();
+      _priceCtrl.text = '29.9';
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _authorCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📄 XML 文档构建器',
+      subtitle: '添加书籍记录，实时生成 XML 文档',
+      children: [
+        ParamTextField(
+          label: '根标签',
+          value: _rootTag,
+          onChanged: (v) => setState(() => _rootTag = v.isEmpty ? 'bookstore' : v),
+          hint: 'bookstore',
+          maxLength: 20,
+        ),
+        const SizedBox(height: 8),
+        Text('添加书籍:', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(
+            child: TextField(
+              controller: _titleCtrl,
+              onChanged: (v) => _title = v,
+              maxLength: 20,
+              decoration: InputDecoration(
+                labelText: '书名',
+                isDense: true,
+                counterText: '',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: TextField(
+              controller: _authorCtrl,
+              onChanged: (v) => _author = v,
+              maxLength: 15,
+              decoration: InputDecoration(
+                labelText: '作者',
+                isDense: true,
+                counterText: '',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 72,
+            child: TextField(
+              controller: _priceCtrl,
+              onChanged: (v) => _price = v,
+              maxLength: 8,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: '价格',
+                isDense: true,
+                counterText: '',
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton.icon(
+            onPressed: _addBook,
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('添加书籍'),
+          ),
+          const SizedBox(width: 8),
+          TextButton.icon(
+            onPressed: () => setState(() => _books = []),
+            icon: const Icon(Icons.clear, size: 14),
+            label: const Text('清空'),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SelectableText(
+              _xml,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 12,
+                color: Colors.greenAccent,
+                height: 1.6,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(
+          'import xml.etree.ElementTree as ET\n\n'
+          '# 创建根元素\n'
+          'root = ET.Element("$_rootTag")\n\n'
+          '# 添加子元素\n'
+          'book = ET.SubElement(root, "book")\n'
+          'ET.SubElement(book, "title").text = "Python编程"\n'
+          'ET.SubElement(book, "author").text = "张三"\n'
+          'ET.SubElement(book, "price").text = "59.9"\n\n'
+          '# 格式化输出\n'
+          'ET.indent(root)\n'
+          'tree = ET.ElementTree(root)\n'
+          'tree.write("books.xml", encoding="utf-8", xml_declaration=True)',
+          language: 'Python',
+        ),
+        LiveOutputBox('${_books.length} 本书', label: '▶ 书籍数量'),
+      ],
+    );
+  }
+}
+
 /// Python 第18章：XML 处理教程
 /// 涵盖：XML 基础、SAX/DOM/ElementTree 对比、读取/修改/构建 XML、
 /// XPath、命名空间、lxml、验证、安全、流式解析、实战项目

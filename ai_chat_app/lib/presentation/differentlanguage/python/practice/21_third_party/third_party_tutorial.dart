@@ -1,6 +1,98 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// pip 包管理交互式演示
+class _PipPackageDemo extends StatefulWidget {
+  const _PipPackageDemo();
+  @override
+  State<_PipPackageDemo> createState() => _PipPackageDemoState();
+}
+
+class _PipPackageDemoState extends State<_PipPackageDemo> {
+  String _category = 'data';
+  String _package = 'numpy';
+  String _version = '1.24.3';
+  bool _installed = false;
+  bool _upgraded = false;
+
+  static const _packages = <String, List<(String, String, String)>>{
+    'data': [('numpy', '1.24.3', '科学计算核心库，提供高效的多维数组'), ('pandas', '2.0.1', '数据分析库，DataFrame 表格操作'), ('matplotlib', '3.7.1', '数据可视化，绘制各种图表')],
+    'web': [('requests', '2.31.0', '简洁的 HTTP 请求库'), ('flask', '2.3.2', '轻量级 Web 框架'), ('fastapi', '0.95.0', '现代高性能 Web API 框架')],
+    'tools': [('pillow', '9.5.0', 'Python 图像处理库'), ('pytest', '7.3.1', 'Python 测试框架'), ('black', '23.3.0', 'Python 代码格式化工具')],
+  };
+
+  List<(String, String, String)> get _options => _packages[_category]!;
+  (String, String, String) get _pkgInfo => _options.firstWhere((p) => p.$1 == _package);
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📦 pip 包管理演示',
+      subtitle: '探索不同类别的 Python 第三方包和安装命令',
+      children: [
+        ParamChoiceChips<String>(
+          label: '包类别',
+          value: _category,
+          options: [('data', '数据科学'), ('web', 'Web开发'), ('tools', '开发工具')],
+          onChanged: (v) => setState(() { _category = v; _package = _packages[v]!.first.$1; _installed = false; _upgraded = false; }),
+        ),
+        ParamChoiceChips<String>(
+          label: '选择包',
+          value: _package,
+          options: _options.map((p) => (p.$1, '${p.$1} v${p.$2}')).toList(),
+          onChanged: (v) => setState(() { _package = v; _installed = false; _upgraded = false; final info = _options.firstWhere((p) => p.$1 == v); _version = info.$2; }),
+        ),
+        // 包信息卡
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.05), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.blue.withOpacity(0.2))),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(_package, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 8),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: Text('v$_version', style: const TextStyle(fontSize: 11, fontFamily: 'monospace'))),
+            ]),
+            const SizedBox(height: 4),
+            Text(_pkgInfo.$3, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+          ]),
+        ),
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton.icon(
+            onPressed: () => setState(() { _installed = true; _upgraded = false; }),
+            icon: const Icon(Icons.download, size: 14),
+            label: const Text('模拟安装'),
+          ),
+          const SizedBox(width: 8),
+          if (_installed)
+            OutlinedButton.icon(
+              onPressed: () => setState(() => _upgraded = true),
+              icon: const Icon(Icons.upload, size: 14),
+              label: const Text('模拟升级'),
+            ),
+        ]),
+        if (_installed) ...[
+          const SizedBox(height: 8),
+          Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+            child: Row(children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 16),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_upgraded ? '$_package 已升级到最新版' : '$_package v$_version 已安装', style: const TextStyle(fontSize: 13, color: Colors.green))),
+            ])),
+        ],
+        LiveCodeBlock(
+          '${_installed ? '# 已安装\n' : ''}'
+          'pip install $_package==$_version\n'
+          '${_upgraded ? '\n# 升级到最新版\npip install --upgrade $_package' : ''}'
+          '\n\n# 查看已安装包\npip list\n\n'
+          '# 导出依赖\npip freeze > requirements.txt',
+        ),
+      ],
+    );
+  }
+}
+
 class PythonThirdPartyTutorial extends StatelessWidget {
   const PythonThirdPartyTutorial({super.key});
 
@@ -2690,7 +2782,8 @@ system_monitor(duration=6, interval=2)
             type: TipType.tip,
           ),
 
-          const SizedBox(height: 16),
+          const _PipPackageDemo(),
+          const DividerLine(),
 
           // ==========================================
           // 总结

@@ -1,6 +1,147 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// SQL 查询构造器演示
+class _SqlQueryBuilderDemo extends StatefulWidget {
+  const _SqlQueryBuilderDemo();
+  @override
+  State<_SqlQueryBuilderDemo> createState() => _SqlQueryBuilderDemoState();
+}
+
+class _SqlQueryBuilderDemoState extends State<_SqlQueryBuilderDemo> {
+  String _table = 'users';
+  String _operation = 'SELECT';
+  List<String> _conditions = [];
+  String _orderBy = '';
+  int _limit = 10;
+
+  static const _availableConditions = ['age > 18', 'city = "北京"', 'status = 1'];
+
+  String get _sql {
+    final buf = StringBuffer();
+    if (_operation == 'SELECT') {
+      buf.write('SELECT * FROM $_table');
+      if (_conditions.isNotEmpty) {
+        buf.write(' WHERE ${_conditions.join(' AND ')}');
+      }
+      if (_orderBy.isNotEmpty) buf.write(' ORDER BY $_orderBy');
+      buf.write(' LIMIT $_limit');
+    } else if (_operation == 'INSERT') {
+      buf.write('INSERT INTO $_table (name, age, city) VALUES (?, ?, ?)');
+    } else if (_operation == 'UPDATE') {
+      buf.write('UPDATE $_table SET name = ?');
+      if (_conditions.isNotEmpty) {
+        buf.write(' WHERE ${_conditions.join(' AND ')}');
+      }
+    } else {
+      buf.write('DELETE FROM $_table');
+      if (_conditions.isNotEmpty) {
+        buf.write(' WHERE ${_conditions.join(' AND ')}');
+      }
+    }
+    buf.write(';');
+    return buf.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🔧 SQL 查询构造器',
+      subtitle: '可视化拼装 SQL 语句，实时查看结果',
+      children: [
+        ParamChoiceChips<String>(
+          label: '操作类型',
+          value: _operation,
+          options: const [
+            ('SELECT', 'SELECT'),
+            ('INSERT', 'INSERT'),
+            ('UPDATE', 'UPDATE'),
+            ('DELETE', 'DELETE'),
+          ],
+          onChanged: (v) => setState(() => _operation = v),
+        ),
+        ParamTextField(
+          label: '表名',
+          value: _table,
+          onChanged: (v) => setState(() => _table = v.isEmpty ? 'users' : v),
+          hint: 'users',
+          maxLength: 20,
+        ),
+        if (_operation == 'SELECT') ...[
+          ParamIntSlider(
+            label: 'LIMIT',
+            value: _limit,
+            min: 1,
+            max: 100,
+            onChanged: (v) => setState(() => _limit = v),
+            unit: ' 行',
+          ),
+          ParamChoiceChips<String>(
+            label: 'ORDER BY',
+            value: _orderBy,
+            options: const [
+              ('', '不排序'),
+              ('id ASC', 'id ASC'),
+              ('name ASC', 'name ASC'),
+              ('age DESC', 'age DESC'),
+            ],
+            onChanged: (v) => setState(() => _orderBy = v),
+          ),
+        ],
+        const SizedBox(height: 4),
+        Text('添加 WHERE 条件:', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            ..._availableConditions.map((cond) {
+              final selected = _conditions.contains(cond);
+              return FilterChip(
+                label: Text(cond, style: const TextStyle(fontSize: 12)),
+                selected: selected,
+                onSelected: (on) => setState(() {
+                  if (on) {
+                    _conditions = [..._conditions, cond];
+                  } else {
+                    _conditions = _conditions.where((c) => c != cond).toList();
+                  }
+                }),
+              );
+            }),
+            TextButton.icon(
+              onPressed: () => setState(() => _conditions = []),
+              icon: const Icon(Icons.clear, size: 14),
+              label: const Text('清空条件', style: TextStyle(fontSize: 12)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        LiveCodeBlock(
+          'import pymysql\n'
+          'from sqlalchemy import create_engine, text\n\n'
+          '# SQLAlchemy 连接\n'
+          'engine = create_engine("mysql+pymysql://user:pwd@localhost/db")\n\n'
+          'with engine.connect() as conn:\n'
+          '    result = conn.execute(text(\n'
+          '        "SELECT * FROM $_table'
+          '${_conditions.isNotEmpty ? ' WHERE ${_conditions.join(" AND ")}' : ''}'
+          '${_orderBy.isNotEmpty ? ' ORDER BY $_orderBy' : ''}'
+          ' LIMIT $_limit"\n'
+          '    ))\n'
+          '    rows = result.fetchall()',
+          language: 'Python',
+        ),
+        LiveOutputBox(_sql, label: '▶ 生成 SQL'),
+      ],
+    );
+  }
+}
+
 /// Python第14章：MySQL数据库教程
 class PythonMySQLTutorial extends StatelessWidget {
   const PythonMySQLTutorial({super.key});
@@ -2076,6 +2217,8 @@ print("  两者可混合使用 → SQLAlchemy 支持原生 SQL 回退")''',
             '一旦掌握了这种思维方式，使用任何语言的 ORM（Java Hibernate、TypeORM 等）都能快速上手。',
             type: TipType.info,
           ),
+
+          const _SqlQueryBuilderDemo(),
 
           // ============================================================
           // 本章总结

@@ -1,6 +1,242 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 函数参数类型演示
+class _FunctionParamDemo extends StatefulWidget {
+  const _FunctionParamDemo();
+  @override
+  State<_FunctionParamDemo> createState() => _FunctionParamDemoState();
+}
+
+class _FunctionParamDemoState extends State<_FunctionParamDemo> {
+  String _name = '小明';
+  int _age = 18;
+  String _city = '北京';
+  bool _useDefault = false;
+  bool _useKw = false;
+
+  String get _code {
+    if (_useKw) {
+      return 'greet(name="$_name", age=$_age, city="$_city")';
+    }
+    if (_useDefault) {
+      return 'greet("$_name", $_age)  # city 使用默认值';
+    }
+    return 'greet("$_name", $_age, "$_city")';
+  }
+
+  String get _output {
+    final city = _useDefault ? '上海' : _city;
+    return '你好！我是 $_name，今年 $_age 岁，来自 $city。';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📝 函数参数类型演示',
+      subtitle: '修改参数，观察位置参数、关键字参数和默认参数的区别',
+      children: [
+        ParamTextField(label: '名字', value: _name, onChanged: (v) => setState(() => _name = v.isEmpty ? '？' : v), maxLength: 8),
+        ParamIntSlider(label: '年龄', value: _age, min: 1, max: 80, onChanged: (v) => setState(() => _age = v), unit: '岁'),
+        ParamTextField(label: '城市', value: _city, onChanged: (v) => setState(() => _city = v.isEmpty ? '北京' : v), maxLength: 6),
+        ParamSwitch(label: '使用默认参数', value: _useDefault, onChanged: (v) => setState(() { _useDefault = v; if (v) _useKw = false; }), trueLabel: '开', falseLabel: '关'),
+        ParamSwitch(label: '使用关键字参数', value: _useKw, onChanged: (v) => setState(() { _useKw = v; if (v) _useDefault = false; }), trueLabel: '开', falseLabel: '关'),
+        LiveCodeBlock(
+          '# 函数定义\n'
+          'def greet(name, age, city="上海"):  # city 有默认值\n'
+          '    print(f"你好！我是 {name}，今年 {age} 岁，来自 {city}。")\n'
+          '\n'
+          '# 函数调用\n$_code',
+        ),
+        LiveOutputBox(_output),
+      ],
+    );
+  }
+}
+
+/// 递归演示
+class _RecursionDemo extends StatefulWidget {
+  const _RecursionDemo();
+  @override
+  State<_RecursionDemo> createState() => _RecursionDemoState();
+}
+
+class _RecursionDemoState extends State<_RecursionDemo> {
+  int _n = 5;
+  bool _showSteps = true;
+
+  int _factorial(int n) {
+    if (n <= 1) return 1;
+    return n * _factorial(n - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = _factorial(_n);
+    return InteractivePlayground(
+      title: '🔄 递归：阶乘可视化',
+      subtitle: '拖动滑块，看递归展开和回溯的完整过程',
+      children: [
+        ParamIntSlider(label: 'n 的值', value: _n, min: 1, max: 8, onChanged: (v) => setState(() => _n = v)),
+        ParamSwitch(label: '显示推导步骤', value: _showSteps, onChanged: (v) => setState(() => _showSteps = v), trueLabel: '开', falseLabel: '关'),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$_n! = $result', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+              const SizedBox(height: 4),
+              Text(
+                List.generate(_n, (i) => '${_n - i}').join(' × ') + ' = $result',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600], fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+        ),
+        if (_showSteps) ...[
+          const SizedBox(height: 8),
+          const Text('递归展开过程：', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          ...List.generate(
+            _n.clamp(0, 6),
+            (i) {
+              int depth = i;
+              int n = _n - depth;
+              return Padding(
+                padding: EdgeInsets.only(left: depth * 12.0, top: 3),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.05 + depth * 0.03),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.orange.withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    'factorial($n) → $n × factorial(${n - 1})',
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                  ),
+                ),
+              );
+            },
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: _n.clamp(0, 6) * 12.0, top: 3),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.green.withOpacity(0.4))),
+              child: const Text('factorial(1) = 1  ← 终止条件', style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+        LiveCodeBlock(
+          'def factorial(n):\n'
+          '    if n <= 1:             # 终止条件\n'
+          '        return 1\n'
+          '    return n * factorial(n-1)  # 递归\n\n'
+          'print(factorial($_n))  # $result',
+        ),
+        LiveOutputBox('$_n! = $result'),
+      ],
+    );
+  }
+}
+
+/// lambda 演示
+class _LambdaDemo extends StatefulWidget {
+  const _LambdaDemo();
+  @override
+  State<_LambdaDemo> createState() => _LambdaDemoState();
+}
+
+class _LambdaDemoState extends State<_LambdaDemo> {
+  String _op = 'x * x';
+  int _end = 8;
+
+  List<int> get _output {
+    return List.generate(_end, (i) => i + 1).map((x) {
+      switch (_op) {
+        case 'x * x': return x * x;
+        case 'x * 2': return x * 2;
+        case 'x + 10': return x + 10;
+        case 'x ** 3': return x * x * x;
+        case '-x': return -x;
+        default: return x;
+      }
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final numbers = List.generate(_end, (i) => i + 1);
+    final output = _output;
+    return InteractivePlayground(
+      title: '⚡ Lambda + map() 演示',
+      subtitle: '选择 lambda 表达式，实时看到 map() 的变换结果',
+      children: [
+        ParamIntSlider(label: '输入数量', value: _end, min: 3, max: 12, onChanged: (v) => setState(() => _end = v)),
+        ParamChoiceChips(
+          label: 'lambda 表达式',
+          value: _op,
+          options: [('x * x', 'x²'), ('x * 2', 'x×2'), ('x + 10', 'x+10'), ('x ** 3', 'x³'), ('-x', '-x')],
+          onChanged: (v) => setState(() => _op = v),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('输入', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
+                  const SizedBox(height: 4),
+                  Wrap(spacing: 4, runSpacing: 4, children: numbers.map((n) => Container(
+                    width: 32, height: 32,
+                    decoration: BoxDecoration(color: Colors.blue.withOpacity(0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.blue.withOpacity(0.3))),
+                    child: Center(child: Text('$n', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue))),
+                  )).toList()),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(children: [
+                const Icon(Icons.arrow_forward, color: Colors.grey),
+                Text('lambda x:\n$_op', style: const TextStyle(fontSize: 10, fontFamily: 'monospace'), textAlign: TextAlign.center),
+              ]),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('输出', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green)),
+                  const SizedBox(height: 4),
+                  Wrap(spacing: 4, runSpacing: 4, children: output.map((n) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.green.withOpacity(0.3))),
+                    child: Text('$n', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green)),
+                  )).toList()),
+                ],
+              ),
+            ),
+          ],
+        ),
+        LiveCodeBlock(
+          'numbers = list(range(1, ${_end + 1}))\n'
+          'result = list(map(lambda x: $_op, numbers))\n'
+          'print(result)',
+        ),
+        LiveOutputBox('[${output.join(', ')}]'),
+      ],
+    );
+  }
+}
+
 /// Python 函数 —— 第三课（扩展版）
 /// 涵盖：定义/调用、参数类型详解、类型注解、作用域、闭包、
 /// lambda、装饰器深入、partial、递归
@@ -459,6 +695,12 @@ class PythonFunctions extends StatelessWidget {
             OutputBox(
               '120\n354224848179261915075\n1000',
             ),
+            DividerLine(),
+
+            // ===== 交互式演示 =====
+            const _FunctionParamDemo(),
+            const _RecursionDemo(),
+            const _LambdaDemo(),
             DividerLine(),
 
             // ===== 小练习 =====

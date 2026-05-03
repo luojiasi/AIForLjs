@@ -1,6 +1,338 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 异常模拟器：触发并捕获各种异常
+class _ExceptionSimDemo extends StatefulWidget {
+  const _ExceptionSimDemo();
+  @override
+  State<_ExceptionSimDemo> createState() => _ExceptionSimDemoState();
+}
+
+class _ExceptionSimDemoState extends State<_ExceptionSimDemo> {
+  String _operation = 'divide';
+  int _a = 10;
+  int _b = 0;
+  String _input = '123';
+  bool _useFinally = true;
+
+  String get _exceptionResult {
+    switch (_operation) {
+      case 'divide':
+        if (_b == 0) return 'ZeroDivisionError: division by zero';
+        return '结果 = ${_a ~/ _b}';
+      case 'index':
+        final list = [1, 2, 3];
+        if (_a >= list.length || _a < 0) return 'IndexError: list index out of range';
+        return '结果 = ${list[_a]}';
+      case 'parse':
+        final n = int.tryParse(_input);
+        if (n == null) return "ValueError: invalid literal for int() with base 10: '$_input'";
+        return '结果 = $n';
+      case 'custom':
+        if (_a < 0) return "ValueError: 自定义错误";
+        return '结果 = $_a（无异常）';
+      default:
+        return '';
+    }
+  }
+
+  bool get _hasError {
+    switch (_operation) {
+      case 'divide': return _b == 0;
+      case 'index': return _a >= 3 || _a < 0;
+      case 'parse': return int.tryParse(_input) == null;
+      case 'custom': return _a < 0;
+      default: return false;
+    }
+  }
+
+  String get _liveCode {
+    switch (_operation) {
+      case 'divide':
+        return 'a = $_a\nb = $_b\ntry:\n    result = a / b\n    print(f"结果 = {result}")\nexcept ZeroDivisionError as e:\n    print(f"捕获异常: {e}")${_useFinally ? '\nfinally:\n    print("finally 总会执行")' : ''}';
+      case 'index':
+        return 'lst = [1, 2, 3]\na = $_a\ntry:\n    result = lst[a]\n    print(f"结果 = {result}")\nexcept IndexError as e:\n    print(f"捕获异常: {e}")${_useFinally ? '\nfinally:\n    print("finally 总会执行")' : ''}';
+      case 'parse':
+        return 'input_str = "$_input"\ntry:\n    result = int(input_str)\n    print(f"结果 = {result}")\nexcept ValueError as e:\n    print(f"捕获异常: {e}")${_useFinally ? '\nfinally:\n    print("finally 总会执行")' : ''}';
+      case 'custom':
+        return 'a = $_a\ntry:\n    if a < 0:\n        raise ValueError("自定义错误")\n    print(f"结果 = {a}")\nexcept ValueError as e:\n    print(f"捕获异常: {e}")${_useFinally ? '\nfinally:\n    print("finally 总会执行")' : ''}';
+      default:
+        return '';
+    }
+  }
+
+  String get _liveOutput {
+    final result = _exceptionResult;
+    final hasErr = _hasError;
+    final lines = <String>[];
+    if (hasErr) {
+      lines.add('捕获异常: $result');
+    } else {
+      lines.add(result);
+    }
+    if (_useFinally) lines.add('finally 总会执行');
+    return lines.join('\n');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasErr = _hasError;
+    final tryColor = Colors.blue.shade700;
+    final catchColor = Colors.red.shade700;
+    final successColor = Colors.green.shade700;
+    final finallyColor = Colors.orange.shade700;
+
+    return InteractivePlayground(
+      title: '🔥 异常模拟器',
+      subtitle: '选择操作和参数，观察 try/except/finally 的执行流程',
+      children: [
+        ParamChoiceChips<String>(
+          label: '操作类型',
+          value: _operation,
+          options: const [
+            ('divide', '除法'),
+            ('index', '索引'),
+            ('parse', '解析'),
+            ('custom', '自定义'),
+          ],
+          onChanged: (v) => setState(() => _operation = v),
+        ),
+        if (_operation == 'divide' || _operation == 'index' || _operation == 'custom')
+          ParamIntSlider(
+            label: 'a 的值',
+            value: _a,
+            min: -5,
+            max: 20,
+            onChanged: (v) => setState(() => _a = v),
+          ),
+        if (_operation == 'divide')
+          ParamIntSlider(
+            label: 'b 的值',
+            value: _b,
+            min: 0,
+            max: 10,
+            onChanged: (v) => setState(() => _b = v),
+          ),
+        if (_operation == 'parse')
+          ParamTextField(
+            label: 'input',
+            value: _input,
+            hint: '输入要解析的字符串',
+            onChanged: (v) => setState(() => _input = v.isEmpty ? '' : v),
+            maxLength: 10,
+          ),
+        ParamSwitch(
+          label: '使用 finally',
+          value: _useFinally,
+          onChanged: (v) => setState(() => _useFinally = v),
+          trueLabel: '开',
+          falseLabel: '关',
+        ),
+        const SizedBox(height: 8),
+        // 执行流程可视化
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  _FlowBlock(label: 'try 块', color: tryColor, active: true),
+                  const SizedBox(height: 4),
+                  Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+                  const SizedBox(height: 4),
+                  _FlowBlock(
+                    label: hasErr ? 'except 块（捕获异常）' : '✅ 执行成功',
+                    color: hasErr ? catchColor : successColor,
+                    active: true,
+                  ),
+                  if (_useFinally) ...[
+                    const SizedBox(height: 4),
+                    Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+                    const SizedBox(height: 4),
+                    _FlowBlock(label: 'finally 块（总是执行）', color: finallyColor, active: true),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_liveCode),
+        LiveOutputBox(_liveOutput),
+      ],
+    );
+  }
+}
+
+class _FlowBlock extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool active;
+  const _FlowBlock({required this.label, required this.color, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: active ? color.withOpacity(0.12) : Colors.grey.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: active ? color.withOpacity(0.5) : Colors.grey.withOpacity(0.2)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: active ? color : Colors.grey,
+          fontFamily: 'monospace',
+        ),
+      ),
+    );
+  }
+}
+
+/// 异常处理控制流演示
+class _TryExceptFlowDemo extends StatefulWidget {
+  const _TryExceptFlowDemo();
+  @override
+  State<_TryExceptFlowDemo> createState() => _TryExceptFlowDemoState();
+}
+
+class _TryExceptFlowDemoState extends State<_TryExceptFlowDemo> {
+  int _scenario = 0;
+  String _catchType = 'ValueError';
+
+  bool get _isCaught {
+    switch (_scenario) {
+      case 0: return false; // no error
+      case 1: // ValueError
+        return _catchType == 'ValueError' || _catchType == 'Exception' || _catchType == 'BaseException';
+      case 2: // TypeError
+        return _catchType == 'TypeError' || _catchType == 'Exception' || _catchType == 'BaseException';
+      case 3: // custom exception (inherits Exception)
+        return _catchType == 'Exception' || _catchType == 'BaseException';
+      default: return false;
+    }
+  }
+
+  bool get _hasError => _scenario > 0;
+
+  String get _scenarioName {
+    switch (_scenario) {
+      case 0: return '无错误';
+      case 1: return 'ValueError';
+      case 2: return 'TypeError';
+      case 3: return '自定义异常';
+      default: return '';
+    }
+  }
+
+  String get _liveCode {
+    final exceptionLine = _scenario == 0
+        ? '    result = 10 / 2  # 正常执行'
+        : _scenario == 1
+            ? '    int("abc")  # 触发 ValueError'
+            : _scenario == 2
+                ? '    1 + "2"   # 触发 TypeError'
+                : '    raise MyError("自定义错误")  # 触发自定义异常';
+    return 'class MyError(Exception):\n    pass\n\ntry:\n$exceptionLine\nexcept $_catchType as e:\n    print(f"捕获: {e}")\nelse:\n    print("无异常，执行 else")\nfinally:\n    print("finally 总会执行")';
+  }
+
+  String get _liveOutput {
+    final lines = <String>[];
+    if (_scenario == 0) {
+      lines.add('无异常，执行 else');
+    } else if (_isCaught) {
+      lines.add('捕获: ${_scenarioName}');
+    } else {
+      lines.add('未被捕获！异常向上传播...');
+      lines.add('$_scenarioName: 未被 $_catchType 捕获');
+    }
+    lines.add('finally 总会执行');
+    return lines.join('\n');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final haserr = _hasError;
+    final caught = _isCaught;
+
+    return InteractivePlayground(
+      title: '🔀 异常处理控制流',
+      subtitle: '选择场景和捕获类型，观察异常在继承体系中的传播',
+      children: [
+        ParamChoiceChips<int>(
+          label: '场景',
+          value: _scenario,
+          options: const [
+            (0, '无错误'),
+            (1, 'ValueError'),
+            (2, 'TypeError'),
+            (3, '自定义错误'),
+          ],
+          onChanged: (v) => setState(() => _scenario = v),
+        ),
+        ParamChoiceChips<String>(
+          label: '捕获类型',
+          value: _catchType,
+          options: const [
+            ('ValueError', 'ValueError'),
+            ('TypeError', 'TypeError'),
+            ('Exception', 'Exception'),
+            ('BaseException', 'BaseException'),
+          ],
+          onChanged: (v) => setState(() => _catchType = v),
+        ),
+        const SizedBox(height: 8),
+        // 流程图
+        Column(
+          children: [
+            _FlowBlock(label: 'try 块执行', color: Colors.blue.shade700, active: true),
+            const SizedBox(height: 4),
+            Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+            const SizedBox(height: 4),
+            _FlowBlock(
+              label: haserr ? '⚡ 触发 $_scenarioName' : '✅ 无异常',
+              color: haserr ? Colors.red.shade700 : Colors.green.shade700,
+              active: true,
+            ),
+            if (haserr) ...[
+              const SizedBox(height: 4),
+              Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+              const SizedBox(height: 4),
+              _FlowBlock(
+                label: caught
+                    ? '✅ except $_catchType 捕获成功'
+                    : '❌ $_catchType 无法捕获，异常传播',
+                color: caught ? Colors.green.shade700 : Colors.red.shade700,
+                active: true,
+              ),
+            ],
+            if (!haserr) ...[
+              const SizedBox(height: 4),
+              Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+              const SizedBox(height: 4),
+              _FlowBlock(label: 'else 块执行（仅无异常时）', color: Colors.teal.shade700, active: true),
+            ],
+            const SizedBox(height: 4),
+            Icon(Icons.arrow_downward, size: 16, color: Colors.grey.shade500),
+            const SizedBox(height: 4),
+            _FlowBlock(label: 'finally 块（总是执行）', color: Colors.orange.shade700, active: true),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_liveCode),
+        LiveOutputBox(_liveOutput),
+      ],
+    );
+  }
+}
+
 /// Python 第8章：错误、调试和测试（扩展版）
 /// 涵盖：语法错误vs异常、try/except/else/finally、异常层级、
 /// 自定义异常、异常链、断言、logging、上下文管理器、pdb调试、unittest测试、doctest测试
@@ -942,6 +1274,10 @@ ok
 4 passed and 0 failed.
 Test passed.''',
           ),
+
+          const _ExceptionSimDemo(),
+          const _TryExceptFlowDemo(),
+          const DividerLine(),
 
           // ── 小练习 ──
           const DividerLine(),

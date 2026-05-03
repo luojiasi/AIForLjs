@@ -1,6 +1,127 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// Flask 路由与响应演示
+class _FlaskRouteDemo extends StatefulWidget {
+  const _FlaskRouteDemo();
+  @override
+  State<_FlaskRouteDemo> createState() => _FlaskRouteDemoState();
+}
+
+class _FlaskRouteDemoState extends State<_FlaskRouteDemo> {
+  String _framework = 'flask';
+  String _route = '/users';
+  String _method = 'GET';
+  String _name = '张三';
+
+  String get _responseBody {
+    switch (_method) {
+      case 'GET':
+        return _route == '/users' ? '[{"id":1,"name":"$_name"}, {"id":2,"name":"李四"}]' : '{"id":1,"name":"$_name","email":"zhang@example.com"}';
+      case 'POST':
+        return '{"status":"created","id":3,"name":"$_name"}';
+      case 'DELETE':
+        return '{"status":"deleted","message":"用户已删除"}';
+      default:
+        return '{}';
+    }
+  }
+
+  String get _statusCode => _method == 'POST' ? '201 Created' : _method == 'DELETE' ? '204 No Content' : '200 OK';
+
+  String _code() {
+    final getBody = r'return jsonify([{"id":1,"name":"' '$_name' r'"}])';
+    final postBody = r'data = request.json' '\n' r'    return jsonify({"status":"created"}), 201';
+    final deleteBody = r'return "", 204';
+    String body;
+    switch (_method) {
+      case 'GET': body = getBody; break;
+      case 'POST': body = postBody; break;
+      default: body = deleteBody; break;
+    }
+    switch (_framework) {
+      case 'flask':
+        return 'from flask import Flask, jsonify, request\n\n'
+            'app = Flask(__name__)\n\n'
+            '@app.route("$_route", methods=["$_method"])\n'
+            'def users():\n'
+            '    $body';
+      case 'django':
+        final djGet = r'return JsonResponse([{"id":1,"name":"' '$_name' r'"}], safe=False)';
+        final djPost = r'return JsonResponse({"status":"created"}, status=201)';
+        final djDel = r'return JsonResponse({}, status=204)';
+        String djBody;
+        switch (_method) {
+          case 'GET': djBody = djGet; break;
+          case 'POST': djBody = djPost; break;
+          default: djBody = djDel; break;
+        }
+        return '# urls.py\nurlpatterns = [\n    path("$_route", views.users),\n]\n\n# views.py\nfrom django.http import JsonResponse\n\ndef users(request):\n    $djBody';
+      case 'fastapi':
+        final faGet = r'return [{"id":1,"name":"' '$_name' r'"}]';
+        final faPost = r'return {"status":"created"}';
+        final faDel = r'return {}';
+        String faBody;
+        switch (_method) {
+          case 'GET': faBody = faGet; break;
+          case 'POST': faBody = faPost; break;
+          default: faBody = faDel; break;
+        }
+        return 'from fastapi import FastAPI\n\napp = FastAPI()\n\n@app.${_method.toLowerCase()}("$_route")\n'
+            'def users():\n'
+            '    $faBody';
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🌐 Flask/Django/FastAPI 路由演示',
+      subtitle: '切换框架和路由，观察请求/响应模式',
+      children: [
+        ParamChoiceChips<String>(
+          label: '框架',
+          value: _framework,
+          options: [('flask', 'Flask'), ('django', 'Django'), ('fastapi', 'FastAPI')],
+          onChanged: (v) => setState(() => _framework = v),
+        ),
+        ParamChoiceChips<String>(
+          label: '路由',
+          value: _route,
+          options: [('/users', '/users（列表）'), ('/users/1', '/users/1（详情）')],
+          onChanged: (v) => setState(() => _route = v),
+        ),
+        ParamChoiceChips<String>(
+          label: 'HTTP 方法',
+          value: _method,
+          options: [('GET', 'GET'), ('POST', 'POST'), ('DELETE', 'DELETE')],
+          onChanged: (v) => setState(() => _method = v),
+        ),
+        ParamTextField(label: '用户名', value: _name, onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v), maxLength: 10),
+        const SizedBox(height: 8),
+        // Response 展示
+        Container(width: double.infinity, padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.grey[900], borderRadius: BorderRadius.circular(8)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(_method, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amberAccent)),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_route, style: const TextStyle(fontSize: 13, color: Colors.white))),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1), decoration: BoxDecoration(color: _statusCode.startsWith('2') ? Colors.green.withOpacity(0.3) : Colors.red.withOpacity(0.3), borderRadius: BorderRadius.circular(3)),
+                child: Text(_statusCode, style: TextStyle(fontSize: 10, color: _statusCode.startsWith('2') ? Colors.greenAccent : Colors.redAccent))),
+            ]),
+            const Padding(padding: EdgeInsets.symmetric(vertical: 3), child: Divider(color: Colors.grey)),
+            SelectableText('Content-Type: application/json\n\n$_responseBody', style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.greenAccent)),
+          ]),
+        ),
+        LiveCodeBlock(_code()),
+        LiveOutputBox('$_method $_route → $_statusCode\n$_responseBody'),
+      ],
+    );
+  }
+}
+
 class PythonWebDevTutorial extends StatelessWidget {
   const PythonWebDevTutorial({super.key});
 
@@ -2094,7 +2215,8 @@ if __name__ == '__main__':
             '6. 善用过滤器简化模板代码，如 |default、|join、|round 等',
             type: TipType.tip,
           ),
-          const SizedBox(height: 16),
+          const _FlaskRouteDemo(),
+          const DividerLine(),
 
           // ==========================================
           // 本章总结

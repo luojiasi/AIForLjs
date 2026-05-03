@@ -630,6 +630,8 @@ ScaffoldMessenger.of(context)
               label: const Text('SnackBar'),
             ),
           ]),
+          const SizedBox(height: 4),
+          Text('已选择: $_selectedFruit', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
           const SizedBox(height: 8),
           OutputBox('AlertDialog 阻断操作需用户回应。\n'
               'BottomSheet 底部滑入，可手势下拉关闭。\n'

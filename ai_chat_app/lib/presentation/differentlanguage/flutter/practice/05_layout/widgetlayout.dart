@@ -36,7 +36,6 @@ class _WidgetLayoutDemoState extends State<WidgetLayoutDemo> {
     MainAxisAlignment.start => 'start', MainAxisAlignment.center => 'center',
     MainAxisAlignment.end => 'end', MainAxisAlignment.spaceBetween => 'spaceBetween',
     MainAxisAlignment.spaceAround => 'spaceAround', MainAxisAlignment.spaceEvenly => 'spaceEvenly',
-    _ => '',
   };
 
   String _cName(CrossAxisAlignment a) => switch (a) {
@@ -853,6 +852,11 @@ LayoutBuilder(
             '• 需要响应式 → LayoutBuilder',
           ),
 
+          // ===== 交互式演示 =====
+          const _ContainerDecorationDemo(),
+          const _PaddingMarginDemo(),
+          const DividerLine(),
+
           const SectionHeader('✏️ 小练习', icon: Icons.edit),
           const Paragraph(
             '1. 用 Stack+Positioned 实现"圆形头像+右下角在线绿点"\n'
@@ -869,6 +873,201 @@ LayoutBuilder(
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// Container 装饰属性演示
+class _ContainerDecorationDemo extends StatefulWidget {
+  const _ContainerDecorationDemo();
+  @override
+  State<_ContainerDecorationDemo> createState() => _ContainerDecorationDemoState();
+}
+
+class _ContainerDecorationDemoState extends State<_ContainerDecorationDemo> {
+  double _radius = 12;
+  double _blur = 8;
+  double _spreadRadius = 0;
+  bool _hasBorder = false;
+  bool _useGradient = false;
+  int _colorIdx = 0;
+
+  static const _colors = [Colors.blue, Colors.purple, Colors.teal, Colors.orange, Colors.pink];
+  static const _colorNames = ['蓝色', '紫色', '青色', '橙色', '粉色'];
+
+  Color get _baseColor => _colors[_colorIdx];
+
+  String get _codeStr {
+    final colorLine = _useGradient
+        ? 'gradient: LinearGradient(\n      colors: [color.withOpacity(0.9),\n               color.withOpacity(0.3)],\n    ),'
+        : 'color: ${_colorNames[_colorIdx]}.withOpacity(0.7),';
+    final borderLine = _hasBorder ? '    border: Border.all(color: color, width: 2),\n' : '';
+    final shadowLine = _blur > 0
+        ? '    boxShadow: [BoxShadow(\n      blurRadius: ${_blur.toInt()},\n      spreadRadius: ${_spreadRadius.toInt()},\n    )],\n'
+        : '';
+    return 'Container(\n'
+        '  width: 140, height: 90,\n'
+        '  decoration: BoxDecoration(\n'
+        '    $colorLine\n'
+        '    borderRadius: BorderRadius.circular(${_radius.toInt()}),\n'
+        '$borderLine$shadowLine'
+        '  ),\n'
+        ')';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final decoration = BoxDecoration(
+      color: _useGradient ? null : _baseColor.withOpacity(0.7),
+      gradient: _useGradient ? LinearGradient(
+        colors: [_baseColor.withOpacity(0.9), _baseColor.withOpacity(0.3)],
+        begin: Alignment.topLeft, end: Alignment.bottomRight,
+      ) : null,
+      borderRadius: BorderRadius.circular(_radius),
+      border: _hasBorder ? Border.all(color: _baseColor, width: 2) : null,
+      boxShadow: _blur > 0 ? [
+        BoxShadow(
+          color: _baseColor.withOpacity(0.4),
+          blurRadius: _blur,
+          spreadRadius: _spreadRadius,
+          offset: const Offset(2, 4),
+        )
+      ] : null,
+    );
+
+    return InteractivePlayground(
+      title: '📦 Container Decoration 演示',
+      subtitle: '调整参数，实时预览 BoxDecoration 效果',
+      children: [
+        ParamChoiceChips<int>(
+          label: '颜色',
+          value: _colorIdx,
+          options: List.generate(_colors.length, (i) => (i, _colorNames[i])),
+          onChanged: (v) => setState(() => _colorIdx = v),
+        ),
+        ParamSlider(label: '圆角 borderRadius', value: _radius, min: 0, max: 50, divisions: 50,
+          onChanged: (v) => setState(() => _radius = v), displayValue: (v) => '${v.toInt()}'),
+        ParamSlider(label: '阴影模糊 blurRadius', value: _blur, min: 0, max: 30, divisions: 30,
+          onChanged: (v) => setState(() => _blur = v), displayValue: (v) => '${v.toInt()}'),
+        ParamSlider(label: '阴影扩散 spreadRadius', value: _spreadRadius, min: 0, max: 10, divisions: 10,
+          onChanged: (v) => setState(() => _spreadRadius = v), displayValue: (v) => '${v.toInt()}'),
+        ParamSwitch(label: '渐变色 gradient', value: _useGradient, onChanged: (v) => setState(() => _useGradient = v),
+          trueLabel: '渐变', falseLabel: '纯色'),
+        ParamSwitch(label: '边框 border', value: _hasBorder, onChanged: (v) => setState(() => _hasBorder = v),
+          trueLabel: '显示', falseLabel: '隐藏'),
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            width: 140, height: 90,
+            decoration: decoration,
+            child: const Center(child: Text('Container', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          ),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_codeStr),
+      ],
+    );
+  }
+}
+
+/// Padding vs Margin 对比演示
+class _PaddingMarginDemo extends StatefulWidget {
+  const _PaddingMarginDemo();
+  @override
+  State<_PaddingMarginDemo> createState() => _PaddingMarginDemoState();
+}
+
+class _PaddingMarginDemoState extends State<_PaddingMarginDemo> {
+  double _padding = 16;
+  double _margin = 12;
+  bool _showAnnotation = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = _padding.toInt();
+    final m = _margin.toInt();
+
+    return InteractivePlayground(
+      title: '📐 Padding vs Margin 对比演示',
+      subtitle: '拖动滑块观察 padding（内间距）与 margin（外间距）的视觉差异',
+      children: [
+        ParamIntSlider(label: 'padding（内间距）', value: p, min: 0, max: 40,
+          onChanged: (v) => setState(() => _padding = v.toDouble()), unit: 'px'),
+        ParamIntSlider(label: 'margin（外间距）', value: m, min: 0, max: 40,
+          onChanged: (v) => setState(() => _margin = v.toDouble()), unit: 'px'),
+        ParamSwitch(label: '显示标注', value: _showAnnotation, onChanged: (v) => setState(() => _showAnnotation = v),
+          trueLabel: '开', falseLabel: '关'),
+        const SizedBox(height: 8),
+        // 可视化区域：从外到内：灰色背景→margin空间→蓝色容器→padding空间→内容
+        Container(
+          width: double.infinity,
+          color: Colors.orange[50], // 最外层：margin 所在区域
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: EdgeInsets.all(_margin),
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue[400]!, width: 2),
+            ),
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.all(_padding),
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.blue[500],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Center(
+                  child: Text('内容 (Content)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // 图例
+        if (_showAnnotation)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            _LegendItem(color: Colors.orange[100]!, label: 'margin: ${m}px（外间距）'),
+            const SizedBox(width: 16),
+            _LegendItem(color: Colors.blue[100]!, label: 'padding: ${p}px（内间距）'),
+            const SizedBox(width: 16),
+            _LegendItem(color: Colors.blue[500]!, label: '内容区'),
+          ]),
+        LiveCodeBlock(
+          'Container(\n'
+          '  margin: EdgeInsets.all($m),    // 外间距\n'
+          '  decoration: BoxDecoration(\n'
+          '    color: Colors.blue[100],\n'
+          '  ),\n'
+          '  padding: EdgeInsets.all($p),   // 内间距\n'
+          '  child: Text("内容"),\n'
+          ')',
+        ),
+        LiveOutputBox(
+          'margin=$m: 容器与外部邻居的距离\n'
+          'padding=$p: 容器边框与内部内容的距离\n'
+          '总占用宽度 ≈ 内容 + ${p * 2}(padding×2) + ${m * 2}(margin×2)',
+        ),
+      ],
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  final Color color;
+  final String label;
+  const _LegendItem({required this.color, required this.label});
+  @override
+  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
+    Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+    const SizedBox(width: 4),
+    Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+  ]);
 }
 
 class _Box extends StatelessWidget {

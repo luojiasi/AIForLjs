@@ -17,13 +17,10 @@ class ThemeDemo extends StatefulWidget {
 class _ThemeDemoState extends State<ThemeDemo> {
   bool _useDark = false;
   MaterialColor _primaryColor = Colors.blue;
-  double _fontScale = 1.0;
   bool _useM3 = true;
-  int _selectedRadius = 1; // 0=squircle, 1=default, 2=round
 
   @override
   Widget build(BuildContext context) {
-    final radiusValues = [4.0, 12.0, 28.0];
     final theme = ThemeData(
       colorSchemeSeed: _primaryColor,
       brightness: _useDark ? Brightness.dark : Brightness.light,
@@ -38,8 +35,6 @@ class _ThemeDemoState extends State<ThemeDemo> {
         builder: (innerContext) {
           final t = Theme.of(innerContext);
           final scheme = t.colorScheme;
-          final isDark = t.brightness == Brightness.dark;
-
           return Scaffold(
             appBar: AppBar(
               title: const Text('第12章 · 主题与样式'),

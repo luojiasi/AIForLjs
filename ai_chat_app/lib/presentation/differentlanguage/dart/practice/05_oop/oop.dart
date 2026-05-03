@@ -3,6 +3,284 @@ library dart_oop;
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ============================================================
+// Interactive Demo: _ClassInspectorDemo
+// ============================================================
+class _ClassInspectorDemo extends StatefulWidget {
+  const _ClassInspectorDemo();
+
+  @override
+  State<_ClassInspectorDemo> createState() => _ClassInspectorDemoState();
+}
+
+class _ClassInspectorDemoState extends State<_ClassInspectorDemo> {
+  String _name = '张三';
+  int _age = 25;
+  bool _showPrivate = false;
+
+  bool get _isAdult => _age >= 18;
+  String get _greeting => '你好，我是$_name，今年$_age岁';
+
+  @override
+  Widget build(BuildContext context) {
+    final ageDisplay = _showPrivate ? '私有字段 _age = $_age' : 'getter age => $_age';
+    return InteractivePlayground(
+      title: '类实例化演示',
+      subtitle: '探索字段、Getter/Setter 的行为',
+      children: [
+        ParamTextField(
+          label: '姓名',
+          value: _name,
+          hint: '输入姓名',
+          maxLength: 10,
+          onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v),
+        ),
+        ParamIntSlider(
+          label: '年龄',
+          value: _age,
+          min: 0,
+          max: 120,
+          unit: '岁',
+          onChanged: (v) => setState(() => _age = v),
+        ),
+        ParamSwitch(
+          label: '显示私有字段',
+          value: _showPrivate,
+          trueLabel: '私有 _age',
+          falseLabel: 'getter age',
+          onChanged: (v) => setState(() => _showPrivate = v),
+        ),
+        LiveCodeBlock(
+          'class Person {\n'
+          '  String name;\n'
+          '  int _age;  // 私有字段\n'
+          '\n'
+          '  Person(this.name, int age) : _age = age;\n'
+          '\n'
+          '  int get age => _age;\n'
+          '  bool get isAdult => _age >= 18;\n'
+          '  set age(int v) { if (v >= 0) _age = v; }\n'
+          '}\n'
+          '\n'
+          "final p = Person('$_name', $_age);\n"
+          'print(p.name);      // $_name\n'
+          'print(p.age);       // $_age\n'
+          'print(p.isAdult);   // $_isAdult',
+        ),
+        LiveOutputBox(
+          'name: $_name\n'
+          'age: $_age\n'
+          'isAdult: $_isAdult\n'
+          '$_greeting\n'
+          '$ageDisplay',
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// Interactive Demo: _InheritanceDemo
+// ============================================================
+class _InheritanceDemo extends StatefulWidget {
+  const _InheritanceDemo();
+
+  @override
+  State<_InheritanceDemo> createState() => _InheritanceDemoState();
+}
+
+class _InheritanceDemoState extends State<_InheritanceDemo> {
+  String _shapeType = 'circle';
+  double _size = 5.0;
+
+  static const double _pi = 3.14159;
+
+  double get _area {
+    switch (_shapeType) {
+      case 'circle':
+        return _pi * _size * _size;
+      case 'rectangle':
+        return _size * _size;
+      case 'triangle':
+        return 0.5 * _size * _size * 0.866;
+      default:
+        return 0;
+    }
+  }
+
+  double get _perimeter {
+    switch (_shapeType) {
+      case 'circle':
+        return 2 * _pi * _size;
+      case 'rectangle':
+        return 4 * _size;
+      case 'triangle':
+        return 3 * _size;
+      default:
+        return 0;
+    }
+  }
+
+  String get _shapeLabel {
+    switch (_shapeType) {
+      case 'circle':
+        return '圆形';
+      case 'rectangle':
+        return '矩形';
+      case 'triangle':
+        return '三角形';
+      default:
+        return _shapeType;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '继承与多态演示',
+      subtitle: '切换形状，观察多态方法的不同结果',
+      children: [
+        ParamChoiceChips<String>(
+          label: '选择形状',
+          value: _shapeType,
+          options: const [
+            ('circle', '圆形'),
+            ('rectangle', '矩形'),
+            ('triangle', '三角形'),
+          ],
+          onChanged: (v) => setState(() => _shapeType = v),
+        ),
+        ParamSlider(
+          label: '尺寸',
+          value: _size,
+          min: 1,
+          max: 10,
+          divisions: 18,
+          onChanged: (v) => setState(() => _size = v),
+          displayValue: (v) => v.toStringAsFixed(1),
+        ),
+        LiveCodeBlock(
+          'abstract class Shape {\n'
+          '  double get area;\n'
+          '  double get perimeter;\n'
+          '}\n'
+          '\n'
+          'class Circle extends Shape {\n'
+          '  final double radius;\n'
+          '  Circle(this.radius);\n'
+          '  @override double get area => 3.14159 * radius * radius;\n'
+          '  @override double get perimeter => 2 * 3.14159 * radius;\n'
+          '}\n'
+          '// ... Rectangle, Triangle similarly',
+        ),
+        LiveOutputBox(
+          '形状: $_shapeLabel\n'
+          '面积: ${_area.toStringAsFixed(2)}\n'
+          '周长: ${_perimeter.toStringAsFixed(2)}',
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// Interactive Demo: _EnumDemo
+// ============================================================
+class _EnumDemo extends StatefulWidget {
+  const _EnumDemo();
+
+  @override
+  State<_EnumDemo> createState() => _EnumDemoState();
+}
+
+class _EnumDemoState extends State<_EnumDemo> {
+  int _status = 0;
+  bool _showEnhanced = false;
+
+  static const List<(int, String)> _statusOptions = [
+    (0, '待处理'),
+    (1, '进行中'),
+    (2, '已完成'),
+    (3, '已取消'),
+  ];
+
+  static const List<String> _statusNames = ['pending', 'active', 'completed', 'cancelled'];
+  static const List<String> _statusLabels = ['待处理', '进行中', '已完成', '已取消'];
+  static const List<Color> _statusColors = [Colors.orange, Colors.blue, Colors.green, Colors.red];
+
+  String get _simpleEnumCode =>
+      'enum Status { pending, active, completed, cancelled }\n'
+      '\n'
+      'var current = Status.${_statusNames[_status]};\n'
+      'print(current.name);  // ${_statusNames[_status]}\n'
+      'print(current.index); // $_status';
+
+  String get _enhancedEnumCode =>
+      'enum Status {\n'
+      '  pending(\'待处理\'),\n'
+      '  active(\'进行中\'),\n'
+      '  completed(\'已完成\'),\n'
+      '  cancelled(\'已取消\');\n'
+      '\n'
+      '  final String label;\n'
+      '  const Status(this.label);\n'
+      '}\n'
+      '\n'
+      'var s = Status.${_statusNames[_status]};\n'
+      'print(s.label);  // ${_statusLabels[_status]}';
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _statusColors[_status];
+    final label = _statusLabels[_status];
+    final name = _statusNames[_status];
+    return InteractivePlayground(
+      title: '枚举演示',
+      subtitle: '普通枚举 vs 增强枚举（Dart 2.17+）',
+      children: [
+        ParamChoiceChips<int>(
+          label: '当前状态',
+          value: _status,
+          options: _statusOptions,
+          onChanged: (v) => setState(() => _status = v),
+        ),
+        ParamSwitch(
+          label: '增强枚举',
+          value: _showEnhanced,
+          trueLabel: '增强枚举',
+          falseLabel: '普通枚举',
+          onChanged: (v) => setState(() => _showEnhanced = v),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color.withOpacity(0.5)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(_showEnhanced ? _enhancedEnumCode : _simpleEnumCode),
+        LiveOutputBox(
+          _showEnhanced
+              ? 'Status.$name.label => $label\nStatus.$name.index => $_status\nStatus.values.length => 4'
+              : 'Status.$name.name  => $name\nStatus.$name.index => $_status\n'
+                'Status.values => [${_statusNames.map((s) => "Status.$s").join(", ")}]',
+        ),
+      ],
+    );
+  }
+}
+
 /// Dart 面向对象编程教程页面
 /// 涵盖：类定义、构造函数、继承、抽象类、Mixin、接口、枚举、扩展方法、静态成员、运算符重载
 class DartOOP extends StatelessWidget {
@@ -748,6 +1026,11 @@ void main() {
               'v1 * 3 = Vector2(3, 6)\n-v1 = Vector2(-1, -2)\n'
               'v1 == Vector2(1,2): true\nv1 == v2: false\n'
               'v1[0] = 1\nv1[1] = 2\n|v2| = 5.0'),
+
+          const _ClassInspectorDemo(),
+          const _InheritanceDemo(),
+          const _EnumDemo(),
+          const DividerLine(),
 
           DividerLine(),
           SectionHeader('小练习', icon: Icons.assignment),

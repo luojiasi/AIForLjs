@@ -1,6 +1,363 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 列表操作可视化
+class _ListOperationsDemo extends StatefulWidget {
+  const _ListOperationsDemo();
+  @override
+  State<_ListOperationsDemo> createState() => _ListOperationsDemoState();
+}
+
+class _ListOperationsDemoState extends State<_ListOperationsDemo> {
+  List<int> _list = [3, 1, 4, 1, 5, 9, 2, 6];
+  String _op = 'append';
+  int _value = 7;
+  int _index = 0;
+  String _lastAction = '';
+
+  void _doOp() {
+    setState(() {
+      switch (_op) {
+        case 'append':
+          _list = [..._list, _value];
+          _lastAction = 'list.append($_value) → 末尾添加 $_value';
+          break;
+        case 'insert':
+          final idx = _index.clamp(0, _list.length);
+          final newList = [..._list];
+          newList.insert(idx, _value);
+          _list = newList;
+          _lastAction = 'list.insert($idx, $_value) → 在索引 $idx 插入 $_value';
+          break;
+        case 'remove':
+          if (_list.contains(_value)) {
+            final newList = [..._list];
+            newList.remove(_value);
+            _list = newList;
+            _lastAction = 'list.remove($_value) → 删除第一个 $_value';
+          } else {
+            _lastAction = 'ValueError: $_value 不在列表中！';
+          }
+          break;
+        case 'pop':
+          if (_list.isNotEmpty) {
+            final idx = _index.clamp(0, _list.length - 1);
+            final newList = [..._list];
+            final popped = newList.removeAt(idx);
+            _list = newList;
+            _lastAction = 'list.pop($idx) → 删除并返回 $popped';
+          }
+          break;
+        case 'sort':
+          final newList = [..._list]..sort();
+          _list = newList;
+          _lastAction = 'list.sort() → 就地升序排序';
+          break;
+        case 'reverse':
+          _list = _list.reversed.toList();
+          _lastAction = 'list.reverse() → 就地翻转';
+          break;
+        case 'reset':
+          _list = [3, 1, 4, 1, 5, 9, 2, 6];
+          _lastAction = '重置为初始列表';
+          break;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📋 列表操作可视化',
+      subtitle: '选择操作，点击执行，观察列表如何变化',
+      children: [
+        if (_op != 'sort' && _op != 'reverse' && _op != 'reset') ...[
+          ParamIntSlider(label: '操作的值', value: _value, min: 1, max: 20, onChanged: (v) => setState(() => _value = v)),
+          if (_op == 'insert' || _op == 'pop')
+            ParamIntSlider(label: '操作的索引', value: _index, min: 0, max: (_list.length - 1).clamp(0, 10), onChanged: (v) => setState(() => _index = v)),
+        ],
+        // 操作按钮
+        Wrap(
+          spacing: 8, runSpacing: 8,
+          children: [
+            for (final op in ['append', 'insert', 'remove', 'pop', 'sort', 'reverse', 'reset'])
+              ChoiceChip(
+                label: Text('.$op()', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+                selected: _op == op,
+                onSelected: (_) => setState(() { _op = op; _lastAction = ''; }),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _doOp,
+          icon: const Icon(Icons.play_arrow, size: 18),
+          label: Text('执行 list.$_op()'),
+        ),
+        const SizedBox(height: 12),
+        // 列表可视化
+        Wrap(
+          spacing: 6, runSpacing: 6,
+          children: _list.asMap().entries.map((e) {
+            return Column(
+              children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(child: Text('${e.value}', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary))),
+                ),
+                Text('${e.key}', style: const TextStyle(fontSize: 9, color: Colors.grey)),
+              ],
+            );
+          }).toList(),
+        ),
+        if (_lastAction.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          LiveOutputBox(_lastAction + '\n当前列表：$_list\n长度：${_list.length}'),
+        ],
+      ],
+    );
+  }
+}
+
+/// 集合运算演示
+class _SetOperationsDemo extends StatefulWidget {
+  const _SetOperationsDemo();
+  @override
+  State<_SetOperationsDemo> createState() => _SetOperationsDemoState();
+}
+
+class _SetOperationsDemoState extends State<_SetOperationsDemo> {
+  Set<int> _a = {1, 2, 3, 4, 5};
+  Set<int> _b = {4, 5, 6, 7, 8};
+  String _op = '&';
+
+  Set<int> get _result {
+    switch (_op) {
+      case '&': return _a.intersection(_b);
+      case '|': return _a.union(_b);
+      case '-': return _a.difference(_b);
+      case '^': return _a.union(_b).difference(_a.intersection(_b));
+      default: return {};
+    }
+  }
+
+  String get _opName {
+    switch (_op) {
+      case '&': return '交集（同时在 A 和 B 中）';
+      case '|': return '并集（A 或 B 中的所有元素）';
+      case '-': return '差集（在 A 不在 B）';
+      case '^': return '对称差（A、B 不共有的）';
+      default: return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = _result;
+    final onlyA = _a.difference(_b).toList()..sort();
+    final onlyB = _b.difference(_a).toList()..sort();
+    final both = _a.intersection(_b).toList()..sort();
+
+    return InteractivePlayground(
+      title: '⭕ 集合运算可视化',
+      subtitle: '选择运算符，观察集合 A 和 B 的交叉区域',
+      children: [
+        ParamChoiceChips(
+          label: '运算符',
+          value: _op,
+          options: [('&', 'A & B 交集'), ('|', 'A | B 并集'), ('-', 'A - B 差集'), ('^', 'A ^ B 对称差')],
+          onChanged: (v) => setState(() => _op = v),
+        ),
+        const SizedBox(height: 12),
+        // 韦恩图式可视化
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ('&' == _op || '|' == _op || '-' == _op || '^' == _op) ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.withOpacity(0.4)),
+                ),
+                child: Column(children: [
+                  Text('集合 A', style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold)),
+                  Wrap(spacing: 4, runSpacing: 4, children: [
+                    ...onlyA.map((n) => _CircleNum(n, Colors.blue, inResult: _op == '|' || _op == '-' || _op == '^')),
+                    ...both.map((n) => _CircleNum(n, Colors.purple, inResult: _op == '&' || _op == '|')),
+                  ]),
+                ]),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                ),
+                child: Column(children: [
+                  Text('集合 B', style: TextStyle(color: Colors.orange[700], fontWeight: FontWeight.bold)),
+                  Wrap(spacing: 4, runSpacing: 4, children: [
+                    ...both.map((n) => _CircleNum(n, Colors.purple, inResult: _op == '&' || _op == '|')),
+                    ...onlyB.map((n) => _CircleNum(n, Colors.orange, inResult: _op == '|' || _op == '^')),
+                  ]),
+                ]),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.green.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.green.withOpacity(0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('结果：$_opName', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.green)),
+              const SizedBox(height: 6),
+              Wrap(spacing: 6, runSpacing: 6, children: (result.toList()..sort()).map((n) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)),
+                child: Text('$n', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              )).toList()),
+            ],
+          ),
+        ),
+        LiveCodeBlock('a = ${_a.toList()..sort()}\nb = ${_b.toList()..sort()}\n\nresult = a $_op b\nprint(result)'),
+        LiveOutputBox('${result.toList()..sort()}'),
+      ],
+    );
+  }
+}
+
+class _CircleNum extends StatelessWidget {
+  final int value;
+  final Color color;
+  final bool inResult;
+  const _CircleNum(this.value, this.color, {required this.inResult});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32, height: 32,
+      decoration: BoxDecoration(
+        color: inResult ? color : color.withOpacity(0.15),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text('$value', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: inResult ? Colors.white : color)),
+      ),
+    );
+  }
+}
+
+/// 排序演示
+class _SortingDemo extends StatefulWidget {
+  const _SortingDemo();
+  @override
+  State<_SortingDemo> createState() => _SortingDemoState();
+}
+
+class _SortingDemoState extends State<_SortingDemo> {
+  final List<(String, int)> _students = [
+    ('小明', 85), ('小红', 92), ('小刚', 78), ('小丽', 92), ('小强', 67),
+  ];
+  bool _reverse = false;
+  String _key = '按名字';
+
+  List<(String, int)> get _sorted {
+    final copy = [..._students];
+    switch (_key) {
+      case '按名字':
+        copy.sort((a, b) => _reverse ? b.$1.compareTo(a.$1) : a.$1.compareTo(b.$1));
+        break;
+      case '按分数':
+        copy.sort((a, b) => _reverse ? b.$2.compareTo(a.$2) : a.$2.compareTo(b.$2));
+        break;
+      case '按名字长度':
+        copy.sort((a, b) {
+          final cmp = a.$1.length.compareTo(b.$1.length);
+          return _reverse ? -cmp : cmp;
+        });
+        break;
+    }
+    return copy;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = _sorted;
+    return InteractivePlayground(
+      title: '🏆 sorted() 排序可视化',
+      subtitle: '选择 key 和方向，实时看到 sorted() 的结果',
+      children: [
+        ParamChoiceChips(
+          label: 'key 参数',
+          value: _key,
+          options: [('按名字', '按名字'), ('按分数', '按分数'), ('按名字长度', '按名字长度')],
+          onChanged: (v) => setState(() => _key = v),
+        ),
+        ParamSwitch(label: 'reverse（降序）', value: _reverse, onChanged: (v) => setState(() => _reverse = v), trueLabel: '降序', falseLabel: '升序'),
+        const SizedBox(height: 8),
+        ...sorted.asMap().entries.map((e) {
+          final rank = e.key + 1;
+          final (name, score) = e.value;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: rank == 1
+                  ? Colors.amber.withOpacity(0.2)
+                  : rank == 2
+                      ? Colors.grey.withOpacity(0.15)
+                      : rank == 3
+                          ? Colors.brown.withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: rank <= 3 ? Colors.amber.withOpacity(0.4) : Colors.grey.withOpacity(0.2)),
+            ),
+            child: Row(children: [
+              Text('$rank.', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: rank == 1 ? Colors.amber[700] : Colors.grey)),
+              const SizedBox(width: 10),
+              Expanded(child: Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer, borderRadius: BorderRadius.circular(20)),
+                child: Text('$score 分', style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+              ),
+            ]),
+          );
+        }),
+        LiveCodeBlock(
+          'students = [("小明", 85), ("小红", 92), ("小刚", 78), ("小丽", 92), ("小强", 67)]\n\n'
+          '# ${_key}${_reverse ? "（降序）" : "（升序）"}\n'
+          'sorted_students = sorted(students,\n'
+          '    key=lambda s: ${_key == '按名字' ? 's[0]' : _key == '按分数' ? 's[1]' : 'len(s[0])'},\n'
+          '    reverse=${_reverse ? 'True' : 'False'}\n'
+          ')\n'
+          'print(sorted_students)',
+        ),
+        LiveOutputBox(sorted.map((s) => '(${s.$1}, ${s.$2})').join('\n')),
+      ],
+    );
+  }
+}
+
 /// Python 数据结构 —— 第四课（扩展版）
 /// 覆盖列表、元组、字典、集合、推导式、collections 模块、排序与切片
 class PythonDataStructures extends StatelessWidget {
@@ -1038,6 +1395,12 @@ class PythonDataStructures extends StatelessWidget {
               '命名切片（slice 对象）能让复杂切片逻辑更可读。',
               type: TipType.info,
             ),
+            DividerLine(),
+
+            // ===== 交互式演示 =====
+            const _ListOperationsDemo(),
+            const _SetOperationsDemo(),
+            const _SortingDemo(),
             DividerLine(),
 
             // ================================================================

@@ -16,7 +16,6 @@ class FrameworkClassesDemo extends StatefulWidget {
 
 class _FrameworkClassesDemoState extends State<FrameworkClassesDemo> {
   int _rebuildCount = 0;
-  bool _showElementInfo = false;
   final List<String> _log = [];
 
   void _addLog(String msg) {

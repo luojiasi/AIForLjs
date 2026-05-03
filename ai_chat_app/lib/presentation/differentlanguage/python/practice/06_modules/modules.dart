@@ -1,5 +1,140 @@
+import 'dart:math' as dart_math;
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
+
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// random 模块演示
+class _RandomModuleDemo extends StatefulWidget {
+  const _RandomModuleDemo();
+  @override
+  State<_RandomModuleDemo> createState() => _RandomModuleDemoState();
+}
+
+class _RandomModuleDemoState extends State<_RandomModuleDemo> {
+  int _min = 1;
+  int _max = 100;
+  int _count = 5;
+  List<int> _results = [];
+  final _rng = dart_math.Random();
+  String _function = 'randint';
+
+  void _generate() {
+    setState(() {
+      switch (_function) {
+        case 'randint':
+          _results = List.generate(_count, (_) => _min + _rng.nextInt(_max - _min + 1));
+        case 'sample':
+          final pool = List.generate(_max - _min + 1, (i) => i + _min);
+          pool.shuffle(_rng);
+          _results = pool.take(_count.clamp(0, pool.length)).toList();
+        case 'shuffle':
+          _results = List.generate(_count, (i) => i + _min);
+          _results.shuffle(_rng);
+        default:
+          _results = List.generate(_count, (_) => _min + _rng.nextInt(_max - _min + 1));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🎲 random 模块演示',
+      subtitle: '点击生成，观察不同 random 函数的行为',
+      children: [
+        ParamIntSlider(label: '最小值', value: _min, min: 1, max: 50, onChanged: (v) => setState(() => _min = v.clamp(1, _max - 1))),
+        ParamIntSlider(label: '最大值', value: _max, min: 10, max: 100, onChanged: (v) => setState(() => _max = v.clamp(_min + 1, 100))),
+        ParamIntSlider(label: '数量', value: _count, min: 1, max: 10, onChanged: (v) => setState(() => _count = v)),
+        ParamChoiceChips<String>(
+          label: '函数',
+          value: _function,
+          options: [('randint', 'randint'), ('sample', 'sample（不重复）'), ('shuffle', 'shuffle')],
+          onChanged: (v) => setState(() => _function = v),
+        ),
+        const SizedBox(height: 8),
+        if (_results.isNotEmpty)
+          Wrap(spacing: 6, runSpacing: 6, children: _results.map((n) =>
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer, shape: BoxShape.circle),
+              child: Center(child: Text('$n', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Theme.of(context).colorScheme.primary))),
+            )
+          ).toList()),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(onPressed: _generate, icon: const Icon(Icons.casino, size: 16), label: const Text('生成')),
+        LiveCodeBlock(
+          'import random\n\n'
+          '# randint: 包含两端的整数\n'
+          'random.randint($_min, $_max)\n\n'
+          '# sample: 不重复抽取\n'
+          'random.sample(range($_min, $_max+1), $_count)\n\n'
+          '# shuffle: 打乱列表\n'
+          'nums = list(range($_min, $_min+$_count))\n'
+          'random.shuffle(nums)',
+        ),
+        LiveOutputBox(_results.isEmpty ? '点击"生成"查看结果' : '结果: ${_results.join(', ')}'),
+      ],
+    );
+  }
+}
+
+/// json 模块演示
+class _JsonModuleDemo extends StatefulWidget {
+  const _JsonModuleDemo();
+  @override
+  State<_JsonModuleDemo> createState() => _JsonModuleDemoState();
+}
+
+class _JsonModuleDemoState extends State<_JsonModuleDemo> {
+  String _name = '张三';
+  int _age = 25;
+  List<String> _hobbies = ['编程', '读书'];
+  bool _prettyPrint = true;
+
+  String get _jsonStr {
+    final hobbiesStr = _hobbies.map((h) => '"$h"').join(', ');
+    if (_prettyPrint) {
+      return '{\n'
+          '  "name": "$_name",\n'
+          '  "age": $_age,\n'
+          '  "hobbies": [$hobbiesStr]\n'
+          '}';
+    }
+    return '{"name":"$_name","age":$_age,"hobbies":[$hobbiesStr]}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📋 json 模块演示',
+      subtitle: '修改数据，观察 JSON 序列化（dumps）和格式化输出',
+      children: [
+        ParamTextField(label: '姓名', value: _name, onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v), maxLength: 10),
+        ParamIntSlider(label: '年龄', value: _age, min: 1, max: 99, unit: '岁', onChanged: (v) => setState(() => _age = v)),
+        ParamSwitch(label: '格式化输出 indent=2', value: _prettyPrint, onChanged: (v) => setState(() => _prettyPrint = v), trueLabel: '开', falseLabel: '关'),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: Colors.grey[900], borderRadius: BorderRadius.circular(8)),
+          child: SelectableText(_jsonStr, style: const TextStyle(fontFamily: 'monospace', fontSize: 13, color: Colors.greenAccent)),
+        ),
+        LiveCodeBlock(
+          'import json\n\n'
+          'data = {"name": "$_name", "age": $_age, "hobbies": ${_hobbies.map((h) => '"$h"').toList()}}\n\n'
+          '# 序列化（Python对象 → JSON字符串）\n'
+          '${_prettyPrint ? 'json_str = json.dumps(data, ensure_ascii=False, indent=2)' : 'json_str = json.dumps(data, ensure_ascii=False)'}\n\n'
+          '# 反序列化（JSON字符串 → Python对象）\n'
+          'obj = json.loads(json_str)\n'
+          'print(obj["name"])  # $_name',
+        ),
+        LiveOutputBox(_jsonStr),
+      ],
+    );
+  }
+}
 
 /// Python 模块与包 —— 第六课
 class PythonModules extends StatelessWidget {
@@ -425,6 +560,8 @@ class PythonModules extends StatelessWidget {
               '②模块名用下划线不用连字符；③优先用 import module 而非 from module import *。',
               type: TipType.caution,
             ),
+            const _RandomModuleDemo(),
+            const _JsonModuleDemo(),
             DividerLine(),
 
             // ===== 小练习 =====

@@ -3,6 +3,161 @@ library dart3;
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// Records 构建演示：可视化位置参数和命名参数
+class _RecordsDemo extends StatefulWidget {
+  const _RecordsDemo();
+  @override
+  State<_RecordsDemo> createState() => _RecordsDemoState();
+}
+
+class _RecordsDemoState extends State<_RecordsDemo> {
+  String _name = '张三';
+  int _age = 25;
+  String _city = '北京';
+  bool _useNamed = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final recordStr = _useNamed
+        ? '(name: "$_name", age: $_age, city: "$_city")'
+        : '("$_name", $_age, "$_city")';
+    final accessStr = _useNamed
+        ? 'r.name → "$_name"\nr.age  → $_age\nr.city → "$_city"'
+        : r'r.$1 → ' + '"$_name"\n' + r'r.$2 → ' + '$_age\n' + r'r.$3 → ' + '"$_city"';
+
+    return InteractivePlayground(
+      title: '📦 Records 演示',
+      subtitle: '切换位置参数与命名参数，观察访问方式的差异',
+      children: [
+        ParamTextField(label: '姓名', value: _name, onChanged: (v) => setState(() => _name = v.isEmpty ? '张三' : v), maxLength: 10),
+        ParamIntSlider(label: '年龄', value: _age, min: 1, max: 99, unit: '岁', onChanged: (v) => setState(() => _age = v)),
+        ParamTextField(label: '城市', value: _city, onChanged: (v) => setState(() => _city = v.isEmpty ? '北京' : v), maxLength: 10),
+        ParamSwitch(label: '参数风格', value: _useNamed, onChanged: (v) => setState(() => _useNamed = v), trueLabel: '命名参数（推荐）', falseLabel: '位置参数'),
+        const SizedBox(height: 8),
+        // 可视化：Record 结构
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Record = $recordStr', style: const TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.bold)),
+            const Divider(height: 16),
+            Text(accessStr, style: const TextStyle(fontFamily: 'monospace', fontSize: 13)),
+          ]),
+        ),
+        LiveCodeBlock(
+          '// ${_useNamed ? '命名参数 Record（推荐）' : '位置参数 Record'}\n'
+          'var r = $recordStr;\n\n'
+          '${_useNamed
+              ? 'print(r.name);  // $_name\nprint(r.age);   // $_age\nprint(r.city);  // $_city'
+              : 'print(r.\$1);   // $_name\nprint(r.\$2);   // $_age\nprint(r.\$3);   // $_city'}\n\n'
+          '// 函数返回多个值（Records 最佳用例）\n'
+          '(String, int) getInfo() => ("$_name", $_age);\n'
+          'var (name, age) = getInfo();  // 解构赋值',
+        ),
+        LiveOutputBox('$_name  |  $_age岁  |  $_city'),
+      ],
+    );
+  }
+}
+
+/// Pattern Matching 模式匹配演示
+class _PatternMatchingDemo extends StatefulWidget {
+  const _PatternMatchingDemo();
+  @override
+  State<_PatternMatchingDemo> createState() => _PatternMatchingDemoState();
+}
+
+class _PatternMatchingDemoState extends State<_PatternMatchingDemo> {
+  int _x = 10;
+  int _y = 5;
+  String _matchType = 'compare'; // compare | diagonal | quadrant
+
+  String get _result {
+    switch (_matchType) {
+      case 'compare':
+        if (_x > _y) return '(${ _x}, $_y) → x > y，x 更大';
+        if (_x < _y) return '($_x, $_y) → x < y，y 更大';
+        return '($_x, $_y) → x == y，相等';
+      case 'diagonal':
+        if (_x == _y) return '($_x, $_y) → 坐标在对角线上！';
+        if (_x > _y) return '($_x, $_y) → 在对角线下方';
+        return '($_x, $_y) → 在对角线上方';
+      case 'quadrant':
+        if (_x > 0 && _y > 0) return '第一象限（右上）';
+        if (_x < 0 && _y > 0) return '第二象限（左上）';
+        if (_x < 0 && _y < 0) return '第三象限（左下）';
+        if (_x > 0 && _y < 0) return '第四象限（右下）';
+        return '坐标轴上';
+      default: return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🎯 模式匹配（Pattern Matching）演示',
+      subtitle: '调整坐标值，观察不同 switch 模式的匹配结果',
+      children: [
+        ParamIntSlider(label: 'x 值', value: _x, min: -10, max: 10, onChanged: (v) => setState(() => _x = v)),
+        ParamIntSlider(label: 'y 值', value: _y, min: -10, max: 10, onChanged: (v) => setState(() => _y = v)),
+        ParamChoiceChips<String>(
+          label: '匹配模式',
+          value: _matchType,
+          options: [('compare', '比较大小'), ('diagonal', '对角线'), ('quadrant', '象限判断')],
+          onChanged: (v) => setState(() => _matchType = v),
+        ),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text('当前坐标: ($_x, $_y)\n结果: $_result',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
+        LiveCodeBlock(
+          _matchType == 'compare'
+              ? '(int, int) point = ($_x, $_y);\n'
+                'switch (point) {\n'
+                '  case (var x, var y) when x > y:\n'
+                '    print("x 更大");\n'
+                '  case (var x, var y) when x < y:\n'
+                '    print("y 更大");\n'
+                '  default:\n'
+                '    print("相等");\n'
+                '}'
+              : _matchType == 'diagonal'
+                  ? '(int, int) point = ($_x, $_y);\n'
+                    'switch (point) {\n'
+                    '  case (var x, var y) when x == y:\n'
+                    '    print("在对角线上！");\n'
+                    '  case (var x, var y) when x > y:\n'
+                    '    print("在对角线下方");\n'
+                    '  default:\n'
+                    '    print("在对角线上方");\n'
+                    '}'
+                  : '(int x, int y) = ($_x, $_y);\n'
+                    'final quadrant = switch ((x > 0, y > 0)) {\n'
+                    '  (true, true)  => "第一象限",\n'
+                    '  (false, true) => "第二象限",\n'
+                    '  _             => "其他",\n'
+                    '};',
+        ),
+        LiveOutputBox(_result),
+      ],
+    );
+  }
+}
+
 /// Dart 教程 · 第七章：Dart 3 新特性
 /// Records、Patterns、Sealed Class、Switch 增强、Class Modifiers
 class Dart3Features extends StatelessWidget {
@@ -275,6 +430,8 @@ Widget buildUI<T>(UiState<T> state) => switch (state) {
           const OutputBox('用 sealed class 管理 UI 状态是 Flutter 社区的最佳实践。\n'
               '新加状态 → 编译器提醒所有 switch 要更新 → 减少线上 bug。'),
 
+          const _RecordsDemo(),
+          const _PatternMatchingDemo(),
           const DividerLine(),
           SectionHeader('小练习', icon: Icons.assignment),
           const Paragraph('1. 用 Record 返回 (name, age, email) 三元组信息'),

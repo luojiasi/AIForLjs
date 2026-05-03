@@ -1,6 +1,201 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 变量声明类型对比演示
+class _VariableDeclDemo extends StatefulWidget {
+  const _VariableDeclDemo();
+  @override
+  State<_VariableDeclDemo> createState() => _VariableDeclDemoState();
+}
+
+class _VariableDeclDemoState extends State<_VariableDeclDemo> {
+  String _keyword = 'var';
+  String _value = '"Dart"';
+  bool _reassign = false;
+
+  final _keywords = ['var', 'final', 'const', 'late', 'dynamic'];
+
+  String get _code {
+    final kw = _keyword;
+    final val = _value;
+    if (kw == 'late') {
+      return 'late String result;\n'
+          '// 延迟初始化，首次使用前必须赋值\n'
+          'result = $val;\n'
+          'print(result);  // $val';
+    }
+    if (_reassign) {
+      return '$kw name = $val;\n'
+          'name = "New Value";  // ${kw == 'final' || kw == 'const' ? '❌ 编译错误：$kw 不可修改' : '✅ 可以重新赋值'}';
+    }
+    return '$kw name = $val;\n'
+        'print(name);  // $val';
+  }
+
+  String get _result {
+    if (_reassign) {
+      if (_keyword == 'final' || _keyword == 'const') {
+        return '编译错误！\n$_keyword 变量不能重新赋值。';
+      }
+      return 'New Value';
+    }
+    return _value.replaceAll('"', '');
+  }
+
+  String get _desc {
+    switch (_keyword) {
+      case 'var': return '类型推断，可以重新赋值，不能改变类型';
+      case 'final': return '运行时常量，只能赋值一次（值在运行时确定）';
+      case 'const': return '编译时常量，值必须在编译时已知';
+      case 'late': return '延迟初始化，首次访问时才初始化（惰性求值）';
+      case 'dynamic': return '动态类型，绕过类型检查，谨慎使用';
+      default: return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📦 Dart 变量声明关键字对比',
+      subtitle: '切换不同声明方式，理解它们的区别',
+      children: [
+        ParamChoiceChips(
+          label: '声明关键字',
+          value: _keyword,
+          options: _keywords.map((k) => (k, k)).toList(),
+          onChanged: (v) => setState(() => _keyword = v),
+        ),
+        KnowledgeCard(title: _keyword, content: _desc, icon: Icons.info_outline, color: Theme.of(context).colorScheme.primary),
+        if (_keyword != 'late')
+          ParamSwitch(label: '尝试重新赋值', value: _reassign, onChanged: (v) => setState(() => _reassign = v), trueLabel: '开', falseLabel: '关'),
+        LiveCodeBlock(_code),
+        LiveOutputBox(_result.contains('错误') ? '❌ $_result' : '✅ 输出：$_result'),
+      ],
+    );
+  }
+}
+
+/// Null Safety 演示
+class _NullSafetyDemo extends StatefulWidget {
+  const _NullSafetyDemo();
+  @override
+  State<_NullSafetyDemo> createState() => _NullSafetyDemoState();
+}
+
+class _NullSafetyDemoState extends State<_NullSafetyDemo> {
+  bool _isNull = false;
+  String _op = '??';
+  String _fallback = '"默认值"';
+
+  String get _varDef => _isNull ? 'String? name = null;' : 'String? name = "Dart";';
+  String get _code {
+    switch (_op) {
+      case '??': return '$_varDef\nString display = name ?? $_fallback;\nprint(display);';
+      case '?.': return '$_varDef\nprint(name?.length);  // 安全访问';
+      case '!': return '$_varDef\n${_isNull ? '// name! 在 null 时会崩溃！' : 'String s = name!;  // 断言非 null'}\nprint(${_isNull ? '// 抛出 Null check failed' : 's'});';
+      case '??=': return 'String? name;\nname ??= "被赋值了";  // 仅当 null 时赋值\nprint(name);';
+      default: return '';
+    }
+  }
+
+  String get _result {
+    switch (_op) {
+      case '??': return _isNull ? _fallback.replaceAll('"', '') : 'Dart';
+      case '?.': return _isNull ? 'null' : '4';
+      case '!': return _isNull ? '💥 Null check operator used on a null value' : 'Dart';
+      case '??=': return '被赋值了';
+      default: return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isError = _result.contains('💥');
+    return InteractivePlayground(
+      title: '🛡️ Null Safety 操作符演示',
+      subtitle: '切换变量是否为 null，观察各操作符的行为',
+      children: [
+        ParamSwitch(label: 'name 的值', value: _isNull, onChanged: (v) => setState(() => _isNull = v), trueLabel: 'null', falseLabel: '"Dart"'),
+        ParamChoiceChips(
+          label: '操作符',
+          value: _op,
+          options: [('??', '?? 空合并'), ('?.', '?. 安全访问'), ('!', '! 强制断言'), ('??=', '??= 空赋值')],
+          onChanged: (v) => setState(() => _op = v),
+        ),
+        LiveCodeBlock(_code),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isError ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: isError ? Colors.red.withOpacity(0.4) : Colors.green.withOpacity(0.4)),
+          ),
+          child: Text(
+            _result,
+            style: TextStyle(fontFamily: 'monospace', fontSize: 14, color: isError ? Colors.red : Colors.green, fontWeight: FontWeight.bold),
+          ),
+        ),
+        if (_op == '!')
+          TipBox(
+            '! 操作符危险！只在你 100% 确定值不为 null 时使用。'
+            '优先用 ?? 提供默认值，或用 ?. 安全访问。',
+            type: TipType.caution,
+          ),
+      ],
+    );
+  }
+}
+
+/// 字符串插值演示
+class _StringInterpolationDemo extends StatefulWidget {
+  const _StringInterpolationDemo();
+  @override
+  State<_StringInterpolationDemo> createState() => _StringInterpolationDemoState();
+}
+
+class _StringInterpolationDemoState extends State<_StringInterpolationDemo> {
+  String _name = 'Dart';
+  int _year = 2011;
+  bool _multiline = false;
+  bool _rawString = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final interpolated = _rawString
+        ? r'$name 诞生于 ${year} 年'
+        : '$_name 诞生于 $_year 年，距今 ${2026 - _year} 年';
+
+    return InteractivePlayground(
+      title: '📝 Dart 字符串插值演示',
+      subtitle: '修改变量值，看插值字符串的实时变化',
+      children: [
+        ParamTextField(label: '语言名', value: _name, onChanged: (v) => setState(() => _name = v.isEmpty ? 'Dart' : v), maxLength: 10),
+        ParamIntSlider(label: '诞生年份', value: _year, min: 1990, max: 2020, onChanged: (v) => setState(() => _year = v)),
+        ParamSwitch(label: '多行字符串 """', value: _multiline, onChanged: (v) => setState(() => _multiline = v), trueLabel: '开', falseLabel: '关'),
+        ParamSwitch(label: '原始字符串 r""', value: _rawString, onChanged: (v) => setState(() => _rawString = v), trueLabel: '开', falseLabel: '关'),
+        LiveCodeBlock(
+          _multiline
+              ? 'final text = """\n'
+                  '  语言名：\$name\n'
+                  '  诞生年：\${year}\n'
+                  '  年龄：\${2026 - year} 岁\n'
+                  '""";'
+              : _rawString
+                  ? "final text = r'\$name 诞生于 \${year} 年';"
+                  : 'final name = "$_name";\n'
+                      'final year = $_year;\n'
+                      'print("\$name 诞生于 \${year} 年，距今 \${2026 - year} 年");',
+        ),
+        LiveOutputBox(interpolated),
+      ],
+    );
+  }
+}
+
 /// Dart 基础语法教程页面
 /// 涵盖：Dart 简介、main 函数、注释、变量声明、Null Safety、
 /// 基本数据类型、字符串操作、类型转换、运算符、Records
@@ -347,6 +542,11 @@ void main() {
               type: TipType.tip),
 
           DividerLine(),
+          // ===== 交互式演示 =====
+          const _VariableDeclDemo(),
+          const _NullSafetyDemo(),
+          const _StringInterpolationDemo(),
+          const DividerLine(),
           SectionHeader('本章练习', icon: Icons.assignment),
           Paragraph('1. 声明 var、final、const 变量各一个，说出它们的区别。'),
           Paragraph('2. 创建一个可空的 String 变量，用 ?? 提供默认值。'),

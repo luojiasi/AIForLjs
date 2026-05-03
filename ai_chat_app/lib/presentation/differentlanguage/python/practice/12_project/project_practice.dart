@@ -1,6 +1,156 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 互动演示：Todo CLI 模拟器
+// ─────────────────────────────────────────────────────────────
+class _TodoCliDemo extends StatefulWidget {
+  const _TodoCliDemo();
+  @override
+  State<_TodoCliDemo> createState() => _TodoCliDemoState();
+}
+
+class _TodoCliDemoState extends State<_TodoCliDemo> {
+  final List<String> _todos = ['学Python', '做项目', '复习Dart'];
+  String _newTask = '';
+  final Set<int> _completedIdx = {};
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: 'Todo CLI 模拟器',
+      subtitle: '模拟 Python 命令行待办事项管理器',
+      children: [
+        // 输入区
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  labelText: '新任务',
+                  hintText: '输入任务名称...',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _newTask = v),
+                onSubmitted: (_) => _addTask(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: _newTask.trim().isEmpty ? null : _addTask,
+              child: const Text('添加任务'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 任务列表
+        if (_todos.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text('暂无任务', style: TextStyle(color: Colors.grey)),
+          )
+        else
+          Column(
+            children: List.generate(_todos.length, (i) {
+              final done = _completedIdx.contains(i);
+              return Card(
+                margin: const EdgeInsets.only(bottom: 6),
+                child: ListTile(
+                  dense: true,
+                  leading: Checkbox(
+                    value: done,
+                    onChanged: (v) => setState(() {
+                      if (v == true) {
+                        _completedIdx.add(i);
+                      } else {
+                        _completedIdx.remove(i);
+                      }
+                    }),
+                  ),
+                  title: Text(
+                    _todos[i],
+                    style: TextStyle(
+                      decoration: done ? TextDecoration.lineThrough : null,
+                      color: done ? Colors.grey : null,
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, size: 18, color: Colors.redAccent),
+                    onPressed: () => setState(() {
+                      _todos.removeAt(i);
+                      _completedIdx.removeWhere((idx) => idx == i);
+                      // Re-map indices above the removed one
+                      final updated = _completedIdx
+                          .map((idx) => idx > i ? idx - 1 : idx)
+                          .toSet();
+                      _completedIdx
+                        ..clear()
+                        ..addAll(updated);
+                    }),
+                  ),
+                ),
+              );
+            }),
+          ),
+        const SizedBox(height: 8),
+        // Python 代码示例
+        const LiveCodeBlock(
+          '''import argparse, json, os
+
+TODO_FILE = "todos.json"
+
+def load_todos():
+    if os.path.exists(TODO_FILE):
+        with open(TODO_FILE) as f:
+            return json.load(f)
+    return []
+
+def save_todos(todos):
+    with open(TODO_FILE, "w") as f:
+        json.dump(todos, f, ensure_ascii=False)
+
+def add_task(task):
+    todos = load_todos()
+    todos.append({"task": task, "done": False})
+    save_todos(todos)
+    print(f"已添加: {task}")
+
+parser = argparse.ArgumentParser(description="Todo CLI")
+parser.add_argument("command", choices=["add","list","done","delete"])
+parser.add_argument("--task", help="任务名称")
+parser.add_argument("--id", type=int, help="任务ID")''',
+          language: 'python',
+        ),
+        const SizedBox(height: 8),
+        LiveOutputBox(
+          '${_todos.length} 个任务，${_completedIdx.length} 个已完成',
+          label: '任务统计',
+        ),
+      ],
+    );
+  }
+
+  void _addTask() {
+    final task = _newTask.trim();
+    if (task.isEmpty) return;
+    setState(() {
+      _todos.add(task);
+      _newTask = '';
+      _controller.clear();
+    });
+  }
+}
+
 /// Python 第12章：综合实战项目
 /// 三个完整实战项目：
 ///   1. 命令行待办事项管理器 (Todo CLI)
@@ -845,6 +995,10 @@ print(soup.get_text(strip=True))
             '• 添加爬取进度条（tqdm）和断点续爬功能\n'
             '• 遵守 robots.txt 协议，做文明爬虫',
           ),
+          const DividerLine(),
+
+          // ── 互动演示 ──
+          const _TodoCliDemo(),
           const DividerLine(),
 
           // ── 本章总结 ──

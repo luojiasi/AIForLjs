@@ -1,6 +1,308 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// if/elif/else 分支可视化
+class _IfElseDemo extends StatefulWidget {
+  const _IfElseDemo();
+  @override
+  State<_IfElseDemo> createState() => _IfElseDemoState();
+}
+
+class _IfElseDemoState extends State<_IfElseDemo> {
+  int _score = 85;
+  int _age = 20;
+  bool _hasId = true;
+
+  String get _grade {
+    if (_score >= 90) return 'A（优秀）';
+    if (_score >= 75) return 'B（良好）';
+    if (_score >= 60) return 'C（及格）';
+    return 'D（不及格）';
+  }
+
+  Color get _gradeColor {
+    if (_score >= 90) return Colors.green;
+    if (_score >= 75) return Colors.blue;
+    if (_score >= 60) return Colors.orange;
+    return Colors.red;
+  }
+
+  String get _ageResult {
+    if (_age >= 18) {
+      return _hasId ? '可以进入 ✅' : '请出示身份证 ⚠️';
+    }
+    return '未成年禁止进入 ❌';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader('🎯 交互式演示', icon: Icons.play_circle),
+        InteractivePlayground(
+          title: '📊 成绩等级分支可视化',
+          subtitle: '拖动滑块，实时看到哪个 if/elif 分支被执行',
+          children: [
+            ParamIntSlider(label: '分数', value: _score, min: 0, max: 100, onChanged: (v) => setState(() => _score = v), unit: '分'),
+            // 分支高亮展示
+            ...[
+              ('score >= 90', 'A（优秀）', _score >= 90),
+              ('score >= 75', 'B（良好）', _score >= 75 && _score < 90),
+              ('score >= 60', 'C（及格）', _score >= 60 && _score < 75),
+              ('else', 'D（不及格）', _score < 60),
+            ].map((item) {
+              final (cond, result, active) = item;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: active ? _gradeColor.withOpacity(0.15) : Colors.grey.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: active ? _gradeColor : Colors.grey.withOpacity(0.2),
+                    width: active ? 2 : 1,
+                  ),
+                ),
+                child: Row(children: [
+                  Icon(active ? Icons.arrow_right : Icons.remove, size: 20, color: active ? _gradeColor : Colors.grey[400]),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(cond == 'else' ? 'else:' : 'elif $cond:', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: active ? FontWeight.bold : FontWeight.normal))),
+                  if (active) Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: _gradeColor, borderRadius: BorderRadius.circular(20)),
+                    child: Text(result, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ]),
+              );
+            }),
+            const SizedBox(height: 8),
+            LiveCodeBlock(
+              'score = $_score\n'
+              'if score >= 90:      ${_score >= 90 ? "← 执行此分支" : ""}\n'
+              '    grade = "A（优秀）"\n'
+              'elif score >= 75:    ${_score >= 75 && _score < 90 ? "← 执行此分支" : ""}\n'
+              '    grade = "B（良好）"\n'
+              'elif score >= 60:    ${_score >= 60 && _score < 75 ? "← 执行此分支" : ""}\n'
+              '    grade = "C（及格）"\n'
+              'else:                ${_score < 60 ? "← 执行此分支" : ""}\n'
+              '    grade = "D（不及格）"\n'
+              'print(grade)',
+            ),
+            LiveOutputBox('grade = $_grade'),
+          ],
+        ),
+        const SizedBox(height: 12),
+        InteractivePlayground(
+          title: '🚪 嵌套条件：年龄 + 证件检查',
+          subtitle: '模拟多层嵌套 if 的执行路径',
+          children: [
+            ParamIntSlider(label: '年龄', value: _age, min: 1, max: 60, onChanged: (v) => setState(() => _age = v), unit: '岁'),
+            ParamSwitch(label: '有身份证', value: _hasId, onChanged: (v) => setState(() => _hasId = v), trueLabel: '有', falseLabel: '没有'),
+            const SizedBox(height: 8),
+            ProgressSteps(
+              steps: ['年龄检查', '证件检查', '结果'],
+              activeStep: _age >= 18 ? (_hasId ? 2 : 1) : 0,
+            ),
+            const SizedBox(height: 8),
+            LiveCodeBlock(
+              'age, has_id = $_age, ${_hasId ? 'True' : 'False'}\n\n'
+              'if age >= 18:      ${_age >= 18 ? "← True，进入" : "← False，跳过"}\n'
+              '    if has_id:    ${_age >= 18 ? (_hasId ? "← True，进入" : "← False，跳过") : ""}\n'
+              '        print("可以进入")\n'
+              '    else:\n'
+              '        print("请出示身份证")\n'
+              'else:\n'
+              '    print("未成年禁止进入")',
+            ),
+            LiveOutputBox(_ageResult),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// 循环演示
+class _LoopDemo extends StatefulWidget {
+  const _LoopDemo();
+  @override
+  State<_LoopDemo> createState() => _LoopDemoState();
+}
+
+class _LoopDemoState extends State<_LoopDemo> {
+  int _start = 1;
+  int _end = 10;
+  int _step = 1;
+  String _filter = '全部';
+
+  List<int> get _range {
+    final result = <int>[];
+    for (int i = _start; i <= _end; i += _step) {
+      result.add(i);
+    }
+    return result;
+  }
+
+  List<int> get _filtered {
+    return _range.where((n) {
+      switch (_filter) {
+        case '偶数': return n % 2 == 0;
+        case '奇数': return n % 2 != 0;
+        case '3的倍数': return n % 3 == 0;
+        default: return true;
+      }
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final range = _range;
+    final filtered = _filtered;
+
+    return InteractivePlayground(
+      title: '🔁 循环演示：range() 可视化',
+      subtitle: '调整 start/end/step，实时查看循环执行情况',
+      children: [
+        ParamIntSlider(label: 'start（起始）', value: _start, min: 0, max: 10, onChanged: (v) => setState(() { _start = v; if (_start > _end) _end = _start; })),
+        ParamIntSlider(label: 'end（结束）', value: _end, min: 1, max: 20, onChanged: (v) => setState(() { _end = v; if (_end < _start) _start = _end; })),
+        ParamIntSlider(label: 'step（步长）', value: _step, min: 1, max: 5, onChanged: (v) => setState(() => _step = v)),
+        ParamChoiceChips(
+          label: '过滤条件',
+          value: _filter,
+          options: [('全部', '全部'), ('偶数', '偶数'), ('奇数', '奇数'), ('3的倍数', '3的倍数')],
+          onChanged: (v) => setState(() => _filter = v),
+        ),
+        // 数字格子可视化
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: range.map((n) {
+            final inFilter = filtered.contains(n);
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: inFilter ? Theme.of(context).colorScheme.primary : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  '$n',
+                  style: TextStyle(
+                    color: inFilter ? Colors.white : Colors.grey[400],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        LiveCodeBlock(
+          '# range($_start, ${_end + 1}, $_step)\n'
+          'for n in range($_start, ${_end + 1}, $_step):\n'
+          '    ${_filter == '全部' ? '' : 'if n % ${_filter == '偶数' ? '2 == 0' : _filter == '奇数' ? '2 != 0' : '3 == 0'}:\n    '}'
+          'print(n, end=" ")\n'
+          '\n'
+          '# 结果：${filtered.join(', ')}',
+        ),
+        LiveOutputBox(filtered.isEmpty ? '（无输出）' : filtered.join('  ') + '\n\n共 ${filtered.length} 个数字，'
+            'range: [$_start, ${_end + 1}) step=$_step'),
+      ],
+    );
+  }
+}
+
+/// 列表推导式演示
+class _ListComprehensionDemo extends StatefulWidget {
+  const _ListComprehensionDemo();
+  @override
+  State<_ListComprehensionDemo> createState() => _ListComprehensionDemoState();
+}
+
+class _ListComprehensionDemoState extends State<_ListComprehensionDemo> {
+  int _end = 10;
+  String _expr = 'n * n';
+  bool _hasCondition = false;
+  String _condition = 'n % 2 == 0';
+
+  List<int> _eval(int n) {
+    switch (_expr) {
+      case 'n * n': return [n * n];
+      case 'n * 2': return [n * 2];
+      case 'n + 10': return [n + 10];
+      case 'n ** 3': return [n * n * n];
+      default: return [n];
+    }
+  }
+
+  bool _evalCond(int n) {
+    switch (_condition) {
+      case 'n % 2 == 0': return n % 2 == 0;
+      case 'n % 2 != 0': return n % 2 != 0;
+      case 'n > 5': return n > 5;
+      case 'n % 3 == 0': return n % 3 == 0;
+      default: return true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = List.generate(_end, (i) => i + 1)
+        .where((n) => !_hasCondition || _evalCond(n))
+        .map((n) => _eval(n).first)
+        .toList();
+
+    return InteractivePlayground(
+      title: '⚡ 列表推导式生成器',
+      subtitle: '选择表达式和条件，生成不同的列表',
+      children: [
+        ParamIntSlider(label: '范围 1~n', value: _end, min: 3, max: 15, onChanged: (v) => setState(() => _end = v)),
+        ParamChoiceChips(
+          label: '表达式',
+          value: _expr,
+          options: [('n * n', 'n²'), ('n * 2', 'n×2'), ('n + 10', 'n+10'), ('n ** 3', 'n³')],
+          onChanged: (v) => setState(() => _expr = v),
+        ),
+        ParamSwitch(label: '添加过滤条件', value: _hasCondition, onChanged: (v) => setState(() => _hasCondition = v), trueLabel: '开启', falseLabel: '关闭'),
+        if (_hasCondition)
+          ParamChoiceChips(
+            label: '过滤条件',
+            value: _condition,
+            options: [('n % 2 == 0', '偶数'), ('n % 2 != 0', '奇数'), ('n > 5', 'n>5'), ('n % 3 == 0', '3倍数')],
+            onChanged: (v) => setState(() => _condition = v),
+          ),
+        LiveCodeBlock(
+          _hasCondition
+              ? '[${_expr} for n in range(1, ${_end + 1}) if $_condition]'
+              : '[${_expr} for n in range(1, ${_end + 1})]',
+        ),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: items.map((v) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text('$v', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+          )).toList(),
+        ),
+        const SizedBox(height: 6),
+        LiveOutputBox('[${items.join(', ')}]\n共 ${items.length} 个元素'),
+      ],
+    );
+  }
+}
+
 /// Python 控制流程 —— 第二课（扩展版）
 /// 涵盖：缩进规则、if/elif/else、match-case(3.10+)、
 /// for循环、while循环、break/continue/else、条件表达式、pass
@@ -436,6 +738,12 @@ class PythonControlFlow extends StatelessWidget {
               language: 'Python',
             ),
             OutputBox('[1, 5]'),
+            DividerLine(),
+
+            // ===== 交互式演示 =====
+            const _IfElseDemo(),
+            const _LoopDemo(),
+            const _ListComprehensionDemo(),
             DividerLine(),
 
             // ===== 小练习 =====

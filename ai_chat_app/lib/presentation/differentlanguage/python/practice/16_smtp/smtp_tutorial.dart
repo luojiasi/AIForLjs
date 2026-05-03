@@ -1,6 +1,75 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// Email 构建演示
+class _EmailBuilderDemo extends StatefulWidget {
+  const _EmailBuilderDemo();
+  @override
+  State<_EmailBuilderDemo> createState() => _EmailBuilderDemoState();
+}
+
+class _EmailBuilderDemoState extends State<_EmailBuilderDemo> {
+  String _to = 'recipient@example.com';
+  String _subject = '你好，来自Python!';
+  String _body = '这是一封用 Python smtplib 发送的邮件。\n\n祝好！';
+  bool _useHtml = false;
+  bool _hasCc = false;
+  String _cc = 'cc@example.com';
+
+  String get _htmlBody => '<html><body>'
+      '<h2>$_subject</h2>'
+      '<p>${_body.replaceAll('\n', '<br>')}</p>'
+      '<hr><small>由 Python smtplib 发送</small>'
+      '</body></html>';
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📧 邮件构建演示',
+      subtitle: '填写邮件内容，观察 Python smtplib 的代码结构',
+      children: [
+        ParamTextField(label: '收件人 (To)', value: _to, onChanged: (v) => setState(() => _to = v), maxLength: 40),
+        if (_hasCc)
+          ParamTextField(label: '抄送 (CC)', value: _cc, onChanged: (v) => setState(() => _cc = v), maxLength: 40),
+        ParamTextField(label: '主题 (Subject)', value: _subject, onChanged: (v) => setState(() => _subject = v), maxLength: 40),
+        ParamTextField(label: '正文 (Body)', value: _body, onChanged: (v) => setState(() => _body = v), maxLength: 100),
+        ParamSwitch(label: '使用 HTML 格式', value: _useHtml, onChanged: (v) => setState(() => _useHtml = v), trueLabel: 'HTML', falseLabel: '纯文本'),
+        ParamSwitch(label: '添加抄送 (CC)', value: _hasCc, onChanged: (v) => setState(() => _hasCc = v), trueLabel: '是', falseLabel: '否'),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('邮件预览:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const SizedBox(height: 4),
+            Text('To: $_to', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+            if (_hasCc) Text('CC: $_cc', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+            Text('Subject: $_subject', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+            const Divider(height: 8),
+            Text(_useHtml ? _htmlBody : _body, style: const TextStyle(fontSize: 12)),
+          ]),
+        ),
+        LiveCodeBlock(
+          'import smtplib\n'
+          'from email.mime.${_useHtml ? 'text import MIMEText\nfrom email.mime.multipart import MIMEMultipart' : 'text import MIMEText'}\n\n'
+          '${_useHtml ? 'msg = MIMEMultipart("alternative")\n' : 'msg = MIMEText("$_body", "plain", "utf-8")\n'}'
+          'msg["From"] = "sender@gmail.com"\n'
+          'msg["To"] = "$_to"\n'
+          '${_hasCc ? 'msg["Cc"] = "$_cc"\n' : ''}'
+          'msg["Subject"] = "$_subject"\n\n'
+          'with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:\n'
+          '    s.login("sender@gmail.com", "app_password")\n'
+          '    s.sendmail("sender@gmail.com", ["$_to"${_hasCc ? ', "$_cc"' : ''}], msg.as_string())',
+        ),
+      ],
+    );
+  }
+}
+
 /// Python 第16章：SMTP教程 —— 电子邮件发送
 /// 涵盖 smtplib、email 模块、纯文本/HTML邮件、附件、SSL/TLS、编码等
 class PythonSMTpTutorial extends StatelessWidget {
@@ -1020,6 +1089,7 @@ def send_best_practice():
     print('邮件已按最佳实践发送成功')
 ''', language: 'Python'),
 
+          const _EmailBuilderDemo(),
           const DividerLine(),
           const SectionHeader('✏️ 小练习', icon: Icons.edit),
           const Paragraph(

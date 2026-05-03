@@ -1,6 +1,73 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+/// CGI 表单提交模拟演示
+class _CgiFormDemo extends StatefulWidget {
+  const _CgiFormDemo();
+  @override
+  State<_CgiFormDemo> createState() => _CgiFormDemoState();
+}
+
+class _CgiFormDemoState extends State<_CgiFormDemo> {
+  String _name = '张三';
+  String _email = 'zhang@example.com';
+  String _message = 'Hello CGI!';
+  String _method = 'GET';
+  bool _submitted = false;
+
+  String get _queryString => 'name=$_name&email=$_email&message=${Uri.encodeComponent(_message)}';
+  String get _url => _method == 'GET' ? 'http://server/cgi-bin/form.py?$_queryString' : 'http://server/cgi-bin/form.py';
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '📋 CGI 表单提交模拟',
+      subtitle: '填写表单数据，观察 GET/POST 方式的区别',
+      children: [
+        ParamTextField(label: '姓名', value: _name, onChanged: (v) => setState(() { _name = v; _submitted = false; }), maxLength: 15),
+        ParamTextField(label: 'Email', value: _email, onChanged: (v) => setState(() { _email = v; _submitted = false; }), maxLength: 30),
+        ParamTextField(label: '消息', value: _message, onChanged: (v) => setState(() { _message = v; _submitted = false; }), maxLength: 30),
+        ParamChoiceChips<String>(
+          label: '提交方式',
+          value: _method,
+          options: [('GET', 'GET（参数在URL）'), ('POST', 'POST（参数在Body）')],
+          onChanged: (v) => setState(() { _method = v; _submitted = false; }),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: Colors.grey[900], borderRadius: BorderRadius.circular(8)),
+          child: SelectableText(
+            _method == 'GET' ? 'GET $_url' : 'POST http://server/cgi-bin/form.py\n\n$_queryString',
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.greenAccent),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ElevatedButton.icon(
+          onPressed: () => setState(() => _submitted = true),
+          icon: const Icon(Icons.send, size: 16),
+          label: const Text('提交表单'),
+        ),
+        if (_submitted) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green.withOpacity(0.4))),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('CGI 响应（模拟）:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+              Text('Content-Type: text/html\n\n<html><body>\n  <p>你好，$_name！</p>\n  <p>邮件：$_email</p>\n  <p>消息：$_message</p>\n</body></html>',
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+            ]),
+          ),
+        ],
+        LiveCodeBlock(
+          'import cgi\n\nform = cgi.FieldStorage()\nname = form.getvalue("name", "")\nemail = form.getvalue("email", "")\n\nprint("Content-Type: text/html")\nprint()\nprint(f"<p>你好，{name}！</p>")',
+        ),
+      ],
+    );
+  }
+}
+
 /// Python CGI 编程教程 —— 第13章（完整扩展版）
 class PythonCGITutorial extends StatelessWidget {
   const PythonCGITutorial({super.key});
@@ -934,6 +1001,7 @@ async def hello(name: str = 'World'):
               '建议学习路径：CGI 原理 → WSGI 框架（Flask）→ ASGI 框架（FastAPI）。',
               type: TipType.tip,
             ),
+            const _CgiFormDemo(),
             const DividerLine(),
 
             // ===== 总结 =====

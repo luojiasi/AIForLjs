@@ -1,5 +1,243 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
+
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// Future 状态机演示：模拟异步任务的 pending→fulfilled/rejected 状态变化
+class _FutureStateDemo extends StatefulWidget {
+  const _FutureStateDemo();
+  @override
+  State<_FutureStateDemo> createState() => _FutureStateDemoState();
+}
+
+class _FutureStateDemoState extends State<_FutureStateDemo> {
+  int _delaySeconds = 2;
+  bool _shouldFail = false;
+  String _state = 'idle'; // idle | pending | fulfilled | rejected
+  String _result = '';
+
+  void _runFuture() {
+    setState(() { _state = 'pending'; _result = ''; });
+    Future.delayed(Duration(seconds: _delaySeconds), () {
+      if (!mounted) return;
+      if (_shouldFail) {
+        setState(() { _state = 'rejected'; _result = 'Exception: 网络请求失败'; });
+      } else {
+        setState(() { _state = 'fulfilled'; _result = '{"user": "张三", "age": 25}'; });
+      }
+    });
+  }
+
+  Color get _stateColor => switch (_state) {
+    'pending' => Colors.orange,
+    'fulfilled' => Colors.green,
+    'rejected' => Colors.red,
+    _ => Colors.grey,
+  };
+
+  String get _stateLabel => switch (_state) {
+    'pending' => 'Pending（等待中）',
+    'fulfilled' => 'Fulfilled（已完成）',
+    'rejected' => 'Rejected（已拒绝）',
+    _ => 'Idle（未开始）',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '⏳ Future 状态机演示',
+      subtitle: '点击"执行"观察 Future 从 pending → fulfilled/rejected 的状态变化',
+      children: [
+        ParamIntSlider(label: '延迟时间', value: _delaySeconds, min: 1, max: 5, unit: ' 秒',
+          onChanged: (v) => setState(() => _delaySeconds = v)),
+        ParamSwitch(label: '模拟失败', value: _shouldFail, onChanged: (v) => setState(() => _shouldFail = v),
+          trueLabel: '失败', falseLabel: '成功'),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _stateColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _stateColor.withOpacity(0.5), width: 2),
+          ),
+          child: Row(children: [
+            if (_state == 'pending')
+              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+            else
+              Icon(
+                _state == 'fulfilled' ? Icons.check_circle : _state == 'rejected' ? Icons.error : Icons.circle_outlined,
+                color: _stateColor, size: 20,
+              ),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(_stateLabel, style: TextStyle(fontWeight: FontWeight.bold, color: _stateColor)),
+              if (_result.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(_result, style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: _stateColor)),
+              ],
+            ])),
+          ]),
+        ),
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton.icon(
+            onPressed: _state == 'pending' ? null : _runFuture,
+            icon: const Icon(Icons.play_arrow, size: 16),
+            label: Text(_state == 'pending' ? '执行中...' : '▶ 执行 Future'),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => setState(() { _state = 'idle'; _result = ''; }),
+            child: const Text('重置'),
+          ),
+        ]),
+        LiveCodeBlock(
+          'Future<String> fetchUser() async {\n'
+          '  await Future.delayed(Duration(seconds: $_delaySeconds));\n'
+          '  ${_shouldFail ? 'throw Exception("网络请求失败");' : 'return \'{"user": "张三", "age": 25}\';'}\n'
+          '}\n\n'
+          'try {\n'
+          '  final result = await fetchUser();\n'
+          '  print(result);   // ${_state == 'fulfilled' ? _result : '...'}\n'
+          '} catch (e) {\n'
+          '  print("错误: \$e");\n'
+          '}',
+        ),
+      ],
+    );
+  }
+}
+
+/// Stream 数据流可视化演示
+class _StreamVisualizationDemo extends StatefulWidget {
+  const _StreamVisualizationDemo();
+  @override
+  State<_StreamVisualizationDemo> createState() => _StreamVisualizationDemoState();
+}
+
+class _StreamVisualizationDemoState extends State<_StreamVisualizationDemo> {
+  int _interval = 1;
+  int _count = 5;
+  String _transform = 'none'; // none | map | where
+  List<int> _emitted = [];
+  List<int> _received = [];
+  bool _running = false;
+  StreamSubscription<int>? _sub;
+  int _mapFactor = 2;
+
+  List<int> _applyTransform(List<int> source) {
+    switch (_transform) {
+      case 'map': return source.map((n) => n * _mapFactor).toList();
+      case 'where': return source.where((n) => n % 2 == 0).toList();
+      default: return source;
+    }
+  }
+
+  void _startStream() {
+    setState(() { _emitted = []; _received = []; _running = true; });
+    int emitted = 0;
+    _sub = Stream.periodic(Duration(seconds: _interval), (i) => i + 1)
+        .take(_count)
+        .listen((value) {
+          if (!mounted) return;
+          setState(() {
+            _emitted.add(value);
+            final transformed = _applyTransform([value]);
+            _received.addAll(transformed);
+          });
+          emitted++;
+          if (emitted >= _count) setState(() => _running = false);
+        });
+  }
+
+  void _stop() {
+    _sub?.cancel();
+    setState(() => _running = false);
+  }
+
+  @override
+  void dispose() { _sub?.cancel(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🌊 Stream 数据流可视化',
+      subtitle: '实时观察 Stream 发出和接收数据的过程',
+      children: [
+        ParamIntSlider(label: '发射间隔', value: _interval, min: 1, max: 3, unit: ' 秒',
+          onChanged: (v) { if (!_running) setState(() => _interval = v); }),
+        ParamIntSlider(label: '总数量', value: _count, min: 3, max: 8,
+          onChanged: (v) { if (!_running) setState(() => _count = v); }),
+        ParamChoiceChips<String>(
+          label: '变换操作',
+          value: _transform,
+          options: [('none', '无'), ('map', '.map(×$_mapFactor)'), ('where', '.where(偶数)')],
+          onChanged: (v) { if (!_running) setState(() => _transform = v); },
+        ),
+        if (_transform == 'map')
+          ParamIntSlider(label: '乘法因子', value: _mapFactor, min: 2, max: 5,
+            onChanged: (v) => setState(() => _mapFactor = v)),
+        const SizedBox(height: 8),
+        // 可视化：已发射 + 已接收
+        if (_emitted.isNotEmpty) ...[
+          Row(children: [
+            const Text('发射：', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            Expanded(child: Wrap(spacing: 4, children: _emitted.map((n) =>
+              Container(
+                width: 28, height: 28,
+                decoration: BoxDecoration(color: Colors.blue.withOpacity(0.7), shape: BoxShape.circle),
+                child: Center(child: Text('$n', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold))),
+              )
+            ).toList())),
+          ]),
+          const SizedBox(height: 4),
+          Row(children: [
+            Text('接收：', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+            Expanded(child: Wrap(spacing: 4, children: _received.map((n) =>
+              Container(
+                width: 28, height: 28,
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer, shape: BoxShape.circle),
+                child: Center(child: Text('$n', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold))),
+              )
+            ).toList())),
+          ]),
+        ],
+        const SizedBox(height: 8),
+        Row(children: [
+          ElevatedButton.icon(
+            onPressed: _running ? null : _startStream,
+            icon: const Icon(Icons.play_arrow, size: 16),
+            label: Text(_running ? '运行中...' : '▶ 启动 Stream'),
+          ),
+          const SizedBox(width: 8),
+          if (_running) TextButton.icon(
+            onPressed: _stop,
+            icon: const Icon(Icons.stop, size: 16),
+            label: const Text('停止'),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => setState(() { _emitted = []; _received = []; }),
+            child: const Text('清空'),
+          ),
+        ]),
+        LiveCodeBlock(
+          'final stream = Stream.periodic(\n'
+          '  Duration(seconds: $_interval), (i) => i + 1,\n'
+          ').take($_count)'
+          '${_transform == 'map' ? '.map((n) => n * $_mapFactor)' : _transform == 'where' ? '.where((n) => n % 2 == 0)' : ''};\n\n'
+          'await for (final value in stream) {\n'
+          '  print(value);  // ${_received.isEmpty ? '...' : _received.join(', ')}\n'
+          '}',
+        ),
+      ],
+    );
+  }
+}
 
 /// Dart 异步编程教程页面
 /// 涵盖：事件循环、Future、async/await、Stream、async* 生成器、await for、Isolate
@@ -672,6 +910,8 @@ void main() async {
               '注意：其中一个失败会立即抛出异常，但其他任务仍会继续。'
               , type: TipType.info),
 
+          const _FutureStateDemo(),
+          const _StreamVisualizationDemo(),
           DividerLine(),
           SectionHeader('小练习', icon: Icons.assignment),
           Paragraph('1. 创建三个 Future.delayed（1s、2s、3s），用 Future.wait 同时执行。'),

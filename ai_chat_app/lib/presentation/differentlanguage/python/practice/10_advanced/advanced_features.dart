@@ -1,6 +1,132 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/tutorial_widgets.dart';
 
+// ─────────────────────────────────────────────────────────────
+// 交互式演示组件
+// ─────────────────────────────────────────────────────────────
+
+/// 列表推导式演示
+class _ListComprehensionAdvDemo extends StatefulWidget {
+  const _ListComprehensionAdvDemo();
+  @override
+  State<_ListComprehensionAdvDemo> createState() => _ListComprehensionAdvDemoState();
+}
+
+class _ListComprehensionAdvDemoState extends State<_ListComprehensionAdvDemo> {
+  int _n = 10;
+  String _expr = 'x*x';
+  bool _hasCondition = true;
+  String _condition = 'x % 2 == 0';
+
+  List<int> get _input => List.generate(_n, (i) => i + 1);
+
+  List<int> get _output {
+    final items = _input;
+    List<int> filtered = _hasCondition ? items.where((x) => x % 2 == 0).toList() : items;
+    return switch (_expr) {
+      'x*x' => filtered.map((x) => x * x).toList(),
+      'x*2' => filtered.map((x) => x * 2).toList(),
+      'x+10' => filtered.map((x) => x + 10).toList(),
+      _ => filtered,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '⚡ 列表推导式演示',
+      subtitle: '修改范围、表达式和条件，观察推导式生成的列表',
+      children: [
+        ParamIntSlider(label: '范围 n', value: _n, min: 3, max: 15, onChanged: (v) => setState(() => _n = v)),
+        ParamChoiceChips<String>(
+          label: '表达式',
+          value: _expr,
+          options: [('x*x', 'x²'), ('x*2', 'x×2'), ('x+10', 'x+10')],
+          onChanged: (v) => setState(() => _expr = v),
+        ),
+        ParamSwitch(label: '添加条件', value: _hasCondition, onChanged: (v) => setState(() => _hasCondition = v),
+          trueLabel: 'x % 2 == 0（偶数）', falseLabel: '无'),
+        const SizedBox(height: 8),
+        Row(children: [
+          const Text('输入: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          Expanded(child: Text(_input.join(', '), style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Colors.grey))),
+        ]),
+        const SizedBox(height: 4),
+        Row(children: [
+          Text('输出: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+          Expanded(child: Text(_output.join(', '), style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: Theme.of(context).colorScheme.primary))),
+        ]),
+        LiveCodeBlock(
+          '# 列表推导式\n'
+          '[${_expr.replaceAll('x', 'x')} for x in range(1, ${_n + 1})${_hasCondition ? ' if $_condition' : ''}]\n\n'
+          '# 等价的 for 循环\n'
+          'result = []\n'
+          'for x in range(1, ${_n + 1}):\n'
+          '${_hasCondition ? '    if $_condition:\n        result.append($_expr)\n' : '    result.append($_expr)\n'}',
+        ),
+        LiveOutputBox('输入: ${_input.join(', ')}\n输出: ${_output.join(', ')}\n元素数量: ${_output.length}'),
+      ],
+    );
+  }
+}
+
+/// 装饰器概念演示
+class _DecoratorDemo extends StatefulWidget {
+  const _DecoratorDemo();
+  @override
+  State<_DecoratorDemo> createState() => _DecoratorDemoState();
+}
+
+class _DecoratorDemoState extends State<_DecoratorDemo> {
+  String _funcName = 'say_hello';
+  bool _useLogger = true;
+  bool _useTimer = false;
+  bool _useCache = false;
+  String _arg = 'World';
+
+  String get _decorators {
+    final decs = <String>[];
+    if (_useCache) decs.add('@functools.cache');
+    if (_useTimer) decs.add('@timer');
+    if (_useLogger) decs.add('@logger');
+    return decs.join('\n');
+  }
+
+  String get _output {
+    final parts = <String>[];
+    if (_useLogger) parts.add('[LOG] 调用 $_funcName("$_arg")');
+    if (_useTimer) parts.add('[TIMER] 开始计时...');
+    parts.add('你好, $_arg!');
+    if (_useTimer) parts.add('[TIMER] 耗时: 0.0001s');
+    if (_useLogger) parts.add('[LOG] 返回: "你好, $_arg!"');
+    return parts.join('\n');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractivePlayground(
+      title: '🎨 装饰器（Decorator）演示',
+      subtitle: '叠加不同装饰器，观察函数调用时被增强的行为',
+      children: [
+        ParamTextField(label: '函数名', value: _funcName, onChanged: (v) => setState(() => _funcName = v.isEmpty ? 'say_hello' : v), maxLength: 15),
+        ParamTextField(label: '参数', value: _arg, onChanged: (v) => setState(() => _arg = v.isEmpty ? 'World' : v), maxLength: 10),
+        ParamSwitch(label: '@logger（日志记录）', value: _useLogger, onChanged: (v) => setState(() => _useLogger = v), trueLabel: '开', falseLabel: '关'),
+        ParamSwitch(label: '@timer（计时器）', value: _useTimer, onChanged: (v) => setState(() => _useTimer = v), trueLabel: '开', falseLabel: '关'),
+        ParamSwitch(label: '@functools.cache（缓存）', value: _useCache, onChanged: (v) => setState(() => _useCache = v), trueLabel: '开', falseLabel: '关'),
+        const SizedBox(height: 8),
+        LiveCodeBlock(
+          '${_decorators.isNotEmpty ? '$_decorators\n' : ''}'
+          'def $_funcName(name):\n'
+          '    return f"你好, {name}!"\n\n'
+          '# 调用\n'
+          '$_funcName("$_arg")',
+        ),
+        LiveOutputBox(_decorators.isEmpty ? '你好, $_arg!' : _output),
+      ],
+    );
+  }
+}
+
 /// Python 第10章：高级特性 (Advanced Features)
 ///
 /// 涵盖内容：
@@ -1567,6 +1693,8 @@ print(f"\n推导式外部访问 sq: {sq}")  # 注意: sq 在 Python 3.8+ 中会�
             type: TipType.warning,
           ),
 
+          const _ListComprehensionAdvDemo(),
+          const _DecoratorDemo(),
           const DividerLine(),
 
           // ============================================================
