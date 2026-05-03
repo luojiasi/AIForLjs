@@ -1,0 +1,121 @@
+name: ai_chat_app
+description: "This is For LJS supper app."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+2
+
+environment:
+  sdk: ^3.11.5
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.2.1
+
+  # State management
+  provider: ^6.1.2
+  dynamic_color: ^1.7.0
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Networking
+  dio: ^5.7.0
+
+  # Markdown
+  flutter_markdown_plus: ^1.0.7
+  markdown: ^7.3.0
+
+  # Secure storage
+  flutter_secure_storage: ^9.2.3
+
+  # Utilities
+  uuid: ^4.5.1
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.5
+  intl: ^0.20.2
+  collection: ^1.19.1
+
+  # Window control (desktop)
+  window_manager: ^0.4.3
+  restart_app: ^1.7.3
+  bitsdojo_window: ^0.1.6
+  package_info_plus: ^9.0.1
+  url_launcher: ^6.3.2
+  lucide_icons_flutter: ^3.1.13
+  haptic_feedback: ^0.6.4+3
+  share_plus: ^12.0.2
+  hotkey_manager: ^0.2.3
+  flutter_background: ^1.3.1
+  flutter_local_notifications: ^21.0.0
+  google_fonts: ^8.1.0
+  tray_manager: ^0.5.2
+  file_picker: ^11.0.2
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  mocktail: ^1.0.4
+  flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/icons/
+    - assets/themes/
+# flutter_launcher_icons:
+#   android:true
+#   ios:true
+#   image_path:
+
+flutter_native_splash:
+  # Apply to both platforms
+  android: true
+  ios: true
+
+  # Background colors (fix iOS dark-mode white flash)
+  color: "#FFFFFF"
+  color_dark: "#000000"
+
+  # Center image (re-use app icon foreground)
+  image: assets/start.png
+  image_dark: assets/start.png
+
+  # iOS content mode to keep logo centered
+  ios_content_mode: center
+
+  # Android 12+ splash config (optional but keeps parity)
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#000000"
+    image: assets/start.png
+    image_dark: assets/start.png
