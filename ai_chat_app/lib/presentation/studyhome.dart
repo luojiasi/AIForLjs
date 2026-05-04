@@ -21,6 +21,21 @@ class StudyHome extends StatelessWidget {
         children: [
           const _Header(),
           const SizedBox(height: 16),
+          // PBL 项目实战教程库
+          _LanguageCard(
+            icon: Icons.explore,
+            color: const Color(0xFF00897B),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            title: '项目实战教程库',
+            subtitle: '来自 GitHub 精选合集 · 23 种语言 · 300+ 项目',
+            description: '从零构建完整项目的实战教程合集，涵盖 C/C++、Python、\nJavaScript、Go、Rust、Java 等 23 种编程语言。\n每个教程都带你从零开始构建一个真实可用的项目。',
+            onTap: () => context.push('/pbl'),
+          ),
+          const SizedBox(height: 24),
           _LanguageCard(
             icon: Icons.code,
             color: const Color(0xFF306998),

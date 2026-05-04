@@ -4,7 +4,11 @@
       "WebSearch",
       "Bash(dart analyze *)",
       "Bash(flutter devices *)",
-      "Bash(flutter emulators *)"
+      "Bash(flutter emulators *)",
+      "Bash(flutter doctor *)",
+      "Bash(flutter analyze *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

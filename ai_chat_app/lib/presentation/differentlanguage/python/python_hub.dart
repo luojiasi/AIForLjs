@@ -51,6 +51,10 @@ class PythonHub extends StatelessWidget {
 	          _ChapterCard(num: '21', title: '常用第三方模块', desc: 'requests/bs4/Pillow/numpy/pandas/matplotlib/tqdm/dotenv', route: '/python/21', color: const Color(0xFF306998)),
           _ChapterCard(num: '22', title: 'Web 开发', desc: 'HTTP协议/WSGI接口/Flask框架/Jinja2模板', route: '/python/22', color: const Color(0xFF306998)),
 
+          const SizedBox(height: 16),
+          const _SectionLabel(label: '📚 生态全景'),
+          _ChapterCard(num: '23', title: 'Python 生态系统完全指南', desc: '整合 awesome-python：500+ 精选库/框架/工具分类速查', route: '/python/23', color: const Color(0xFF306998)),
+
           const SizedBox(height: 24),
         ],
       ),

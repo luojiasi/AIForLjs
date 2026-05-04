@@ -50,13 +50,16 @@ import 'package:ai_chat_app/presentation/commonproblems/brand_device_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/flutter/flutter_hub.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python/python_hub.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/dart/dart_hub.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_home.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_language_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_tutorial_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_favorites_page.dart';
 
 import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
 import 'package:ai_chat_app/features/home/pages/home_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:path/path.dart';
 
 /// 全局路由观察者，用于监听页面跳转/返回事件
 final RouteObserver<ModalRoute<dynamic>> routeObserver = RouteObserver<ModalRoute<dynamic>>();
@@ -136,6 +139,21 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/dart/05', builder: (context, state) => const dart_oop.DartOOP()),
     GoRoute(path: '/dart/06', builder: (context, state) => const DartAsync()),
     GoRoute(path: '/dart/07', builder: (context, state) => const dart3.Dart3Features()),
+
+    // 项目实战教程库 (Project-Based Learning)
+    GoRoute(path: '/pbl', builder: (context, state) => const PBLHome()),
+    GoRoute(path: '/pbl/:languageName', builder: (context, state) =>
+      PBLLanguagePage(languageName: state.pathParameters['languageName'] ?? ''),
+    ),
+    GoRoute(path: '/pbl/tutorial', builder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>? ?? {};
+      return PBLTutorialPage(
+        title: extra['title'] as String? ?? '',
+        url: extra['url'] as String? ?? '',
+        languageName: extra['languageName'] as String? ?? '',
+      );
+    }),
+    GoRoute(path: '/pbl/favorites', builder: (context, state) => const PBLFavoritesPage()),
 
     // 常见问题（设备参数与故障）
     GoRoute(path: '/commonproblems', builder: (context, state) => const CommonProblemsHome()),

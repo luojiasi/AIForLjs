@@ -402,7 +402,7 @@ _formKey.currentState!.fields['email']?.didChange(_emailCtl.text);
                     }
                     return null;
                   },
-                  onSaved: (v) => print('邮箱: ${v?.trim()}'),
+                  onSaved: (v) => debugPrint('邮箱: ${v?.trim()}'),
                 ),
                 const SizedBox(height: 16),
                 // 密码
@@ -985,7 +985,7 @@ SafeArea(
                     style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                 Text('屏幕方向: ${mq.orientation == Orientation.portrait ? "竖屏" : "横屏"}  |  '
                     '像素比: ${mq.devicePixelRatio.toStringAsFixed(1)}x  |  '
-                    '字体倍率: ${mq.textScaleFactor.toStringAsFixed(1)}x',
+                    '字体倍率: ${mq.textScaler.scale(1.0).toStringAsFixed(1)}x',
                     style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                 Text('顶部安全区: ${mq.padding.top.toStringAsFixed(0)}px  |  '
                     '底部安全区: ${mq.padding.bottom.toStringAsFixed(0)}px  |  '
@@ -1101,14 +1101,6 @@ GestureDetector(
               '• 拖动 → 移动  •  双指缩放 → 缩放+旋转'),
           Center(
             child: GestureDetector(
-              onPanUpdate: (d) {
-                setState(() {
-                  _dx += d.delta.dx;
-                  _dy += d.delta.dy;
-                  _gestureInfo = '位置 (${_dx.toStringAsFixed(0)}, ${_dy.toStringAsFixed(0)})';
-                  _gestureEvent = '拖动中';
-                });
-              },
               onScaleUpdate: (d) {
                 setState(() {
                   if (d.pointerCount >= 2) {
@@ -1116,6 +1108,11 @@ GestureDetector(
                     _rotation += d.rotation;
                     _gestureInfo = '缩放: ${_scale.toStringAsFixed(2)}x  旋转: ${(_rotation * 180 / 3.14159).toStringAsFixed(0)}°';
                     _gestureEvent = '双指缩放';
+                  } else {
+                    _dx += d.focalPointDelta.dx;
+                    _dy += d.focalPointDelta.dy;
+                    _gestureInfo = '位置 (${_dx.toStringAsFixed(0)}, ${_dy.toStringAsFixed(0)})';
+                    _gestureEvent = '拖动中';
                   }
                 });
               },
@@ -1134,16 +1131,16 @@ GestureDetector(
               }),
               child: Transform(
                 transform: Matrix4.identity()
-                  ..translate(_dx, _dy)
+                  ..setTranslationRaw(_dx, _dy, 0)
                   ..rotateZ(_rotation)
-                  ..scale(_scale),
+                  ..scaleByDouble(_scale, _scale, 1.0, 1.0),
                 alignment: Alignment.center,
                 child: Container(
                   width: 80, height: 80,
                   decoration: BoxDecoration(
                     color: Colors.orange,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 8)],
+                    boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.4), blurRadius: 8)],
                   ),
                   child: const Center(
                     child: Text('拖我', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -1235,7 +1232,7 @@ InteractiveViewer(
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.purple.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: Colors.purple.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
                     ),
                     child: const Center(
                       child: Text('缩放我', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
@@ -1396,7 +1393,7 @@ class _MoodPainter extends CustomPainter {
 
     // 脸（圆形填充）
     final facePaint = Paint()
-      ..color = color.withOpacity(0.3)
+      ..color = color.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, facePaint);
 
@@ -1434,8 +1431,8 @@ class _MoodPainter extends CustomPainter {
 
     // 腮红（mood 高时更红）
     final blushColor = Color.lerp(
-      color.withOpacity(0.05),
-      Colors.pink.withOpacity(0.3),
+      color.withValues(alpha: 0.05),
+      Colors.pink.withValues(alpha: 0.3),
       mood,
     )!;
     final blushPaint = Paint()
