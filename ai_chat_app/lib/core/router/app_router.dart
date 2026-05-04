@@ -14,6 +14,12 @@ import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_favorites_pag
 import 'package:ai_chat_app/presentation/differentlanguage/awesome_python/awesome_python_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/awesome_python/awesome_python_category_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/awesome_python/awesome_python_detail_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/public_apis/public_apis_home.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/public_apis/public_apis_category_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/public_apis/public_apis_detail_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_home.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_detail_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_data.dart';
 
 import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
 import 'package:ai_chat_app/features/home/pages/home_page.dart';
@@ -75,11 +81,40 @@ final GoRouter appRouter = GoRouter(
         features: (extra['features'] as List<dynamic>?)?.cast<String>() ?? [],
         useCase: extra['useCase'] as String? ?? '',
         categoryName: extra['categoryName'] as String? ?? '',
+        tutorialCode: extra['tutorialCode'] as String?,
       );
     }),
     GoRoute(path: '/awesome_python/:categoryIndex', builder: (context, state) {
       final idx = int.tryParse(state.pathParameters['categoryIndex'] ?? '') ?? 0;
       return AwesomePythonCategoryPage(categoryIndex: idx);
+    }),
+
+    // Public APIs — 公共 API 权威合集
+    GoRoute(path: '/public_apis', builder: (context, state) => const PublicApisHome()),
+    GoRoute(path: '/public_apis/detail', builder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>? ?? {};
+      return PublicApisDetailPage(
+        name: extra['name'] as String? ?? '',
+        url: extra['url'] as String? ?? '',
+        description: extra['description'] as String? ?? '',
+        auth: extra['auth'] as String? ?? 'No',
+        https: extra['https'] as bool? ?? true,
+        cors: extra['cors'] as String? ?? 'Unknown',
+        categoryName: extra['categoryName'] as String? ?? '',
+      );
+    }),
+    GoRoute(path: '/public_apis/:categoryIndex', builder: (context, state) {
+      final idx = int.tryParse(state.pathParameters['categoryIndex'] ?? '') ?? 0;
+      return PublicApisCategoryPage(categoryIndex: idx);
+    }),
+
+    // AI Agent 架构大全 — 12种主流架构详解
+    GoRoute(path: '/agent_architectures', builder: (context, state) => const AgentArchitecturesHome()),
+    GoRoute(path: '/agent_architectures/detail', builder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>? ?? {};
+      final arch = extra['arch'] as AgentArchitecture?;
+      if (arch == null) return const AgentArchitecturesHome();
+      return AgentArchitecturesDetailPage(arch: arch);
     }),
 
     // 常见问题（设备参数与故障）

@@ -36,6 +36,36 @@ class StudyHome extends StatelessWidget {
             onTap: () => context.push('/pbl'),
           ),
           const SizedBox(height: 24),
+          // Public APIs 公共API合集
+          _LanguageCard(
+            icon: Icons.api,
+            color: const Color(0xFF1565C0),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            title: 'Public APIs',
+            subtitle: '公共 API 权威合集 · 22 个分类 · 400+ API',
+            description: '来自 GitHub public-apis 的权威API合集，涵盖动物、天气、\n体育、金融、机器学习、音乐、社交、新闻等22个领域。\n每个API都提供详细的接口文档、认证方式说明和示例代码。',
+            onTap: () => context.push('/public_apis'),
+          ),
+          const SizedBox(height: 24),
+          // AI Agent 架构大全
+          _LanguageCard(
+            icon: Icons.psychology,
+            color: const Color(0xFF6A1B9A),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6A1B9A), Color(0xFFAB47BC)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            title: 'AI Agent 架构大全',
+            subtitle: '12种主流Agent架构详解 · 从入门到精通',
+            description: '涵盖 Workflow+Tool Calling、ReAct、Router+Dispatcher、\nSupervisor、Reflection、Plan-Execute、LLMCompiler、\nReWOO、ToT、Self-Consistency、Multi-Agent、Critic-Editor。\n每种架构都包含原理、流程、优劣、实践和论文引用。',
+            onTap: () => context.push('/agent_architectures'),
+          ),
+          const SizedBox(height: 24),
           _LanguageCard(
             icon: Icons.code,
             color: const Color(0xFF306998),
@@ -44,7 +74,7 @@ class StudyHome extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            title: 'Python',
+            title: 'Python（Awesome Python）',
             subtitle: '最易学的编程语言 · 22 个章节',
             description: '从零开始学 Python：基础语法、数据结构、函数、\n面向对象到 IO编程、调试测试、正则、标准库、\n实战项目与专题进阶（CGI/MySQL/SQLite+ORM/网络/SMTP/多线程/XML/GUI+turtle/异步IO/第三方模块/Web开发）。',
             onTap: () => context.push('/awesome_python'),

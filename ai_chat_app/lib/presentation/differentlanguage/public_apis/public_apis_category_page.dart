@@ -1,59 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'awesome_python_data.dart';
+import 'public_apis_data.dart';
 
 /// ============================================================
-/// Awesome Python 分类详情页面
-/// 展示子分类和所有库，支持搜索、展开/折叠
+/// Public APIs 分类详情页面
+/// 展示某个分类下所有 API，支持搜索和详情跳转
 /// ============================================================
 
-class AwesomePythonCategoryPage extends StatefulWidget {
+class PublicApisCategoryPage extends StatefulWidget {
   final int categoryIndex;
-
-  const AwesomePythonCategoryPage({super.key, required this.categoryIndex});
+  const PublicApisCategoryPage({super.key, required this.categoryIndex});
 
   @override
-  State<AwesomePythonCategoryPage> createState() => _AwesomePythonCategoryPageState();
+  State<PublicApisCategoryPage> createState() => _PublicApisCategoryPageState();
 }
 
-class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
+class _PublicApisCategoryPageState extends State<PublicApisCategoryPage> {
   String _query = '';
 
-  AwesomePythonCategory? get _category {
+  PublicApisCategory? get _category {
     final idx = widget.categoryIndex;
-    if (idx >= 0 && idx < awesomePythonCategories.length) {
-      return awesomePythonCategories[idx];
-    }
+    if (idx >= 0 && idx < publicApisCategories.length) return publicApisCategories[idx];
     return null;
   }
 
-  List<AwesomePythonSubCategory> _filteredSubs(AwesomePythonCategory cat) {
-    if (_query.isEmpty) return cat.subCategories;
+  List<PublicApi> get _filtered {
+    final cat = _category;
+    if (cat == null) return [];
+    if (_query.isEmpty) return cat.apis;
     final q = _query.toLowerCase();
-    return cat.subCategories
-        .map((sc) => AwesomePythonSubCategory(
-              sc.name,
-              sc.libraries
-                  .where((l) =>
-                      l.name.toLowerCase().contains(q) ||
-                      l.description.toLowerCase().contains(q))
-                  .toList(),
-            ))
-        .where((sc) => sc.libraries.isNotEmpty)
-        .toList();
+    return cat.apis.where((api) =>
+      api.name.toLowerCase().contains(q) || api.description.toLowerCase().contains(q)
+    ).toList();
   }
 
-  void _openLibrary(AwesomePythonLibrary lib, String categoryName) {
+  void _openDetail(PublicApi api) {
     context.push(
-      '/awesome_python/detail',
+      '/public_apis/detail',
       extra: {
-        'name': lib.name,
-        'url': lib.url,
-        'description': lib.description,
-        'features': lib.features,
-        'useCase': lib.useCase,
-        'categoryName': categoryName,
-        'tutorialCode': lib.tutorialCode,
+        'name': api.name,
+        'url': api.url,
+        'description': api.description,
+        'auth': api.auth,
+        'https': api.https,
+        'cors': api.cors,
+        'categoryName': _category?.name ?? '',
       },
     );
   }
@@ -68,14 +59,13 @@ class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
       );
     }
 
-    final filtered = _filteredSubs(cat);
-    final totalVisible = filtered.fold<int>(0, (sum, sc) => sum + sc.libraries.length);
+    final filtered = _filtered;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(cat.name),
         centerTitle: true,
-        bottom: cat.libraryCount > 20
+        bottom: cat.apis.length > 15
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(48),
                 child: Padding(
@@ -126,33 +116,19 @@ class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        cat.name,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: cat.color),
-                      ),
+                      Text(cat.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: cat.color)),
                       const SizedBox(height: 4),
-                      Text(
-                        cat.description,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(cat.description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text(
-                        '${cat.subCategories.length} 个子分类 · $totalVisible 个库/工具',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-                      ),
+                      Text('${filtered.length} 个 API', style: TextStyle(fontSize: 13, color: Colors.grey[500])),
                     ],
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: cat.color,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  decoration: BoxDecoration(color: cat.color, borderRadius: BorderRadius.circular(20)),
                   child: Text(
-                    '$totalVisible',
+                    '${filtered.length}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
@@ -175,11 +151,11 @@ class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
                     padding: const EdgeInsets.only(bottom: 32),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
-                      final sub = filtered[index];
-                      return _SubCategoryTile(
-                        subCategory: sub,
+                      final api = filtered[index];
+                      return _ApiTile(
+                        api: api,
                         color: cat.color,
-                        onTapLib: (lib) => _openLibrary(lib, cat.name),
+                        onTap: () => _openDetail(api),
                       );
                     },
                   ),
@@ -190,56 +166,64 @@ class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
   }
 }
 
-class _SubCategoryTile extends StatelessWidget {
-  final AwesomePythonSubCategory subCategory;
+class _ApiTile extends StatelessWidget {
+  final PublicApi api;
   final Color color;
-  final void Function(AwesomePythonLibrary lib) onTapLib;
+  final VoidCallback onTap;
 
-  const _SubCategoryTile({
-    required this.subCategory,
-    required this.color,
-    required this.onTapLib,
-  });
+  const _ApiTile({required this.api, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ExpansionTile(
+      child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Text(
-            '${subCategory.libraries.length}',
-            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
-          ),
+          backgroundColor: api.authColor.withValues(alpha: 0.15),
+          child: Icon(api.authIcon, color: api.authColor, size: 20),
         ),
-        title: Text(
-          subCategory.name,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-        ),
-        subtitle: Text(
-          '${subCategory.libraries.length} 个库/工具',
-          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        children: subCategory.libraries.map((lib) {
-          return ListTile(
-            leading: const Icon(Icons.link, size: 18, color: Colors.blue),
-            title: Text(lib.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            subtitle: Text(
-              lib.description,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+        title: Text(api.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(api.description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                _Badge(label: api.authLabel, color: api.authColor),
+                const SizedBox(width: 6),
+                _Badge(label: api.https ? 'HTTPS' : 'HTTP', color: api.https ? Colors.green : Colors.red.shade300),
+                const SizedBox(width: 6),
+                _Badge(label: 'CORS: ${api.cors}', color: api.cors == 'Yes' ? Colors.blue : Colors.grey),
+              ],
             ),
-            trailing: const Icon(Icons.open_in_new, size: 16),
-            dense: true,
-            onTap: () => onTapLib(lib),
-          );
-        }).toList(),
+          ],
+        ),
+        isThreeLine: true,
+        trailing: const Icon(Icons.open_in_new, size: 16),
+        dense: true,
+        onTap: onTap,
       ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Badge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
     );
   }
 }

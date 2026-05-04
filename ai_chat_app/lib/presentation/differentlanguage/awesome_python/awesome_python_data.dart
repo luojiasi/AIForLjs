@@ -6,7 +6,8 @@ class AwesomePythonLibrary {
   final String description;
   final List<String> features;
   final String useCase;
-  const AwesomePythonLibrary(this.name, this.url, this.description, this.features, this.useCase);
+  final String? tutorialCode;
+  const AwesomePythonLibrary(this.name, this.url, this.description, this.features, this.useCase, {this.tutorialCode});
 }
 
 class AwesomePythonSubCategory {

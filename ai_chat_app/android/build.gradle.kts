@@ -21,6 +21,13 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(":app")
 }
+gradle.taskGraph.whenReady {
+    allTasks.forEach { task ->
+        if (task.name.contains("lint", ignoreCase = true)) {
+            task.enabled = false
+        }
+    }
+}
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)

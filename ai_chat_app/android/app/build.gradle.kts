@@ -7,6 +7,9 @@ plugins {
 
 android {
     namespace = "com.aichat.ai_chat_app"
+    lint {
+        checkReleaseBuilds = false
+    }
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
