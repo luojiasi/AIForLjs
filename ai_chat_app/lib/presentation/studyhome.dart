@@ -49,36 +49,7 @@ class StudyHome extends StatelessWidget {
             description: '从零开始学 Python：基础语法、数据结构、函数、\n面向对象到 IO编程、调试测试、正则、标准库、\n实战项目与专题进阶（CGI/MySQL/SQLite+ORM/网络/SMTP/多线程/XML/GUI+turtle/异步IO/第三方模块/Web开发）。',
             onTap: () => context.push('/python'),
           ),
-          const SizedBox(height: 24),
-          _LanguageCard(
-            icon: Icons.phone_android,
-            color: const Color(0xFF0553B1),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0553B1), Color(0xFF027DFD)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            title: 'Flutter',
-            subtitle: '跨平台 UI 框架 · 12 个章节',
-            description: '从状态管理、动画、布局到网络请求、本地存储，\n全面掌握 Flutter 开发技能（含 Widget 基础）。',
-            onTap: () => context.push('/flutter'),
-          ),
-          
-          const SizedBox(height: 16),
-          _LanguageCard(
-            icon: Icons.flutter_dash,
-            color: const Color(0xFF0175C2),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0175C2), Color(0xFF13B9FD)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            title: 'Dart',
-            subtitle: 'Flutter 的编程语言 · 7 个章节',
-            description: '深入 Dart 语言：Null Safety、集合操作、\n面向对象、异步编程与 Dart 3 新特性。',
-            onTap: () => context.push('/dart'),
-          ),
-          const SizedBox(height: 40),
+
         ],
       ),
     );

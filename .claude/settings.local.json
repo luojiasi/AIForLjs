@@ -8,7 +8,10 @@
       "Bash(flutter doctor *)",
       "Bash(flutter analyze *)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(dart pub *)",
+      "Bash(flutter clean *)",
+      "Bash(flutter pub *)"
     ]
   }
 }
