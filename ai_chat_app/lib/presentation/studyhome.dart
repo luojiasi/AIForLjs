@@ -47,7 +47,7 @@ class StudyHome extends StatelessWidget {
             title: 'Python',
             subtitle: '最易学的编程语言 · 22 个章节',
             description: '从零开始学 Python：基础语法、数据结构、函数、\n面向对象到 IO编程、调试测试、正则、标准库、\n实战项目与专题进阶（CGI/MySQL/SQLite+ORM/网络/SMTP/多线程/XML/GUI+turtle/异步IO/第三方模块/Web开发）。',
-            onTap: () => context.push('/python'),
+            onTap: () => context.push('/awesome_python'),
           ),
 
         ],

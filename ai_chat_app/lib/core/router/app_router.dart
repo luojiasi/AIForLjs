@@ -77,9 +77,10 @@ final GoRouter appRouter = GoRouter(
         categoryName: extra['categoryName'] as String? ?? '',
       );
     }),
-    GoRoute(path: '/awesome_python/:categoryName', builder: (context, state) =>
-      AwesomePythonCategoryPage(categoryName: state.pathParameters['categoryName'] ?? ''),
-    ),
+    GoRoute(path: '/awesome_python/:categoryIndex', builder: (context, state) {
+      final idx = int.tryParse(state.pathParameters['categoryIndex'] ?? '') ?? 0;
+      return AwesomePythonCategoryPage(categoryIndex: idx);
+    }),
 
     // 常见问题（设备参数与故障）
     GoRoute(path: '/commonproblems', builder: (context, state) => const CommonProblemsHome()),

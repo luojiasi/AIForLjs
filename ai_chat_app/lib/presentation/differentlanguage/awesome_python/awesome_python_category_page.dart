@@ -8,9 +8,9 @@ import 'awesome_python_data.dart';
 /// ============================================================
 
 class AwesomePythonCategoryPage extends StatefulWidget {
-  final String categoryName;
+  final int categoryIndex;
 
-  const AwesomePythonCategoryPage({super.key, required this.categoryName});
+  const AwesomePythonCategoryPage({super.key, required this.categoryIndex});
 
   @override
   State<AwesomePythonCategoryPage> createState() => _AwesomePythonCategoryPageState();
@@ -20,12 +20,11 @@ class _AwesomePythonCategoryPageState extends State<AwesomePythonCategoryPage> {
   String _query = '';
 
   AwesomePythonCategory? get _category {
-    final decoded = Uri.decodeComponent(widget.categoryName);
-    try {
-      return awesomePythonCategories.firstWhere((c) => c.name == decoded);
-    } catch (_) {
-      return null;
+    final idx = widget.categoryIndex;
+    if (idx >= 0 && idx < awesomePythonCategories.length) {
+      return awesomePythonCategories[idx];
     }
+    return null;
   }
 
   List<AwesomePythonSubCategory> _filteredSubs(AwesomePythonCategory cat) {

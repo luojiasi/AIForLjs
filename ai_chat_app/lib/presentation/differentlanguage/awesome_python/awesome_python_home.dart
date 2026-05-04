@@ -136,9 +136,10 @@ class _AwesomePythonHomeState extends State<AwesomePythonHome> {
                         final cat = filtered[index];
                         return _CategoryCard(
                           category: cat,
-                          onTap: () => context.push(
-                            '/awesome_python/${Uri.encodeComponent(cat.name)}',
-                          ),
+                          onTap: () {
+                            final idx = awesomePythonCategories.indexOf(cat);
+                            context.push('/awesome_python/$idx');
+                          },
                         );
                       },
                       childCount: filtered.length,
