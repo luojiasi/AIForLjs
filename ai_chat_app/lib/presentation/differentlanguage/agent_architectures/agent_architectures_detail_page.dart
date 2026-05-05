@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'agent_architectures_data.dart';
+import 'agent_architectures_full_detail_page.dart';
 
 /// ============================================================
 /// AI Agent 架构 — 详情页面
@@ -197,6 +198,32 @@ class _AgentArchitecturesDetailPageState
                 _sectionCard(8, '📝 相关论文', arch.papers, arch.color, theme),
                 _sectionCard(9, '🚀 演进路径', arch.evolutionPath, arch.color, theme),
               ],
+            ),
+          ),
+
+          // ── 查看完整详解按钮 ──
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AgentArchitecturesFullDetailPage(arch: arch),
+                    ),
+                  ),
+                  icon: const Icon(Icons.menu_book, color: Colors.white),
+                  label: const Text('查看完整详解',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: arch.color,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
             ),
           ),
 
