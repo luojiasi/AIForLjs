@@ -120,5 +120,36 @@
   "assistantEditEmojiDialogHint": "输入或粘贴任意表情",
   "assistantEditEmojiDialogCancel": "取消",
   "assistantEditEmojiDialogSave": "保存",
-  "desktopAvatarMenuChangeFromImage": "从图片更换…"
+  "desktopAvatarMenuChangeFromImage": "从图片更换…",
+  "homePageCancel": "取消",
+  "homePageDelete": "删除",
+  "homePageDone": "完成",
+  "assistantProviderDefaultAssistantName": "默认助手",
+  "assistantProviderSampleAssistantName": "示例助手",
+  "assistantProviderNewAssistantName": "新助手",
+  "assistantProviderSampleAssistantSystemPrompt": "你是{model_name}, 一个人工智能助手，乐意为用户提供准确，有益的帮助。现在时间是{cur_datetime}，用户设备语言为{locale}，时区为{timezone}，用户正在使用{device_info}，版本{system_version}。如果用户没有明确说明，请使用用户设备语言进行回复。",
+  "@assistantProviderSampleAssistantSystemPrompt": {
+    "placeholders": {
+      "model_name": {
+        "type": "String"
+      },
+      "cur_datetime": {
+        "type": "String"
+      },
+      "locale": {
+        "type": "String"
+      },
+      "timezone": {
+        "type": "String"
+      },
+      "device_info": {
+        "type": "String"
+      },
+      "system_version": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantSettingsCopySuffix": "副本",
+  "homePageDefaultAssistant": "默认助手"
 }

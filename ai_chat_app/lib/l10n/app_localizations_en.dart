@@ -385,4 +385,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get desktopAvatarMenuChangeFromImage => 'Change from image…';
+
+  @override
+  String get homePageCancel => 'Cancel';
+
+  @override
+  String get homePageDelete => 'Delete';
+
+  @override
+  String get homePageDone => 'Done';
+
+  @override
+  String get assistantProviderDefaultAssistantName => 'Default Assistant';
+
+  @override
+  String get assistantProviderSampleAssistantName => 'Sample Assistant';
+
+  @override
+  String get assistantProviderNewAssistantName => 'New Assistant';
+
+  @override
+  String assistantProviderSampleAssistantSystemPrompt(
+    String model_name,
+    String cur_datetime,
+    String locale,
+    String timezone,
+    String device_info,
+    String system_version,
+  ) {
+    return 'You are $model_name, an AI assistant who gladly provides accurate and helpful assistance. The current time is $cur_datetime, the device language is $locale, timezone is $timezone, the user is using $device_info, version $system_version. If the user does not explicitly specify otherwise, please use the user\'s device language when replying.';
+  }
+
+  @override
+  String get assistantSettingsCopySuffix => 'Copy';
+
+  @override
+  String get homePageDefaultAssistant => 'Default Assistant';
 }

@@ -378,4 +378,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get desktopAvatarMenuChangeFromImage => '从图片更换…';
+
+  @override
+  String get homePageCancel => '取消';
+
+  @override
+  String get homePageDelete => '删除';
+
+  @override
+  String get homePageDone => '完成';
+
+  @override
+  String get assistantProviderDefaultAssistantName => '默认助手';
+
+  @override
+  String get assistantProviderSampleAssistantName => '示例助手';
+
+  @override
+  String get assistantProviderNewAssistantName => '新助手';
+
+  @override
+  String assistantProviderSampleAssistantSystemPrompt(
+    String model_name,
+    String cur_datetime,
+    String locale,
+    String timezone,
+    String device_info,
+    String system_version,
+  ) {
+    return '你是$model_name, 一个人工智能助手，乐意为用户提供准确，有益的帮助。现在时间是$cur_datetime，用户设备语言为$locale，时区为$timezone，用户正在使用$device_info，版本$system_version。如果用户没有明确说明，请使用用户设备语言进行回复。';
+  }
+
+  @override
+  String get assistantSettingsCopySuffix => '副本';
+
+  @override
+  String get homePageDefaultAssistant => '默认助手';
 }

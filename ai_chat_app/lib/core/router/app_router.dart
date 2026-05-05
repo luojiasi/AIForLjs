@@ -20,6 +20,8 @@ import 'package:ai_chat_app/presentation/differentlanguage/public_apis/public_ap
 import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_detail_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_data.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_home.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_detail_page.dart';
 
 import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
 import 'package:ai_chat_app/features/home/pages/home_page.dart';
@@ -48,8 +50,8 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   observers: [routeObserver],
   routes: [
-    // GoRoute(path: '/', builder: (context, state) => _homePage()),
-    GoRoute(path: '/',builder: (context, state) => const AboutPage()),
+    GoRoute(path: '/', builder: (context, state) => _homePage()),
+    // GoRoute(path: '/',builder: (context, state) => const AboutPage()),
     GoRoute(path: '/study', builder: (context, state) => const StudyHome()),
 
     
@@ -115,6 +117,13 @@ final GoRouter appRouter = GoRouter(
       final arch = extra['arch'] as AgentArchitecture?;
       if (arch == null) return const AgentArchitecturesHome();
       return AgentArchitecturesDetailPage(arch: arch);
+    }),
+
+    // Python 爬虫教程 — 4大热门项目从零到精通
+    GoRoute(path: '/python_crawler', builder: (context, state) => const PythonCrawlerHome()),
+    GoRoute(path: '/python_crawler/:projectIndex', builder: (context, state) {
+      final idx = int.tryParse(state.pathParameters['projectIndex'] ?? '') ?? 0;
+      return PythonCrawlerDetailPage(projectIndex: idx);
     }),
 
     // 常见问题（设备参数与故障）

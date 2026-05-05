@@ -332,7 +332,31 @@ class SettingsProvider extends ChangeNotifier {
   String? get _effectiveCodeFontAlias => (_codeFontLocalAlias?.isNotEmpty == true) ? _codeFontLocalAlias : null;
   bool get codeFontIsGoogle => _codeFontIsGoogle;
 
+  ///=======
+  ///Display
+  static const String _displayShowMessageNavKey = 'display_show_message_nav_v1';
+  static const String _displayChatBackgroundMaskStrengthKey ='display_chat_background_mask_strength_v1';
+  ///=======
+  bool _showMessageNavButtons = true;
+  bool get showMessageNavButtons => _showMessageNavButtons;
+  Future<void> setShowMessageNavButtons(bool v) async {
+    if (_showMessageNavButtons == v) return;
+    _showMessageNavButtons = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayShowMessageNavKey, v);
+  }
 
+  double _chatBackgroundMaskStrength = 1.0;
+  double get chatBackgroundMaskStrength => _chatBackgroundMaskStrength;
+  Future<void> setChatBackgroundMaskStrength(double strength) async {
+    final s = strength.clamp(0.0, 2.0);
+    if (_chatBackgroundMaskStrength == s) return;
+    _chatBackgroundMaskStrength = s;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_displayChatBackgroundMaskStrengthKey,_chatBackgroundMaskStrength,);
+  }
 
 
 }

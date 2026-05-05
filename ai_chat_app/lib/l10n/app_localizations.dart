@@ -823,6 +823,67 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change from image…'**
   String get desktopAvatarMenuChangeFromImage;
+
+  /// No description provided for @homePageCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get homePageCancel;
+
+  /// No description provided for @homePageDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get homePageDelete;
+
+  /// No description provided for @homePageDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get homePageDone;
+
+  /// No description provided for @assistantProviderDefaultAssistantName.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Assistant'**
+  String get assistantProviderDefaultAssistantName;
+
+  /// No description provided for @assistantProviderSampleAssistantName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample Assistant'**
+  String get assistantProviderSampleAssistantName;
+
+  /// No description provided for @assistantProviderNewAssistantName.
+  ///
+  /// In en, this message translates to:
+  /// **'New Assistant'**
+  String get assistantProviderNewAssistantName;
+
+  /// No description provided for @assistantProviderSampleAssistantSystemPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {model_name}, an AI assistant who gladly provides accurate and helpful assistance. The current time is {cur_datetime}, the device language is {locale}, timezone is {timezone}, the user is using {device_info}, version {system_version}. If the user does not explicitly specify otherwise, please use the user\'s device language when replying.'**
+  String assistantProviderSampleAssistantSystemPrompt(
+    String model_name,
+    String cur_datetime,
+    String locale,
+    String timezone,
+    String device_info,
+    String system_version,
+  );
+
+  /// No description provided for @assistantSettingsCopySuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get assistantSettingsCopySuffix;
+
+  /// No description provided for @homePageDefaultAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Assistant'**
+  String get homePageDefaultAssistant;
 }
 
 class _AppLocalizationsDelegate

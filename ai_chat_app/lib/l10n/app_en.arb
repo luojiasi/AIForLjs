@@ -205,5 +205,36 @@
   "assistantEditEmojiDialogHint": "Type or paste any emoji",
   "assistantEditEmojiDialogCancel": "Cancel",
   "assistantEditEmojiDialogSave": "Save",
-  "desktopAvatarMenuChangeFromImage": "Change from image…"
+  "desktopAvatarMenuChangeFromImage": "Change from image…",
+  "homePageCancel": "Cancel",
+  "homePageDelete": "Delete",
+  "homePageDone": "Done",
+  "assistantProviderDefaultAssistantName": "Default Assistant",
+  "assistantProviderSampleAssistantName": "Sample Assistant",
+  "assistantProviderNewAssistantName": "New Assistant",
+  "assistantProviderSampleAssistantSystemPrompt": "You are {model_name}, an AI assistant who gladly provides accurate and helpful assistance. The current time is {cur_datetime}, the device language is {locale}, timezone is {timezone}, the user is using {device_info}, version {system_version}. If the user does not explicitly specify otherwise, please use the user's device language when replying.",
+  "@assistantProviderSampleAssistantSystemPrompt": {
+    "placeholders": {
+      "model_name": {
+        "type": "String"
+      },
+      "cur_datetime": {
+        "type": "String"
+      },
+      "locale": {
+        "type": "String"
+      },
+      "timezone": {
+        "type": "String"
+      },
+      "device_info": {
+        "type": "String"
+      },
+      "system_version": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantSettingsCopySuffix": "Copy",
+  "homePageDefaultAssistant": "Default Assistant"
 }

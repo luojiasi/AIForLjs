@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_chat_app/core/services/python_executor_service.dart';
 
 /// ============================================================
 /// 教程通用组件库 v2.0
@@ -10,16 +12,177 @@ import 'package:flutter/services.dart';
 // 静态展示组件
 // ─────────────────────────────────────────────────────────────
 
-/// 代码块组件 —— 带背景色和复制按钮的代码展示
-class CodeBlock extends StatelessWidget {
+/// 代码块组件 —— 带复制和运行按钮的代码展示
+///
+/// 桌面端（Windows/Mac/Linux）：显示 ▶ 运行按钮，通过本地 Python 后端执行
+/// 移动端/Web：仅显示复制按钮，引导用户在 PC 上运行
+class CodeBlock extends StatefulWidget {
   final String code;
   final String? language;
+  /// Whether to show the Run button. Defaults to true on desktop, ignored on mobile.
+  final bool showRunButton;
 
-  const CodeBlock(this.code, {super.key, this.language});
+  const CodeBlock(this.code, {super.key, this.language, this.showRunButton = true});
+
+  @override
+  State<CodeBlock> createState() => _CodeBlockState();
+}
+
+class _CodeBlockState extends State<CodeBlock> {
+  bool _running = false;
+  ExecutionResult? _result;
+  bool _copied = false;
+
+  /// Only desktop platforms can run Python locally
+  bool get _isDesktop =>
+      !kIsWeb &&
+      defaultTargetPlatform != TargetPlatform.android &&
+      defaultTargetPlatform != TargetPlatform.iOS;
+
+  Future<void> _runCode() async {
+    setState(() { _running = true; _result = null; });
+    try {
+      final result = await PythonExecutorService().execute(widget.code);
+      if (mounted) setState(() => _result = result);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _result = ExecutionResult(success: false, error: e.toString()));
+      }
+    } finally {
+      if (mounted) setState(() => _running = false);
+    }
+  }
+
+  /// Show a fallback dialog when Python server is not reachable
+  void _showServerNotRunningDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange.shade700, size: 24),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      '代码运行说明',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Icon(Icons.close, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_isDesktop) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '启动本地 Python 服务',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '在终端中依次运行以下命令：\n\n'
+                        '  cd python_executor\n'
+                        '  pip install -r requirements.txt\n'
+                        '  python server.py\n\n'
+                        '启动后即可点击代码块的 ▶ 运行按钮执行代码。',
+                        style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.6),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: const Text(
+                    'Python 代码需要在电脑上运行。\n'
+                    '请将代码复制到您的电脑上执行，'
+                    '或使用桌面版应用体验运行功能。',
+                    style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.6),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: widget.code));
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('代码已复制到剪贴板，可粘贴到本地 Python 环境运行'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.copy, size: 18),
+                  label: const Text('复制代码'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onRunPressed() async {
+    if (!_isDesktop) {
+      _showServerNotRunningDialog();
+      return;
+    }
+    // Check if server is reachable
+    final online = await PythonExecutorService().isServerRunning();
+    if (!online) {
+      if (mounted) _showServerNotRunningDialog();
+      return;
+    }
+    await _runCode();
+  }
+
+  Future<void> _copyCode() async {
+    await Clipboard.setData(ClipboardData(text: widget.code));
+    setState(() => _copied = true);
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _copied = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final codeStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 14,
+      height: 1.6,
+      color: isDark ? const Color(0xFFD4D4D4) : const Color(0xFF1E1E1E),
+    );
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -31,7 +194,7 @@ class CodeBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 标题栏
+          // Title bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
@@ -43,33 +206,114 @@ class CodeBlock extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // 红绿黄三个圆点
                 Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFFF5F56), shape: BoxShape.circle)),
                 const SizedBox(width: 6),
                 Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFFFBD2E), shape: BoxShape.circle)),
                 const SizedBox(width: 6),
                 Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF27C93F), shape: BoxShape.circle)),
                 const SizedBox(width: 10),
-                if (language != null)
-                  Text(language!, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                if (widget.language != null)
+                  Text(widget.language!, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                 const Spacer(),
-                // 复制按钮
-                _CopyButton(code: code),
+                // Run button — desktop only
+                if (widget.showRunButton)
+                  _ToolbarButton(
+                    icon: _running ? Icons.hourglass_empty : Icons.play_arrow,
+                    label: _isDesktop ? '运行' : '运行 (需桌面端)',
+                    color: const Color(0xFF27C93F),
+                    onTap: _running ? null : _onRunPressed,
+                  ),
+                const SizedBox(width: 4),
+                // Copy button
+                _ToolbarButton(
+                  icon: _copied ? Icons.check : Icons.copy,
+                  label: '复制',
+                  color: _copied ? Colors.green : Colors.grey[500]!,
+                  onTap: _copyCode,
+                ),
               ],
             ),
           ),
-          // 代码内容
+          // Code content
           Padding(
             padding: const EdgeInsets.all(16),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              child: SelectableText(widget.code, style: codeStyle),
+            ),
+          ),
+          // Run result
+          if (_result != null) _buildResult(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResult(bool isDark) {
+    final hasError = _result!.error != null && _result!.error!.isNotEmpty;
+    final hasOutput = _result!.output.isNotEmpty;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: hasError ? Colors.red.shade50 : Colors.black,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: hasError ? Colors.red.shade300 : Colors.green.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Result header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: hasError ? Colors.red.shade100 : Colors.green.withValues(alpha: 0.2),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(7),
+                topRight: Radius.circular(7),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  hasError ? Icons.error_outline : Icons.check_circle_outline,
+                  size: 14,
+                  color: hasError ? Colors.red : Colors.green,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  hasError ? '运行错误' : '运行结果',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: hasError ? Colors.red.shade700 : Colors.green),
+                ),
+                const Spacer(),
+                if (_result!.executionTimeMs != null)
+                  Text(
+                    '${_result!.executionTimeMs!.toStringAsFixed(0)} ms',
+                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                  ),
+                GestureDetector(
+                  onTap: () => setState(() => _result = null),
+                  child: Icon(Icons.close, size: 14, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ),
+          // Result content
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: SelectableText(
-                code,
+                hasOutput ? _result!.output : (_result!.error ?? ''),
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 14,
-                  height: 1.6,
-                  color: isDark ? const Color(0xFFD4D4D4) : const Color(0xFF1E1E1E),
+                  fontSize: 13,
+                  height: 1.5,
+                  color: hasError
+                      ? Colors.red.shade800
+                      : (hasOutput ? const Color(0xFF79C0FF) : Colors.grey),
                 ),
               ),
             ),
@@ -80,29 +324,29 @@ class CodeBlock extends StatelessWidget {
   }
 }
 
-class _CopyButton extends StatefulWidget {
-  final String code;
-  const _CopyButton({required this.code});
-  @override
-  State<_CopyButton> createState() => _CopyButtonState();
-}
+class _ToolbarButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
 
-class _CopyButtonState extends State<_CopyButton> {
-  bool _copied = false;
+  const _ToolbarButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () async {
-        await Clipboard.setData(ClipboardData(text: widget.code));
-        setState(() => _copied = true);
-        await Future.delayed(const Duration(seconds: 2));
-        if (mounted) setState(() => _copied = false);
-      },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: _copied
-            ? const Icon(Icons.check, size: 16, color: Colors.green, key: ValueKey('check'))
-            : Icon(Icons.copy, size: 16, color: Colors.grey[500], key: const ValueKey('copy')),
+      onTap: onTap,
+      child: Tooltip(
+        message: label,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Icon(icon, size: 16, color: onTap == null ? Colors.grey[400] : color),
+        ),
       ),
     );
   }
