@@ -193,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.1"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: "3e0141505477fd8ad55d6eb4e7776d3fe8430be8e497ccb1521370c3f21a3e2b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.8"
   fake_async:
     dependency: transitive
     description:
@@ -307,6 +315,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.7"
+  flutter_mobx:
+    dependency: transitive
+    description:
+      name: flutter_mobx
+      sha256: ba5e93467866a2991259dc51cffd41ef45f695c667c2b8e7b087bf24118b50fe
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -637,6 +653,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mobx:
+    dependency: transitive
+    description:
+      name: mobx
+      sha256: "25ea9a3ee69243d578fb6288721d8eeb18550d0391c32f896d377d994154bff2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.0"
   mocktail:
     dependency: "direct dev"
     description:
@@ -1146,6 +1170,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.1.0"
+  vyuh_node_flow:
+    dependency: "direct main"
+    description:
+      name: vyuh_node_flow
+      sha256: "12f96e7966dd85c277650bfa698a0501916bd8a3800c6de54f816789469a6a30"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.27.3"
   web:
     dependency: transitive
     description:

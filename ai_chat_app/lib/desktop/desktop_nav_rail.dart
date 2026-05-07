@@ -6,6 +6,7 @@ import 'package:ai_chat_app/icons/lucide_adapter.dart' as lucide;
 import 'package:ai_chat_app/l10n/app_localizations.dart';
 import 'package:ai_chat_app/shared/widgets/emoji_text.dart';
 import 'package:ai_chat_app/utils/sandbox_path_resolver.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -88,6 +89,14 @@ class DesktopNavRail extends StatelessWidget {
           //   iconColor: isStorageActive ? cs.primary : null,
           // ),
           const Spacer(),
+          _CircleAction(
+            tooltip: 'Workflow (simplen8n)',
+            icon: lucide.Lucide.Network,
+            onTap: () => GoRouter.of(context).go('/simplen8n'),
+            size: 40,
+            iconSize: 18,
+          ),
+          const SizedBox(height: 8),
           _ThemeCycleButton(),
           const SizedBox(height: 8),
           _CircleAction(

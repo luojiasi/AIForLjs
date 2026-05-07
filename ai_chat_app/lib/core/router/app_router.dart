@@ -6,6 +6,8 @@ import 'package:ai_chat_app/features/settings/pages/about_page.dart';
 
 import 'package:ai_chat_app/presentation/studyhome.dart';
 import 'package:ai_chat_app/presentation/commonproblems/commonproblems_home.dart';
+import 'package:ai_chat_app/presentation/simplen8n/simplen8n_init.dart';
+import 'package:ai_chat_app/presentation/simplen8n/ui/simplen8n_home_page.dart';
 import 'package:ai_chat_app/presentation/commonproblems/brand_device_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/pbl/pbl_language_page.dart';
@@ -125,6 +127,15 @@ final GoRouter appRouter = GoRouter(
       final idx = int.tryParse(state.pathParameters['projectIndex'] ?? '') ?? 0;
       return PythonCrawlerDetailPage(projectIndex: idx);
     }),
+
+    // simplen8n — 可视化工作流自动化引擎
+    GoRoute(
+      path: '/simplen8n',
+      builder: (context, state) {
+        initSimplen8n();
+        return const Simplen8nHomePage();
+      },
+    ),
 
     // 常见问题（设备参数与故障）
     GoRoute(path: '/commonproblems', builder: (context, state) => const CommonProblemsHome()),

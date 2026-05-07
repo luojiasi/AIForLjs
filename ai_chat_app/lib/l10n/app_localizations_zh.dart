@@ -414,4 +414,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homePageDefaultAssistant => '默认助手';
+
+  @override
+  String get sideDrawerPinnedLabel => '📌 已置顶';
+
+  @override
+  String get sideDrawerAssistantsTab => '助手';
+
+  @override
+  String get sideDrawerTopicsTab => '话题';
+
+  @override
+  String get sideDrawerToday => '今天';
+
+  @override
+  String get sideDrawerYesterday => '昨天';
+
+  @override
+  String sideDrawerDaysAgo(int count) {
+    return '$count 天前';
+  }
+
+  @override
+  String get sideDrawerDefaultUser => '用户';
+
+  @override
+  String get sideDrawerUserName => '用户名称';
 }

@@ -19,26 +19,26 @@ import 'package:provider/provider.dart';
 class HomeMobileScaffold extends StatelessWidget{
   const HomeMobileScaffold({
     super.key,
-      required this.scaffoldKey,
-      required this.drawerController,
-      required this.title,
-      required this.onToggleDrawer,
-      required this.body,
-      required this.drawer,
-      this.appBarOverride,
+    required this.scaffoldKey,
+    required this.drawerController,
+    required this.title,
+    required this.onToggleDrawer,
+    
+    this.appBarOverride,
+    required this.body,
   });
   final GlobalKey<ScaffoldState> scaffoldKey;
   final InteractiveDrawerController drawerController;
   final String title;
   final VoidCallback onToggleDrawer;
   final PreferredSizeWidget? appBarOverride;
-  final Widget body;  // 主内容   → 外部传入
-  final Widget drawer; 
+  final Widget body; 
 
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    //TODO
     return InteractiveDrawer(
       controller: drawerController,
       side: DrawerSide.left,
@@ -69,6 +69,9 @@ class HomeMobileScaffold extends StatelessWidget{
         defaultTargetPlatform == TargetPlatform.macOS ||
         defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.linux;
+
+
+    //TODO
     return AppBar(
       systemOverlayStyle: (Theme.of(context).brightness == Brightness.dark)
       ?const SystemUiOverlayStyle(
@@ -97,6 +100,7 @@ class HomeMobileScaffold extends StatelessWidget{
               colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
             ),
             onTap: () {
+              //TODO
               // onDismissKeyboard();
               onToggleDrawer();
             },

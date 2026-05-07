@@ -421,4 +421,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homePageDefaultAssistant => 'Default Assistant';
+
+  @override
+  String get sideDrawerPinnedLabel => '📌 Pinned';
+
+  @override
+  String get sideDrawerAssistantsTab => 'Assistants';
+
+  @override
+  String get sideDrawerTopicsTab => 'Topics';
+
+  @override
+  String get sideDrawerToday => 'Today';
+
+  @override
+  String get sideDrawerYesterday => 'Yesterday';
+
+  @override
+  String sideDrawerDaysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String get sideDrawerDefaultUser => 'User';
+
+  @override
+  String get sideDrawerUserName => 'User Name';
 }

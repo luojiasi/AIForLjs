@@ -151,5 +151,18 @@
     }
   },
   "assistantSettingsCopySuffix": "副本",
-  "homePageDefaultAssistant": "默认助手"
+  "homePageDefaultAssistant": "默认助手",
+  "sideDrawerPinnedLabel": "📌 已置顶",
+  "sideDrawerAssistantsTab": "助手",
+  "sideDrawerTopicsTab": "话题",
+  "sideDrawerToday": "今天",
+  "sideDrawerYesterday": "昨天",
+  "sideDrawerDaysAgo": "{count} 天前",
+  "@sideDrawerDaysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sideDrawerDefaultUser": "用户",
+  "sideDrawerUserName": "用户名称"
 }

@@ -236,5 +236,18 @@
     }
   },
   "assistantSettingsCopySuffix": "Copy",
-  "homePageDefaultAssistant": "Default Assistant"
+  "homePageDefaultAssistant": "Default Assistant",
+  "sideDrawerPinnedLabel": "📌 Pinned",
+  "sideDrawerAssistantsTab": "Assistants",
+  "sideDrawerTopicsTab": "Topics",
+  "sideDrawerToday": "Today",
+  "sideDrawerYesterday": "Yesterday",
+  "sideDrawerDaysAgo": "{count} days ago",
+  "@sideDrawerDaysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sideDrawerDefaultUser": "User",
+  "sideDrawerUserName": "User Name"
 }

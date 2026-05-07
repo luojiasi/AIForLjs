@@ -884,6 +884,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Default Assistant'**
   String get homePageDefaultAssistant;
+
+  /// No description provided for @sideDrawerPinnedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'📌 Pinned'**
+  String get sideDrawerPinnedLabel;
+
+  /// No description provided for @sideDrawerAssistantsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistants'**
+  String get sideDrawerAssistantsTab;
+
+  /// No description provided for @sideDrawerTopicsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics'**
+  String get sideDrawerTopicsTab;
+
+  /// No description provided for @sideDrawerToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get sideDrawerToday;
+
+  /// No description provided for @sideDrawerYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get sideDrawerYesterday;
+
+  /// No description provided for @sideDrawerDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String sideDrawerDaysAgo(int count);
+
+  /// No description provided for @sideDrawerDefaultUser.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get sideDrawerDefaultUser;
+
+  /// No description provided for @sideDrawerUserName.
+  ///
+  /// In en, this message translates to:
+  /// **'User Name'**
+  String get sideDrawerUserName;
 }
 
 class _AppLocalizationsDelegate

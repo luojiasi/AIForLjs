@@ -39,7 +39,6 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
   final GlobalKey _selectionMiniMapKey = GlobalKey();
   // // Android 进程文本流订阅（接收其他 App 分享的文本）
   final GlobalKey _selectionExportBarKey = GlobalKey();
-  bool _selecting = false;
 
 
   // ============================================================================
@@ -155,12 +154,9 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
       title: title,
       onToggleDrawer: () => _drawerController.toggle(),
       body: _buildBody(),
-      drawer: _buildDrawerContent(),
     );
   }
-  Widget _buildDrawerContent() {
-    return const ColoredBox(color: Colors.white);
-  }
+
 
   Widget _buildMessageList() {
     return ListView.builder(
@@ -198,7 +194,6 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
           // 左侧嵌入侧栏
           SizedBox(
             width: 280,
-            child: _buildDrawerContent(),
           ),
           // 分隔线
           const VerticalDivider(width: 1),
