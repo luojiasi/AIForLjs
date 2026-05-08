@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 import 'dart:developer' as developer;
-
-import 'package:http/http.dart' as http;
 
 import '../models/workflow_model.dart';
 import '../models/execution_data.dart';
 import 'execution_context.dart';
 import 'dag_analyzer.dart';
+import 'exceptions.dart';
+import 'executor_registry.dart';
 
 // ============================================================================
 // 执行堆栈条目
@@ -60,19 +59,19 @@ class ExecutionEngine {
     try {
       // 0. 校验
       if (workflow.nodes.isEmpty) {
-        return _result(executionId, ExecutionStatus.error, startedAt,
-            error: 'Workflow has no nodes');
+        throw WorkflowValidationException('Workflow has no nodes',
+            executionId: executionId);
       }
 
       // 0a. 循环检测
       _dag = DagAnalyzer(workflow);
       if (_dag!.hasCycle()) {
         final cycles = _dag!.findAllCycles();
-        final cycleStr = cycles
-            .map((c) => c.join(' → '))
-            .join('\n  ');
-        return _result(executionId, ExecutionStatus.error, startedAt,
-            error: 'Workflow contains cycle(s):\n  $cycleStr');
+        final cycleStr =
+            cycles.map((c) => c.join(' → ')).join('\n  ');
+        throw WorkflowValidationException(
+            'Workflow contains cycle(s):\n  $cycleStr',
+            executionId: executionId);
       }
 
       // 1. 注入工作流变量到上下文
@@ -84,8 +83,9 @@ class ExecutionEngine {
       // 2. 找到起始节点并初始化执行栈
       final startNodes = _dag!.sourceNodes;
       if (startNodes.isEmpty) {
-        return _result(executionId, ExecutionStatus.error, startedAt,
-            error: 'No start node found (all nodes have incoming connections)');
+        throw WorkflowValidationException(
+            'No start node found (all nodes have incoming connections)',
+            executionId: executionId);
       }
 
       for (final nodeId in startNodes) {
@@ -124,6 +124,14 @@ class ExecutionEngine {
       }
 
       return _result(executionId, ExecutionStatus.success, startedAt);
+    } on WorkflowValidationException catch (e) {
+      developer.log('[Phase 1] Validation error: $e');
+      return _result(executionId, ExecutionStatus.error, startedAt,
+          error: e.message);
+    } on Simplen8nException catch (e) {
+      developer.log('[Phase 1] Execution error: $e');
+      return _result(executionId, ExecutionStatus.error, startedAt,
+          error: e.message);
     } catch (e, stack) {
       developer.log('[Phase 1] Fatal error: $e\n$stack');
       return _result(executionId, ExecutionStatus.error, startedAt,
@@ -176,9 +184,24 @@ class ExecutionEngine {
         // 将输出传递给下游
         _pushDownstream(workflow, node, output);
         return;
+      } on NodeExecutionException catch (e) {
+        lastError = e;
+        developer
+            .log('[Phase 1] Node ${node.name} attempt $attempt failed: $e');
+
+        if (attempt <= node.retryOnFail &&
+            node.waitBetweenTries > 0) {
+          await Future.delayed(
+              Duration(milliseconds: node.waitBetweenTries));
+        }
       } catch (e) {
-        lastError = e is Exception ? e : Exception(e.toString());
-        developer.log('[Phase 1] Node ${node.name} attempt $attempt failed: $e');
+        lastError = NodeExecutionException(
+          e.toString(),
+          nodeId: node.id,
+          nodeType: node.type,
+        );
+        developer
+            .log('[Phase 1] Node ${node.name} attempt $attempt unexpected error: $e');
 
         if (attempt <= node.retryOnFail &&
             node.waitBetweenTries > 0) {
@@ -190,16 +213,18 @@ class ExecutionEngine {
 
     // 所有重试都失败了
     final duration = DateTime.now().difference(nodeStart).inMilliseconds;
+    final errorMsg = lastError is NodeExecutionException
+        ? lastError.message
+        : lastError?.toString() ?? 'Unknown error';
     _nodeResults[item.nodeId] = NodeExecutionResult(
       nodeId: item.nodeId,
       status: NodeExecutionStatus.error,
-      error: lastError?.toString() ?? 'Unknown error',
+      error: errorMsg,
       durationMs: duration,
       retryCount: attempt - 1,
     );
 
     if (!node.continueOnFail) {
-      // 不再推送到下游，执行栈返回时错误会向上传播
       developer
           .log('[Phase 1] Node ${node.name} FAILED after $attempt attempts');
     }
@@ -311,182 +336,16 @@ class ExecutionEngine {
       context.setCurrentInput(inputData.first.json);
     }
 
-    switch (node.type) {
-      case 'manual_trigger':
-        return [const NodeExecutionData(json: {})];
-
-      case 'http_request':
-        return _executeHttpRequest(node, inputData, context);
-
-      case 'set':
-        return _executeSet(node, inputData, context);
-
-      case 'if':
-        return _executeIf(node, inputData, context);
-
-      case 'merge':
-        return _executeMerge(node, inputData, context);
-
-      default:
-        throw Exception('Unknown node type: ${node.type}');
-    }
-  }
-
-  // ===========================================================================
-  // HTTP Request
-  // ===========================================================================
-
-  Future<List<NodeExecutionData>> _executeHttpRequest(
-    WorkflowNode node,
-    List<NodeExecutionData> inputData,
-    ExecutionContext context,
-  ) async {
-    final method = node.parameters['method'] as String? ?? 'GET';
-    final rawUrl = node.parameters['url'] as String? ?? '';
-    final url = context.evaluateTemplate(rawUrl);
-
-    Map<String, String> headers = {};
-    try {
-      final raw = node.parameters['headers'] as String? ?? '{}';
-      final parsed = jsonDecode(raw) as Map<String, dynamic>;
-      headers = parsed.map((k, v) => MapEntry(k, v.toString()));
-    } catch (_) {}
-
-    String? body;
-    if (node.parameters['body'] is String &&
-        (node.parameters['body'] as String).isNotEmpty) {
-      body = context.evaluateTemplate(node.parameters['body'] as String);
+    final executor = ExecutorRegistry.instance.get(node.type);
+    if (executor == null) {
+      throw NodeExecutionException(
+        'Unknown node type: ${node.type}',
+        nodeId: node.id,
+        nodeType: node.type,
+      );
     }
 
-    final uri = Uri.parse(url);
-    http.Response response;
-
-    switch (method.toUpperCase()) {
-      case 'GET':
-        response = await http.get(uri, headers: headers);
-        break;
-      case 'POST':
-        response = await http.post(uri, headers: headers, body: body);
-        break;
-      case 'PUT':
-        response = await http.put(uri, headers: headers, body: body);
-        break;
-      case 'DELETE':
-        response = await http.delete(uri, headers: headers);
-        break;
-      case 'PATCH':
-        response = await http.patch(uri, headers: headers, body: body);
-        break;
-      default:
-        throw Exception('Unsupported HTTP method: $method');
-    }
-
-    dynamic responseBody;
-    try {
-      responseBody = jsonDecode(response.body);
-    } catch (_) {
-      responseBody = response.body;
-    }
-
-    return [
-      NodeExecutionData(json: {
-        'statusCode': response.statusCode,
-        'headers': response.headers,
-        'body': responseBody,
-      }),
-    ];
-  }
-
-  // ===========================================================================
-  // Set
-  // ===========================================================================
-
-  Future<List<NodeExecutionData>> _executeSet(
-    WorkflowNode node,
-    List<NodeExecutionData> inputData,
-    ExecutionContext context,
-  ) async {
-    final rawValues = node.parameters['values'] as String? ?? '{}';
-
-    Map<String, dynamic> values;
-    try {
-      values = Map<String, dynamic>.from(jsonDecode(rawValues));
-    } catch (_) {
-      values = {};
-    }
-
-    final result = Map<String, dynamic>.from(context.currentInput);
-    for (final entry in values.entries) {
-      if (entry.value is String) {
-        final evaluated =
-            context.evaluateTemplate(entry.value as String);
-        // 尝试解析为 JSON
-        try {
-          result[entry.key] = jsonDecode(evaluated);
-        } catch (_) {
-          result[entry.key] = evaluated;
-        }
-      } else {
-        result[entry.key] = entry.value;
-      }
-    }
-
-    return [NodeExecutionData(json: result)];
-  }
-
-  // ===========================================================================
-  // IF 节点 — 条件分支
-  // ===========================================================================
-
-  Future<List<NodeExecutionData>> _executeIf(
-    WorkflowNode node,
-    List<NodeExecutionData> inputData,
-    ExecutionContext context,
-  ) async {
-    final rawCondition = node.parameters['condition'] as String? ?? 'true';
-    final evaluated = context.evaluate(rawCondition);
-
-    final condition = evaluated == true ||
-        evaluated == 'true' ||
-        (evaluated is num && evaluated != 0) ||
-        (evaluated is String && evaluated.isNotEmpty && evaluated != 'false');
-
-    developer
-        .log('[IF] Condition "$rawCondition" → $evaluated → $condition');
-
-    return [
-      NodeExecutionData(
-        json: {...context.currentInput, '_branch': condition},
-      ),
-    ];
-  }
-
-  // ===========================================================================
-  // Merge 节点 — 多输入合并
-  // ===========================================================================
-
-  Future<List<NodeExecutionData>> _executeMerge(
-    WorkflowNode node,
-    List<NodeExecutionData> inputData,
-    ExecutionContext context,
-  ) async {
-    final mode = node.parameters['mode'] as String? ?? 'combine';
-
-    switch (mode) {
-      case 'passThrough':
-        return inputData.isNotEmpty
-            ? [inputData.first]
-            : [const NodeExecutionData()];
-
-      case 'combine':
-      default:
-        final merged = <String, dynamic>{};
-        merged['inputCount'] = inputData.length;
-        for (var i = 0; i < inputData.length; i++) {
-          merged['input_$i'] = inputData[i].json;
-        }
-        return [NodeExecutionData(json: merged)];
-    }
+    return executor.execute(node, inputData, context);
   }
 
   // ===========================================================================

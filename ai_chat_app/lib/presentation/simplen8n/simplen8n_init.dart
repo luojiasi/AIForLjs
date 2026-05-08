@@ -1,12 +1,34 @@
 import 'models/node_type.dart';
 import 'nodes/node_registry.dart';
+import 'engine/executor_registry.dart';
+import 'engine/executors/manual_trigger_executor.dart';
+import 'engine/executors/http_request_executor.dart';
+import 'engine/executors/set_executor.dart';
+import 'engine/executors/if_executor.dart';
+import 'engine/executors/merge_executor.dart';
+import 'engine/executors/ai_chat_executor.dart';
+import 'engine/executors/webhook_trigger_executor.dart';
+import 'engine/executors/cron_trigger_executor.dart';
 
-/// 初始化 simplen8n — 注册所有节点类型
+/// 初始化 simplen8n — 注册所有节点类型和 executor
 void initSimplen8n() {
   final registry = NodeRegistry.instance;
+  final execRegistry = ExecutorRegistry.instance;
 
   // 只在空注册表时初始化
   if (registry.all.isNotEmpty) return;
+
+  // 注册 executor
+  execRegistry.registerAll([
+    ManualTriggerExecutor(),
+    HttpRequestExecutor(),
+    SetExecutor(),
+    IfExecutor(),
+    MergeExecutor(),
+    AiChatExecutor(),
+    WebhookTriggerExecutor(),
+    CronTriggerExecutor(),
+  ]);
 
   // Phase 0: 注册 3 个核心节点类型
   registry.registerAll([
@@ -129,6 +151,143 @@ void initSimplen8n() {
         ),
       ],
       description: 'Merge multiple branches into one. Waits for all inputs then combines them.',
+    ),
+
+    // AI Chat
+    const NodeTypeDefinition(
+      type: 'ai_chat',
+      displayName: 'AI Chat',
+      category: NodeCategory.ai,
+      inputs: [PortDefinition(id: 'input', name: 'Input')],
+      outputs: [PortDefinition(id: 'output', name: 'Output')],
+      parameterSchema: [
+        ParameterSchema(
+          name: 'provider',
+          displayName: 'Provider',
+          type: ParameterType.select,
+          defaultValue: 'openai',
+          options: [
+            ParameterOption(label: 'OpenAI', value: 'openai'),
+            ParameterOption(label: 'Anthropic', value: 'anthropic'),
+            ParameterOption(label: 'DeepSeek', value: 'deepseek'),
+            ParameterOption(label: 'Custom', value: 'custom'),
+          ],
+          description: 'AI API provider type.',
+        ),
+        ParameterSchema(
+          name: 'model',
+          displayName: 'Model ID',
+          type: ParameterType.string,
+          defaultValue: 'gpt-4o',
+          required: true,
+          description: 'Model identifier (e.g. gpt-4o, claude-sonnet-4-6, deepseek-chat).',
+        ),
+        ParameterSchema(
+          name: 'systemPrompt',
+          displayName: 'System Prompt',
+          type: ParameterType.multiline,
+          defaultValue: '',
+          description: 'System-level instructions. Supports {{ \$json.field }} expressions.',
+        ),
+        ParameterSchema(
+          name: 'userMessage',
+          displayName: 'User Message',
+          type: ParameterType.multiline,
+          defaultValue: '',
+          required: true,
+          description: 'The user message to send. Supports {{ \$json.field }} expressions.',
+        ),
+        ParameterSchema(
+          name: 'temperature',
+          displayName: 'Temperature',
+          type: ParameterType.number,
+          defaultValue: 0.7,
+          description: 'Sampling temperature (0.0–2.0).',
+        ),
+        ParameterSchema(
+          name: 'maxTokens',
+          displayName: 'Max Tokens',
+          type: ParameterType.number,
+          defaultValue: 4096,
+          description: 'Maximum tokens in the response.',
+        ),
+        ParameterSchema(
+          name: 'apiKey',
+          displayName: 'API Key',
+          type: ParameterType.string,
+          defaultValue: '',
+          description: 'API key. Leave empty for local models or to use env-configured keys.',
+        ),
+        ParameterSchema(
+          name: 'baseUrl',
+          displayName: 'Base URL',
+          type: ParameterType.string,
+          defaultValue: '',
+          description: 'Custom API base URL. Leave empty to use the provider default.',
+        ),
+      ],
+      description: 'Send a chat message to an AI model and get its response. Supports OpenAI, Anthropic, and DeepSeek.',
+    ),
+
+    // Webhook Trigger
+    const NodeTypeDefinition(
+      type: 'webhook_trigger',
+      displayName: 'Webhook',
+      category: NodeCategory.trigger,
+      inputs: [],
+      outputs: [PortDefinition(id: 'output', name: 'Output')],
+      parameterSchema: [
+        ParameterSchema(
+          name: 'httpMethod',
+          displayName: 'HTTP Method',
+          type: ParameterType.select,
+          defaultValue: 'POST',
+          options: [
+            ParameterOption(label: 'GET', value: 'GET'),
+            ParameterOption(label: 'POST', value: 'POST'),
+            ParameterOption(label: 'PUT', value: 'PUT'),
+            ParameterOption(label: 'DELETE', value: 'DELETE'),
+            ParameterOption(label: 'ANY', value: 'ANY'),
+          ],
+          description: 'HTTP method to listen for.',
+        ),
+        ParameterSchema(
+          name: 'port',
+          displayName: 'Port',
+          type: ParameterType.number,
+          defaultValue: 5678,
+          required: true,
+          description: 'Local port to listen on (127.0.0.1).',
+        ),
+        ParameterSchema(
+          name: 'responseData',
+          displayName: 'Response Body',
+          type: ParameterType.multiline,
+          defaultValue: '{"ok":true}',
+          description: 'JSON response body sent back to the caller.',
+        ),
+      ],
+      description: 'Listen for incoming HTTP requests on a local port. Activates the workflow on each request.',
+    ),
+
+    // Cron Trigger
+    const NodeTypeDefinition(
+      type: 'cron_trigger',
+      displayName: 'Cron',
+      category: NodeCategory.trigger,
+      inputs: [],
+      outputs: [PortDefinition(id: 'output', name: 'Output')],
+      parameterSchema: [
+        ParameterSchema(
+          name: 'cronExpression',
+          displayName: 'Cron Expression',
+          type: ParameterType.string,
+          defaultValue: '*/5 * * * *',
+          required: true,
+          description: 'Standard 5-field cron: minute hour dayOfMonth month dayOfWeek. E.g. "0 9 * * 1-5" for weekdays at 9am.',
+        ),
+      ],
+      description: 'Run the workflow on a repeating schedule via cron expression.',
     ),
   ]);
 }

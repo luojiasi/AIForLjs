@@ -24,12 +24,14 @@ class NodeConfigPanel extends StatefulWidget {
 
 class _NodeConfigPanelState extends State<NodeConfigPanel> {
   late TextEditingController _nameController;
+  late TextEditingController _notesController;
   final Map<String, TextEditingController> _paramControllers = {};
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.node?.name ?? '');
+    _notesController = TextEditingController(text: widget.node?.notes ?? '');
   }
 
   @override
@@ -37,6 +39,7 @@ class _NodeConfigPanelState extends State<NodeConfigPanel> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.node?.id != widget.node?.id) {
       _nameController.text = widget.node?.name ?? '';
+      _notesController.text = widget.node?.notes ?? '';
       _paramControllers.clear();
     }
   }
@@ -44,6 +47,7 @@ class _NodeConfigPanelState extends State<NodeConfigPanel> {
   @override
   void dispose() {
     _nameController.dispose();
+    _notesController.dispose();
     for (final c in _paramControllers.values) {
       c.dispose();
     }
@@ -78,6 +82,8 @@ class _NodeConfigPanelState extends State<NodeConfigPanel> {
                 _buildNameField(node, cs),
                 const SizedBox(height: 22),
                 _buildParametersSection(node, nodeType, cs),
+                const SizedBox(height: 22),
+                _buildNotesField(node, cs),
               ],
             ),
           ),
@@ -183,6 +189,26 @@ class _NodeConfigPanelState extends State<NodeConfigPanel> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNotesField(WorkflowNode node, ColorScheme cs) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionLabel('Notes', cs),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _notesController,
+          maxLines: 3,
+          minLines: 1,
+          style: TextStyle(fontSize: 12, color: cs.onSurface),
+          cursorHeight: 16,
+          decoration: _fieldDecoration('Add notes for this node…')
+              .copyWith(contentPadding: const EdgeInsets.all(10)),
+          onChanged: (v) => widget.onUpdateParameter(node.id, '_notes', v),
+        ),
+      ],
     );
   }
 
@@ -480,7 +506,8 @@ class _NodeConfigPanelState extends State<NodeConfigPanel> {
         value: value,
         dense: true,
         visualDensity: VisualDensity.compact,
-        activeColor: cs.primary,
+        activeTrackColor: cs.primary.withAlpha(100),
+        activeThumbColor: cs.primary,
         onChanged: (v) => widget.onUpdateParameter(node.id, schema.name, v),
       ),
     );

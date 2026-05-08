@@ -214,7 +214,7 @@ class _NodePaletteState extends State<NodePalette> {
     final hasInput = nodeType.inputs.isNotEmpty;
     final hasOutput = nodeType.outputs.isNotEmpty;
 
-    return Padding(
+    final card = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       child: Material(
         color: Colors.transparent,
@@ -232,7 +232,6 @@ class _NodePaletteState extends State<NodePalette> {
             ),
             child: Row(
               children: [
-                // Icon box
                 Container(
                   width: 34,
                   height: 34,
@@ -243,7 +242,6 @@ class _NodePaletteState extends State<NodePalette> {
                   child: Icon(nodeType.icon, size: 17, color: color),
                 ),
                 const SizedBox(width: 10),
-                // Name + description
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +269,6 @@ class _NodePaletteState extends State<NodePalette> {
                     ],
                   ),
                 ),
-                // Port indicators
                 const SizedBox(width: 6),
                 if (hasInput) _miniPort(Icons.arrow_back, Colors.orange, cs),
                 if (hasInput && hasOutput) const SizedBox(width: 3),
@@ -281,6 +278,39 @@ class _NodePaletteState extends State<NodePalette> {
           ),
         ),
       ),
+    );
+
+    return LongPressDraggable<NodeTypeDefinition>(
+      data: nodeType,
+      delay: const Duration(milliseconds: 300),
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: Material(
+        elevation: 6,
+        borderRadius: BorderRadius.circular(10),
+        color: cs.surface,
+        child: Container(
+          width: 180,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: color.withAlpha(80)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(nodeType.icon, size: 18, color: color),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(nodeType.displayName,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.onSurface),
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(opacity: 0.35, child: card),
+      child: card,
     );
   }
 

@@ -10,6 +10,7 @@ class Simplen8nNodeWidget extends StatelessWidget {
   final bool isSelected;
   final bool isExecuting;
   final String? executionStatus;
+  final void Function(Offset globalPosition)? onContextMenu;
 
   const Simplen8nNodeWidget({
     super.key,
@@ -17,6 +18,7 @@ class Simplen8nNodeWidget extends StatelessWidget {
     this.isSelected = false,
     this.isExecuting = false,
     this.executionStatus,
+    this.onContextMenu,
   });
 
   @override
@@ -25,23 +27,32 @@ class Simplen8nNodeWidget extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final hasSummary = node.data.parameterSummary != null &&
         node.data.parameterSummary!.isNotEmpty;
+    final isError = executionStatus == 'error';
 
-    return Container(
+    return GestureDetector(
+      onSecondaryTapDown: onContextMenu != null
+          ? (details) => onContextMenu!(details.globalPosition)
+          : null,
+      child: Container(
       width: 210,
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isExecuting
-              ? Colors.green.shade400
-              : isSelected
-                  ? color
-                  : color.withAlpha(70),
-          width: isSelected || isExecuting ? 2.0 : 1.2,
+          color: isError
+              ? Colors.red.shade400
+              : isExecuting
+                  ? Colors.green.shade400
+                  : isSelected
+                      ? color
+                      : color.withAlpha(70),
+          width: isSelected || isExecuting || isError ? 2.0 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isSelected ? color : Colors.black).withAlpha(isSelected ? 25 : 12),
+            color: isError
+                ? Colors.red.withAlpha(30)
+                : (isSelected ? color : Colors.black).withAlpha(isSelected ? 25 : 12),
             blurRadius: isSelected ? 14 : 8,
             offset: const Offset(0, 4),
           ),
@@ -63,6 +74,7 @@ class Simplen8nNodeWidget extends StatelessWidget {
           // Mini footer bar
           _buildFooter(color, cs),
         ],
+      ),
       ),
     );
   }

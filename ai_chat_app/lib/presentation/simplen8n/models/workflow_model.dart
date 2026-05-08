@@ -91,6 +91,36 @@ class Workflow {
     return result;
   }
 
+  /// Validate this workflow. Returns a list of issue descriptions (empty = valid).
+  List<String> validate() {
+    final issues = <String>[];
+    if (id.isEmpty) issues.add('Workflow id is empty');
+    if (nodes.isEmpty && connections.isEmpty) return issues; // empty canvas is valid
+    // Check for missing connection targets
+    final nodeIds = nodes.map((n) => n.id).toSet();
+    for (final entry in connections.entries) {
+      if (!nodeIds.contains(entry.key)) {
+        issues.add('Connection source "${entry.key}" does not exist');
+      }
+      for (final portEntry in entry.value.entries) {
+        for (final rule in portEntry.value) {
+          if (!nodeIds.contains(rule.node)) {
+            issues.add('Connection target "${rule.node}" does not exist');
+          }
+        }
+      }
+    }
+    // Check for duplicate node ids
+    final seenIds = <String>{};
+    for (final n in nodes) {
+      if (seenIds.contains(n.id)) {
+        issues.add('Duplicate node id: ${n.id}');
+      }
+      seenIds.add(n.id);
+    }
+    return issues;
+  }
+
   Workflow copyWith({
     String? name,
     String? description,

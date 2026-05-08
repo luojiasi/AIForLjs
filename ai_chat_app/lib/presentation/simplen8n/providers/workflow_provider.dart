@@ -7,10 +7,16 @@ import '../models/workflow_model.dart';
 import '../models/node_type.dart';
 import '../models/execution_data.dart';
 import '../converters/canvas_converter.dart';
+import '../engine/execution_engine.dart';
+import '../services/workflow_storage_service.dart';
+import '../services/execution_storage_service.dart';
+import '../engine/triggers/trigger_manager.dart';
+import 'history_manager.dart';
 
 /// 工作流编辑器状态管理
 class WorkflowProvider extends ChangeNotifier {
   final CanvasConverter converter;
+  final WorkflowHistoryManager _history = WorkflowHistoryManager();
   late final flow.NodeFlowController<Simplen8nCanvasData, void> canvasController;
 
   /// 工作流数据
@@ -22,7 +28,13 @@ class WorkflowProvider extends ChangeNotifier {
   /// 执行状态
   ExecutionResult? _executionResult;
   bool _isExecuting = false;
-  List<String> _executionLogs = [];
+  final List<String> _executionLogs = [];
+
+  /// 最近一次错误（用于 UI 展示）
+  String? _lastError;
+
+  /// 剪贴板节点（内部实现 copy/cut/paste）
+  List<Map<String, dynamic>>? _clipboard;
 
   /// 节点类型定义表
   final Map<String, NodeTypeDefinition> _availableTypes;
@@ -34,6 +46,7 @@ class WorkflowProvider extends ChangeNotifier {
         converter = CanvasConverter(),
         _workflow = existingWorkflow ?? Workflow(id: _generateId()) {
     _initCanvas();
+    _history.record(_workflow.copyWith());
   }
 
   //===========================================================================
@@ -45,9 +58,13 @@ class WorkflowProvider extends ChangeNotifier {
   ExecutionResult? get executionResult => _executionResult;
   bool get isExecuting => _isExecuting;
   List<String> get executionLogs => _executionLogs;
+  String? get lastError => _lastError;
   List<NodeTypeDefinition> get availableTypes => _availableTypes.values.toList();
 
   NodeTypeDefinition? nodeTypeDef(String type) => _availableTypes[type];
+
+  bool get canUndo => _history.canUndo;
+  bool get canRedo => _history.canRedo;
 
   List<flow.Node<Simplen8nCanvasData>> get canvasNodes {
     return canvasController.nodeIds
@@ -91,7 +108,93 @@ class WorkflowProvider extends ChangeNotifier {
     );
   }
 
-  /// 从画布同步到 Workflow 模型
+  // ==========================================================================
+  // Undo/Redo
+  // ==========================================================================
+
+  void undo() {
+    syncToWorkflow();
+    final state = _history.undo();
+    if (state != null) {
+      _loadGraphFromWorkflow(state);
+      addLog('Undo');
+    }
+  }
+
+  void redo() {
+    syncToWorkflow();
+    final state = _history.redo();
+    if (state != null) {
+      _loadGraphFromWorkflow(state);
+      addLog('Redo');
+    }
+  }
+
+  /// 在变异操作前录制当前状态（供 canvas 事件回调使用）
+  void recordBeforeMutation() => _recordBeforeMutation();
+
+  void _recordBeforeMutation() {
+    syncToWorkflow();
+    _history.record(_workflow.copyWith());
+  }
+
+  /// 从 Workflow 模型完全重建画布
+  void _loadGraphFromWorkflow(Workflow wf) {
+    _workflow = wf;
+    _selectedNodeId = null;
+    final canvasNodes = wf.nodes
+        .map((n) => converter.toCanvasNode(n, typeDef: _availableTypes[n.type]))
+        .toList();
+    final canvasConns = converter.toCanvasConnections(wf.connections);
+    canvasController.loadGraph(flow.NodeGraph<Simplen8nCanvasData, void>(
+      nodes: canvasNodes,
+      connections: canvasConns,
+    ));
+    notifyListeners();
+  }
+
+  // ==========================================================================
+  // Internal Clipboard
+  // ==========================================================================
+
+  void copySelectedNode() {
+    final node = selectedWorkflowNode;
+    if (node == null) return;
+    _clipboard = [node.toJson()];
+    addLog('Copied node');
+  }
+
+  void cutSelectedNode() {
+    copySelectedNode();
+    deleteSelectedNode();
+    addLog('Cut node');
+  }
+
+  void pasteNode() {
+    if (_clipboard == null || _clipboard!.isEmpty) return;
+    for (final json in _clipboard!) {
+      final node = WorkflowNode.fromJson(json);
+      final offsetX = 60 + (DateTime.now().millisecond % 80);
+      final offsetY = 60 + (DateTime.now().millisecond % 80);
+      final newPos = [node.position[0] + offsetX, node.position[1] + offsetY];
+      final pasted = WorkflowNode(
+        id: _generateId(),
+        name: '${node.name} (copy)',
+        type: node.type,
+        position: newPos,
+        parameters: Map<String, dynamic>.from(node.parameters),
+      );
+      _addWithoutHistory(_availableTypes[node.type]!, converter.toCanvasNode(pasted,
+          typeDef: _availableTypes[node.type]));
+    }
+    syncToWorkflow();
+    addLog('Pasted ${_clipboard!.length} node(s)');
+  }
+
+  // ==========================================================================
+  // 从画布同步到 Workflow 模型
+  // ==========================================================================
+
   void syncToWorkflow() {
     final nodes = canvasNodes
         .map((n) => converter.fromCanvasNode(n))
@@ -111,26 +214,25 @@ class WorkflowProvider extends ChangeNotifier {
   //===========================================================================
 
   void addNode(NodeTypeDefinition nodeType, Offset position) {
+    _recordBeforeMutation();
+    _addWithoutHistory(nodeType, _buildCanvasNode(nodeType, _generateId(), position));
+    addLog('Added node: ${nodeType.displayName}');
+    syncToWorkflow();
+  }
+
+  void _addWithoutHistory(NodeTypeDefinition nodeType, flow.Node<Simplen8nCanvasData> canvasNode) {
+    canvasController.addNode(canvasNode);
+  }
+
+  flow.Node<Simplen8nCanvasData> _buildCanvasNode(NodeTypeDefinition nodeType, String id, Offset position) {
     final ports = <flow.Port>[];
     for (final p in nodeType.inputs) {
-      ports.add(flow.Port(
-        id: p.id,
-        name: p.name,
-        position: flow.PortPosition.left,
-        type: flow.PortType.input,
-      ));
+      ports.add(flow.Port(id: p.id, name: p.name, position: flow.PortPosition.left, type: flow.PortType.input));
     }
     for (final p in nodeType.outputs) {
-      ports.add(flow.Port(
-        id: p.id,
-        name: p.name,
-        position: flow.PortPosition.right,
-        type: flow.PortType.output,
-      ));
+      ports.add(flow.Port(id: p.id, name: p.name, position: flow.PortPosition.right, type: flow.PortType.output));
     }
-
-    final id = _generateId();
-    final canvasNode = flow.Node<Simplen8nCanvasData>(
+    return flow.Node<Simplen8nCanvasData>(
       id: id,
       type: nodeType.type,
       position: position,
@@ -142,10 +244,6 @@ class WorkflowProvider extends ChangeNotifier {
       ),
       ports: ports,
     );
-
-    canvasController.addNode(canvasNode);
-    _addLog('Added node: ${nodeType.displayName}');
-    syncToWorkflow();
   }
 
   void selectNode(String? nodeId) {
@@ -156,6 +254,7 @@ class WorkflowProvider extends ChangeNotifier {
   void updateNodeParameter(String nodeId, String key, dynamic value) {
     final node = canvasController.getNode(nodeId);
     if (node == null) return;
+    _recordBeforeMutation();
 
     final updatedData = Simplen8nCanvasData(
       nodeType: node.data.nodeType,
@@ -166,12 +265,13 @@ class WorkflowProvider extends ChangeNotifier {
 
     _replaceNode(nodeId, updatedData);
     syncToWorkflow();
-    _addLog('Updated $key = $value');
+    addLog('Updated $key = $value');
   }
 
   void updateNodeName(String nodeId, String name) {
     final node = canvasController.getNode(nodeId);
     if (node == null) return;
+    _recordBeforeMutation();
 
     final updatedData = Simplen8nCanvasData(
       nodeType: node.data.nodeType,
@@ -200,21 +300,23 @@ class WorkflowProvider extends ChangeNotifier {
 
   void deleteSelectedNode() {
     if (_selectedNodeId != null) {
+      _recordBeforeMutation();
       canvasController.removeNode(_selectedNodeId!);
       _selectedNodeId = null;
       syncToWorkflow();
-      _addLog('Deleted node');
+      addLog('Deleted node');
     }
   }
 
   void clearCanvas() {
+    _recordBeforeMutation();
     final ids = canvasController.nodeIds.toList();
     for (final id in ids) {
       canvasController.removeNode(id);
     }
     _selectedNodeId = null;
     syncToWorkflow();
-    _addLog('Cleared canvas');
+    addLog('Cleared canvas');
   }
 
   //===========================================================================
@@ -228,8 +330,8 @@ class WorkflowProvider extends ChangeNotifier {
 
     _isExecuting = true;
     _executionResult = null;
-    _executionLogs = [];
-    _addLog('Starting workflow execution...');
+    _executionLogs.clear();
+    addLog('Starting workflow execution...');
     notifyListeners();
 
     try {
@@ -237,16 +339,26 @@ class WorkflowProvider extends ChangeNotifier {
       final result = await executor(_workflow);
       _executionResult = result;
 
-      _addLog(result.status.name == 'success'
+      if (result.status == ExecutionStatus.error) {
+        _lastError = result.error;
+      } else {
+        _lastError = null;
+      }
+
+      addLog(result.status.name == 'success'
           ? 'Workflow completed successfully in ${result.durationMs}ms'
           : 'Workflow failed: ${result.error}');
 
       for (final entry in result.nodeResults.entries) {
         final s = entry.value.status.name;
-        _addLog('  Node ${entry.key}: $s (${entry.value.durationMs}ms)');
+        addLog('  Node ${entry.key}: $s (${entry.value.durationMs}ms)');
       }
+
+      // Auto-save execution history
+      await _saveExecutionResult(result);
     } catch (e) {
-      _addLog('Execution error: $e');
+      _lastError = e.toString();
+      addLog('Execution error: $e');
     } finally {
       _isExecuting = false;
       notifyListeners();
@@ -263,10 +375,165 @@ class WorkflowProvider extends ChangeNotifier {
   }
 
   //===========================================================================
+  // 持久化
+  //===========================================================================
+
+  final WorkflowStorageService _storage = WorkflowStorageService();
+
+  /// Save the current workflow to disk.
+  Future<void> saveWorkflow() async {
+    syncToWorkflow();
+    await _storage.save(_workflow);
+    addLog('Saved workflow: ${_workflow.name}');
+    notifyListeners();
+  }
+
+  /// Load a workflow by ID, replacing the current state.
+  Future<void> loadWorkflow(String id) async {
+    final wf = await _storage.load(id);
+    if (wf != null) {
+      _loadGraphFromWorkflow(wf);
+      _history.clear();
+      _history.record(wf.copyWith());
+      addLog('Loaded workflow: ${wf.name}');
+    }
+  }
+
+  /// Delete a workflow from disk.
+  Future<void> deleteWorkflow(String id) async {
+    await _storage.delete(id);
+    addLog('Deleted workflow: $id');
+  }
+
+  /// List all saved workflow summaries.
+  static Future<List<WorkflowSummary>> listWorkflows() async {
+    return WorkflowStorageService().listSummaries();
+  }
+
+  /// Import a workflow from a JSON string.
+  void importFromJson(String jsonStr) {
+    final wf = _storage.importFromJson(jsonStr);
+    _loadGraphFromWorkflow(wf);
+    _history.clear();
+    _history.record(wf.copyWith());
+    addLog('Imported workflow: ${wf.name}');
+  }
+
+  /// Export the current workflow as a JSON string.
+  Future<String> exportToJson() async {
+    syncToWorkflow();
+    return _storage.exportJson(_workflow);
+  }
+
+  //===========================================================================
+  // 执行历史
+  //===========================================================================
+
+  final ExecutionStorageService _execStorage = ExecutionStorageService();
+
+  Future<void> _saveExecutionResult(ExecutionResult result) async {
+    await _execStorage.save(
+      result,
+      workflowId: _workflow.id,
+    );
+  }
+
+  /// Load execution history for the current workflow.
+  Future<List<ExecutionSummary>> loadHistory() async {
+    return _execStorage.listSummaries(workflowId: _workflow.id);
+  }
+
+  /// Replay a previous execution using the same workflow graph.
+  Future<void> replayExecution(
+    String executionId, {
+    required Future<ExecutionResult> Function(Workflow) executor,
+  }) async {
+    final prev = await _execStorage.load(executionId);
+    if (prev == null) {
+      addLog('Execution $executionId not found');
+      return;
+    }
+
+    _isExecuting = true;
+    _executionResult = null;
+    addLog('Replaying execution $executionId...');
+    notifyListeners();
+
+    try {
+      syncToWorkflow();
+      final result = await executor(_workflow);
+      _executionResult = result;
+
+      addLog(result.status.name == 'success'
+          ? 'Replay completed successfully in ${result.durationMs}ms'
+          : 'Replay failed: ${result.error}');
+    } catch (e) {
+      _lastError = e.toString();
+      addLog('Replay error: $e');
+    } finally {
+      _isExecuting = false;
+      notifyListeners();
+    }
+  }
+
+  /// Load all execution summaries (across all workflows).
+  static Future<List<ExecutionSummary>> loadAllHistory() async {
+    return ExecutionStorageService().listSummaries();
+  }
+
+  //===========================================================================
+  // Trigger 激活/停用
+  //===========================================================================
+
+  /// Whether this workflow has active triggers.
+  bool get isActive => TriggerManager.instance.isActive(_workflow.id);
+
+  /// Activate all trigger nodes in the current workflow.
+  Future<void> activateWorkflow() async {
+    syncToWorkflow();
+    await TriggerManager.instance.activateWorkflow(
+      _workflow,
+      onFire: (data) async {
+        // Reload latest workflow from storage before executing
+        final stored = await _storage.load(_workflow.id);
+        final wf = stored ?? _workflow;
+
+        final result = await ExecutionEngine().execute(
+          wf,
+          workflowId: wf.id,
+          workflowName: wf.name,
+        );
+        await _execStorage.save(result, workflowId: wf.id);
+
+        _executionResult = result;
+        addLog('Triggered execution: ${result.status.name} (${result.durationMs}ms)');
+        notifyListeners();
+      },
+    );
+
+    _workflow.active = true;
+    addLog('Workflow activated');
+    notifyListeners();
+  }
+
+  /// Deactivate all trigger nodes for the current workflow.
+  Future<void> deactivateWorkflow() async {
+    await TriggerManager.instance.deactivateWorkflow(_workflow.id);
+    _workflow.active = false;
+    addLog('Workflow deactivated');
+    notifyListeners();
+  }
+
+  //===========================================================================
   // Helpers
   //===========================================================================
 
-  void _addLog(String msg) {
+  void clearError() {
+    _lastError = null;
+    notifyListeners();
+  }
+
+  void addLog(String msg) {
     _executionLogs.add('[${DateTime.now().toIso8601String()}] $msg');
   }
 

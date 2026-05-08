@@ -11,7 +11,10 @@
       "WebFetch(domain:github.com)",
       "Bash(dart pub *)",
       "Bash(flutter clean *)",
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Bash(flutter run *)",
+      "Bash(flutter test *)",
+      "Bash(dart doc *)"
     ]
   }
 }

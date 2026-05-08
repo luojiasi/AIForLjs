@@ -16,19 +16,19 @@ class DesktopNavRail extends StatelessWidget {
     super.key,
     required this.activeIndex,
     this.globalSearchActive = false,
-    // required this.onTapChat,
-    // required this.onTapGlobalSearch,
-    // required this.onTapTranslate,
-    // required this.onTapStorage,
+    required this.onTapChat,
+    required this.onTapGlobalSearch,
+    required this.onTapTranslate,
+    required this.onTapStorage,
     required this.onTapSettings,
   });
 
   final int activeIndex; // 0=Chat, 1=Translate, 2=Storage, 3=Settings
   final bool globalSearchActive;
-  // final VoidCallback onTapChat;
-  // final VoidCallback onTapGlobalSearch;
-  // final VoidCallback onTapTranslate;
-  // final VoidCallback onTapStorage;
+  final VoidCallback onTapChat;
+  final VoidCallback onTapGlobalSearch;
+  final VoidCallback onTapTranslate;
+  final VoidCallback onTapStorage;
   final VoidCallback onTapSettings;
 
   static const double width = 64.0;
@@ -53,41 +53,41 @@ class DesktopNavRail extends StatelessWidget {
           SizedBox(height: topGap),
           _UserAvatarButton(),
           const SizedBox(height: 12),
-          // _CircleAction(
-          //   tooltip: l10n.desktopNavChatTooltip,
-          //   icon: lucide.Lucide.MessageCircle,
-          //   onTap: onTapChat,
-          //   size: 40,
-          //   iconSize: 18,
-          //   iconColor: isChatActive ? cs.primary : null,
-          // ),
-          // const SizedBox(height: 8),
-          // _CircleAction(
-          //   tooltip: l10n.desktopNavGlobalSearchTooltip,
-          //   icon: lucide.Lucide.Search,
-          //   onTap: onTapGlobalSearch,
-          //   size: 40,
-          //   iconSize: 18,
-          //   iconColor: isGlobalSearchActive ? cs.primary : null,
-          // ),
-          // const SizedBox(height: 8),
-          // _CircleAction(
-          //   tooltip: l10n.desktopNavTranslateTooltip,
-          //   icon: lucide.Lucide.Languages,
-          //   onTap: onTapTranslate,
-          //   size: 40,
-          //   iconSize: 18,
-          //   iconColor: isTranslateActive ? cs.primary : null,
-          // ),
-          // const SizedBox(height: 8),
-          // _CircleAction(
-          //   tooltip: l10n.desktopNavStorageTooltip,
-          //   icon: lucide.Lucide.Folder,
-          //   onTap: onTapStorage,
-          //   size: 40,
-          //   iconSize: 18,
-          //   iconColor: isStorageActive ? cs.primary : null,
-          // ),
+          _CircleAction(
+            tooltip: l10n.desktopNavChatTooltip,
+            icon: lucide.Lucide.MessageCircle,
+            onTap: onTapChat,
+            size: 40,
+            iconSize: 18,
+            iconColor: isChatActive ? cs.primary : null,
+          ),
+          const SizedBox(height: 8),
+          _CircleAction(
+            tooltip: l10n.desktopNavGlobalSearchTooltip,
+            icon: lucide.Lucide.Search,
+            onTap: onTapGlobalSearch,
+            size: 40,
+            iconSize: 18,
+            iconColor: isGlobalSearchActive ? cs.primary : null,
+          ),
+          const SizedBox(height: 8),
+          _CircleAction(
+            tooltip: l10n.desktopNavTranslateTooltip,
+            icon: lucide.Lucide.Languages,
+            onTap: onTapTranslate,
+            size: 40,
+            iconSize: 18,
+            iconColor: isTranslateActive ? cs.primary : null,
+          ),
+          const SizedBox(height: 8),
+          _CircleAction(
+            tooltip: l10n.desktopNavStorageTooltip,
+            icon: lucide.Lucide.Folder,
+            onTap: onTapStorage,
+            size: 40,
+            iconSize: 18,
+            iconColor: isStorageActive ? cs.primary : null,
+          ),
           const Spacer(),
           _CircleAction(
             tooltip: 'Workflow (simplen8n)',

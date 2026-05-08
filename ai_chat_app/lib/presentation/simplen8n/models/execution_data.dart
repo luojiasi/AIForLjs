@@ -56,11 +56,38 @@ class NodeExecutionResult {
     this.durationMs = 0,
     this.retryCount = 0,
   });
+
+  Map<String, dynamic> toJson() => {
+        'nodeId': nodeId,
+        'status': status.name,
+        'output': output?.map((e) => e.toJson()).toList(),
+        'error': error,
+        'durationMs': durationMs,
+        'retryCount': retryCount,
+      };
+
+  factory NodeExecutionResult.fromJson(Map<String, dynamic> json) {
+    return NodeExecutionResult(
+      nodeId: json['nodeId'] as String,
+      status: NodeExecutionStatus.values.firstWhere(
+        (s) => s.name == json['status'],
+        orElse: () => NodeExecutionStatus.pending,
+      ),
+      output: (json['output'] as List<dynamic>?)
+          ?.map((e) => NodeExecutionData.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      error: json['error'] as String?,
+      durationMs: json['durationMs'] as int? ?? 0,
+      retryCount: json['retryCount'] as int? ?? 0,
+    );
+  }
 }
 
 /// 工作流执行结果
 class ExecutionResult {
   final String executionId;
+  final String? workflowId;
+  final String? workflowName;
   final ExecutionStatus status;
   final DateTime startedAt;
   final DateTime? stoppedAt;
@@ -70,6 +97,8 @@ class ExecutionResult {
 
   const ExecutionResult({
     required this.executionId,
+    this.workflowId,
+    this.workflowName,
     required this.status,
     required this.startedAt,
     this.stoppedAt,
@@ -82,4 +111,46 @@ class ExecutionResult {
       stoppedAt != null
           ? stoppedAt!.difference(startedAt).inMilliseconds
           : DateTime.now().difference(startedAt).inMilliseconds;
+
+  Map<String, dynamic> toJson({String? workflowId}) => {
+        'executionId': executionId,
+        'workflowId': workflowId ?? this.workflowId,
+        'workflowName': workflowName,
+        'status': status.name,
+        'startedAt': startedAt.toIso8601String(),
+        'stoppedAt': stoppedAt?.toIso8601String(),
+        'nodeResults':
+            nodeResults.map((k, v) => MapEntry(k, v.toJson())),
+        'error': error,
+        'finalOutput': finalOutput?.map((e) => e.toJson()).toList(),
+        'durationMs': durationMs,
+        'nodeCount': nodeResults.length,
+      };
+
+  factory ExecutionResult.fromJson(Map<String, dynamic> json) {
+    return ExecutionResult(
+      executionId: json['executionId'] as String,
+      workflowId: json['workflowId'] as String?,
+      workflowName: json['workflowName'] as String?,
+      status: ExecutionStatus.values.firstWhere(
+        (s) => s.name == json['status'],
+        orElse: () => ExecutionStatus.error,
+      ),
+      startedAt: DateTime.parse(json['startedAt'] as String),
+      stoppedAt: json['stoppedAt'] != null
+          ? DateTime.parse(json['stoppedAt'] as String)
+          : null,
+      nodeResults: (json['nodeResults'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(
+              k,
+              NodeExecutionResult.fromJson(v as Map<String, dynamic>),
+            ),
+          ) ??
+          {},
+      error: json['error'] as String?,
+      finalOutput: (json['finalOutput'] as List<dynamic>?)
+          ?.map((e) => NodeExecutionData.fromMap(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
