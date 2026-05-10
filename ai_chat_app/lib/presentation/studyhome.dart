@@ -66,6 +66,21 @@ class StudyHome extends StatelessWidget {
             onTap: () => context.push('/agent_architectures'),
           ),
           const SizedBox(height: 24),
+          // API Token 中转平台
+          _LanguageCard(
+            icon: Icons.hub,
+            color: const Color(0xFF0D47A1),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0D47A1), Color(0xFF42A5F5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            title: 'API Token 中转平台',
+            subtitle: 'API网关架构 · 多厂商适配 · 完整后端实现',
+            description: '从零构建一个API令牌中转平台，涵盖API Gateway模式、\n多厂商适配器模式、限流配额管理、安全设计等核心主题。\n包含完整的Flutter知识模块 + Python FastAPI后端实现。',
+            onTap: () => context.push('/api_token_platform'),
+          ),
+          const SizedBox(height: 24),
           _LanguageCard(
             icon: Icons.code,
             color: const Color(0xFF306998),

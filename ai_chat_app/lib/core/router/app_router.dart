@@ -24,6 +24,9 @@ import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/a
 import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_data.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_detail_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_home.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_detail_page.dart';
+import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_data.dart';
 
 import 'package:ai_chat_app/desktop/widgets/desktop_home_page.dart';
 import 'package:ai_chat_app/features/home/pages/home_page.dart';
@@ -126,6 +129,15 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/python_crawler/:projectIndex', builder: (context, state) {
       final idx = int.tryParse(state.pathParameters['projectIndex'] ?? '') ?? 0;
       return PythonCrawlerDetailPage(projectIndex: idx);
+    }),
+
+    // API Token 中转平台 — 统一多厂商AI API网关
+    GoRoute(path: '/api_token_platform', builder: (context, state) => const ApiTokenPlatformHome()),
+    GoRoute(path: '/api_token_platform/detail', builder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>? ?? {};
+      final topic = extra['topic'] as ApiTokenPlatformTopic?;
+      if (topic == null) return const ApiTokenPlatformHome();
+      return ApiTokenPlatformDetailPage(topic: topic);
     }),
 
     // simplen8n — 可视化工作流自动化引擎

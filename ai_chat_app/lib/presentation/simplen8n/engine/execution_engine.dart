@@ -4,6 +4,8 @@ import 'dart:developer' as developer;
 
 import '../models/workflow_model.dart';
 import '../models/execution_data.dart';
+import '../services/credential_service.dart';
+import '../services/workflow_storage_service.dart';
 import 'execution_context.dart';
 import 'dag_analyzer.dart';
 import 'exceptions.dart';
@@ -50,11 +52,14 @@ class ExecutionEngine {
   // ===========================================================================
 
   Future<ExecutionResult> execute(Workflow workflow,
-      {String? workflowId, String? workflowName}) async {
+      {String? workflowId, String? workflowName,
+       Map<String, dynamic>? triggerData}) async {
     final executionId = _generateId();
     final startedAt = DateTime.now();
+    final wfId = workflowId ?? workflow.id;
+    final wfName = workflowName ?? workflow.name;
 
-    developer.log('[Phase 1] Starting execution: $executionId');
+    developer.log('[Engine] Starting execution: $executionId ($wfName)');
 
     try {
       // 0. 校验
@@ -63,7 +68,10 @@ class ExecutionEngine {
             executionId: executionId);
       }
 
-      // 0a. 循环检测
+      // 0b. 解析凭据
+      await _resolveCredentials(workflow);
+
+      // 0c. 循环检测
       _dag = DagAnalyzer(workflow);
       if (_dag!.hasCycle()) {
         final cycles = _dag!.findAllCycles();
@@ -76,8 +84,8 @@ class ExecutionEngine {
 
       // 1. 注入工作流变量到上下文
       _context.setVariable('workflow', {
-        'id': workflowId ?? workflow.id,
-        'name': workflowName ?? workflow.name,
+        'id': wfId,
+        'name': wfName,
       });
 
       // 2. 找到起始节点并初始化执行栈
@@ -88,16 +96,31 @@ class ExecutionEngine {
             executionId: executionId);
       }
 
+      final initData = triggerData != null
+          ? [NodeExecutionData(json: triggerData)]
+          : [const NodeExecutionData()];
+
       for (final nodeId in startNodes) {
         _stack.add(ExecutionStackItem(
           nodeId: nodeId,
           sourcePortId: 'init',
-          data: [const NodeExecutionData()],
+          data: initData,
         ));
       }
 
       // 3. 主执行循环
+      final timeoutMs = workflow.settings.executionTimeoutMs;
+      final stopwatch = Stopwatch()..start();
+
       while (_stack.isNotEmpty) {
+        // Check timeout
+        if (timeoutMs > 0 && stopwatch.elapsedMilliseconds > timeoutMs) {
+          throw WorkflowValidationException(
+            'Workflow execution timed out after ${timeoutMs}ms',
+            executionId: executionId,
+          );
+        }
+
         final item = _stack.removeLast();
 
         // 跳过已执行的节点（除非是允许多次输入的节点）
@@ -105,7 +128,6 @@ class ExecutionEngine {
           final existing = _nodeResults[item.nodeId]!;
           if (existing.status == NodeExecutionStatus.success ||
               existing.status == NodeExecutionStatus.error) {
-            // Phase 1: 多输入节点会继续聚合
             final node = _getNode(workflow, item.nodeId);
             if (node != null && _dag!.isMultiInput(item.nodeId)) {
               _aggregateInput(node, item);
@@ -120,22 +142,75 @@ class ExecutionEngine {
       // 4. 检查是否有未完成的等待节点
       if (_waitingExecution.isNotEmpty) {
         final waitingIds = _waitingExecution.keys.join(', ');
-        developer.log('[Phase 1] Execution paused — waiting nodes: $waitingIds');
+        developer.log('[Engine] Execution paused — waiting nodes: $waitingIds');
       }
 
-      return _result(executionId, ExecutionStatus.success, startedAt);
+      return _result(executionId, ExecutionStatus.success, startedAt,
+          workflowId: wfId, workflowName: wfName);
     } on WorkflowValidationException catch (e) {
-      developer.log('[Phase 1] Validation error: $e');
-      return _result(executionId, ExecutionStatus.error, startedAt,
-          error: e.message);
+      developer.log('[Engine] Validation error: $e');
+      final result = _result(executionId, ExecutionStatus.error, startedAt,
+          error: e.message, workflowId: wfId, workflowName: wfName);
+      await _triggerErrorWorkflow(workflow, result);
+      return result;
     } on Simplen8nException catch (e) {
-      developer.log('[Phase 1] Execution error: $e');
-      return _result(executionId, ExecutionStatus.error, startedAt,
-          error: e.message);
+      developer.log('[Engine] Execution error: $e');
+      final result = _result(executionId, ExecutionStatus.error, startedAt,
+          error: e.message, workflowId: wfId, workflowName: wfName);
+      await _triggerErrorWorkflow(workflow, result);
+      return result;
     } catch (e, stack) {
-      developer.log('[Phase 1] Fatal error: $e\n$stack');
-      return _result(executionId, ExecutionStatus.error, startedAt,
-          error: e.toString());
+      developer.log('[Engine] Fatal error: $e\n$stack');
+      final result = _result(executionId, ExecutionStatus.error, startedAt,
+          error: e.toString(), workflowId: wfId, workflowName: wfName);
+      await _triggerErrorWorkflow(workflow, result);
+      return result;
+    }
+  }
+
+  /// Resolve all credential references before execution.
+  Future<void> _resolveCredentials(Workflow workflow) async {
+    final paramList = workflow.nodes.map((n) => n.parameters).toList();
+    final creds = await CredentialService.instance.resolveAll(paramList);
+    for (final entry in creds.entries) {
+      _context.setCredential(entry.key, entry.value);
+    }
+  }
+
+  /// Trigger the error workflow if one is configured.
+  Future<void> _triggerErrorWorkflow(
+      Workflow failedWorkflow, ExecutionResult failedResult) async {
+    final errorWfId = failedWorkflow.errorWorkflowId;
+    if (errorWfId == null || errorWfId.isEmpty) return;
+
+    try {
+      developer.log('[Engine] Triggering error workflow: $errorWfId');
+      final storage = WorkflowStorageService();
+      final errorWf = await storage.load(errorWfId);
+      if (errorWf == null) {
+        developer.log('[Engine] Error workflow $errorWfId not found');
+        return;
+      }
+
+      // Execute the error workflow with failed execution data as input
+      await ExecutionEngine().execute(
+        errorWf,
+        workflowId: errorWf.id,
+        workflowName: errorWf.name,
+        triggerData: {
+          'error': {
+            'message': failedResult.error,
+            'workflowId': failedWorkflow.id,
+            'workflowName': failedWorkflow.name,
+            'executionId': failedResult.executionId,
+          },
+          'nodeResults': failedResult.nodeResults.map(
+            (k, v) => MapEntry(k, v.toJson()),
+          ),
+        },
+      );
+    } catch (e) {
+      developer.log('[Engine] Error workflow execution failed: $e');
     }
   }
 
@@ -224,7 +299,21 @@ class ExecutionEngine {
       retryCount: attempt - 1,
     );
 
-    if (!node.continueOnFail) {
+    // Always output data: push an empty output even on failure so downstream continues
+    if (node.alwaysOutputData) {
+      final emptyOutput = [const NodeExecutionData()];
+      _nodeResults[item.nodeId] = NodeExecutionResult(
+        nodeId: item.nodeId,
+        status: NodeExecutionStatus.success,
+        output: emptyOutput,
+        error: errorMsg,
+        durationMs: duration,
+        retryCount: attempt - 1,
+      );
+      _pushDownstream(workflow, node, emptyOutput);
+    }
+
+    if (!node.continueOnFail && !node.alwaysOutputData) {
       developer
           .log('[Phase 1] Node ${node.name} FAILED after $attempt attempts');
     }
@@ -365,9 +454,13 @@ class ExecutionEngine {
     ExecutionStatus status,
     DateTime startedAt, {
     String? error,
+    String? workflowId,
+    String? workflowName,
   }) {
     return ExecutionResult(
       executionId: executionId,
+      workflowId: workflowId,
+      workflowName: workflowName,
       status: status,
       startedAt: startedAt,
       stoppedAt: DateTime.now(),

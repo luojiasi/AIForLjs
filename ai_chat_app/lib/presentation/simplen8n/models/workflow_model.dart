@@ -1,3 +1,39 @@
+/// Workflow-level settings.
+class WorkflowSettings {
+  String? timezone;
+  int executionTimeoutMs; // 0 = no timeout
+  int maxConcurrency;     // max simultaneous triggered executions, 0 = unlimited
+  bool saveExecutionProgress; // save intermediate node results during execution
+  bool allowCallerPolicy; // allow other workflows to call this one
+
+  WorkflowSettings({
+    this.timezone,
+    this.executionTimeoutMs = 0,
+    this.maxConcurrency = 0,
+    this.saveExecutionProgress = false,
+    this.allowCallerPolicy = true,
+  });
+
+  factory WorkflowSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return WorkflowSettings();
+    return WorkflowSettings(
+      timezone: json['timezone'] as String?,
+      executionTimeoutMs: json['executionTimeoutMs'] as int? ?? 0,
+      maxConcurrency: json['maxConcurrency'] as int? ?? 0,
+      saveExecutionProgress: json['saveExecutionProgress'] as bool? ?? false,
+      allowCallerPolicy: json['allowCallerPolicy'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        if (timezone != null) 'timezone': timezone,
+        'executionTimeoutMs': executionTimeoutMs,
+        'maxConcurrency': maxConcurrency,
+        'saveExecutionProgress': saveExecutionProgress,
+        'allowCallerPolicy': allowCallerPolicy,
+      };
+}
+
 /// 工作流定义
 class Workflow {
   final String id;
@@ -9,6 +45,8 @@ class Workflow {
   int version;
   final DateTime createdAt;
   DateTime updatedAt;
+  WorkflowSettings settings;
+  String? errorWorkflowId;
 
   Workflow({
     required this.id,
@@ -20,8 +58,11 @@ class Workflow {
     this.version = 1,
     DateTime? createdAt,
     DateTime? updatedAt,
+    WorkflowSettings? settings,
+    this.errorWorkflowId,
   })  : nodes = nodes ?? [],
         connections = connections ?? {},
+        settings = settings ?? WorkflowSettings(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -43,6 +84,8 @@ class Workflow {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
           : DateTime.now(),
+      settings: WorkflowSettings.fromJson(json['settings'] as Map<String, dynamic>?),
+      errorWorkflowId: json['errorWorkflowId'] as String?,
     );
   }
 
@@ -56,6 +99,8 @@ class Workflow {
         'version': version,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
+        'settings': settings.toJson(),
+        if (errorWorkflowId != null) 'errorWorkflowId': errorWorkflowId,
       };
 
   static Map<String, Map<String, List<ConnectionRule>>> _parseConnections(
@@ -128,6 +173,8 @@ class Workflow {
     Map<String, Map<String, List<ConnectionRule>>>? connections,
     bool? active,
     int? version,
+    WorkflowSettings? settings,
+    String? errorWorkflowId,
   }) {
     return Workflow(
       id: id,
@@ -143,6 +190,8 @@ class Workflow {
       version: version ?? this.version,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
+      settings: settings ?? this.settings,
+      errorWorkflowId: errorWorkflowId ?? this.errorWorkflowId,
     );
   }
 }
@@ -159,6 +208,7 @@ class WorkflowNode {
   int maxTries;
   int waitBetweenTries;
   bool continueOnFail;
+  bool alwaysOutputData;
   String? notes;
 
   WorkflowNode({
@@ -172,6 +222,7 @@ class WorkflowNode {
     this.maxTries = 3,
     this.waitBetweenTries = 1000,
     this.continueOnFail = false,
+    this.alwaysOutputData = false,
     this.notes,
   }) : parameters = parameters ?? {};
 
@@ -191,6 +242,7 @@ class WorkflowNode {
       maxTries: json['maxTries'] as int? ?? 3,
       waitBetweenTries: json['waitBetweenTries'] as int? ?? 1000,
       continueOnFail: json['continueOnFail'] as bool? ?? false,
+      alwaysOutputData: json['alwaysOutputData'] as bool? ?? false,
       notes: json['notes'] as String?,
     );
   }
@@ -206,6 +258,7 @@ class WorkflowNode {
         'maxTries': maxTries,
         'waitBetweenTries': waitBetweenTries,
         'continueOnFail': continueOnFail,
+        'alwaysOutputData': alwaysOutputData,
         'notes': notes,
       };
 }

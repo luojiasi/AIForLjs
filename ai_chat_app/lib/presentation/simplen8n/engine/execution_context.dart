@@ -107,7 +107,7 @@ class ExecutionContext {
 
   Map<String, dynamic>? getCredential(String key) => _credentials[key];
 
-  /// 注入凭据到节点参数（将 {{ $credential.xxx }} 替换为实际值）
+  /// 注入凭据到节点参数（将 {{ $credential.xxx.field }} 替换为实际值）
   void injectCredentials(Map<String, dynamic> parameters) {
     for (final entry in parameters.entries) {
       if (entry.value is String) {
@@ -118,12 +118,15 @@ class ExecutionContext {
   }
 
   String _resolveCredentialTemplate(String value) {
-    final regex = RegExp(r'\{\{\s*\$credential\.(\w+)\s*\}\}');
+    // Support both {{ $credential.name }} (uses 'value' field) and {{ $credential.name.field }}
+    final regex =
+        RegExp(r'\{\{\s*\$credential\.(\w+)(?:\.(\w+))?\s*\}\}');
     return value.replaceAllMapped(regex, (match) {
-      final key = match.group(1)!;
-      final cred = _credentials[key];
+      final name = match.group(1)!;
+      final field = match.group(2) ?? 'value';
+      final cred = _credentials[name];
       if (cred != null) {
-        return cred['value']?.toString() ?? match.group(0)!;
+        return cred[field]?.toString() ?? match.group(0)!;
       }
       return match.group(0)!;
     });

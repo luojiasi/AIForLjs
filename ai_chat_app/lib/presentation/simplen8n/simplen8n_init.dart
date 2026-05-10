@@ -9,6 +9,8 @@ import 'engine/executors/merge_executor.dart';
 import 'engine/executors/ai_chat_executor.dart';
 import 'engine/executors/webhook_trigger_executor.dart';
 import 'engine/executors/cron_trigger_executor.dart';
+import 'engine/executors/error_trigger_executor.dart';
+import 'engine/executors/execute_workflow_executor.dart';
 
 /// 初始化 simplen8n — 注册所有节点类型和 executor
 void initSimplen8n() {
@@ -28,6 +30,8 @@ void initSimplen8n() {
     AiChatExecutor(),
     WebhookTriggerExecutor(),
     CronTriggerExecutor(),
+    ErrorTriggerExecutor(),
+    ExecuteWorkflowExecutor(),
   ]);
 
   // Phase 0: 注册 3 个核心节点类型
@@ -288,6 +292,61 @@ void initSimplen8n() {
         ),
       ],
       description: 'Run the workflow on a repeating schedule via cron expression.',
+    ),
+
+    // Error Trigger
+    const NodeTypeDefinition(
+      type: 'error_trigger',
+      displayName: 'Error Trigger',
+      category: NodeCategory.trigger,
+      inputs: [],
+      outputs: [PortDefinition(id: 'output', name: 'Output')],
+      parameterSchema: [
+        ParameterSchema(
+          name: 'errorTypes',
+          displayName: 'Error Types',
+          type: ParameterType.select,
+          defaultValue: 'all',
+          options: [
+            ParameterOption(label: 'All Errors', value: 'all'),
+            ParameterOption(label: 'Workflow Errors Only', value: 'workflow'),
+            ParameterOption(label: 'Node Errors Only', value: 'node'),
+          ],
+          description: 'Which error types will trigger this workflow.',
+        ),
+      ],
+      description: 'Triggers when another workflow fails. The failed execution data is passed as input.',
+    ),
+
+    // Execute Workflow
+    const NodeTypeDefinition(
+      type: 'execute_workflow',
+      displayName: 'Execute Workflow',
+      category: NodeCategory.action,
+      inputs: [PortDefinition(id: 'input', name: 'Input')],
+      outputs: [PortDefinition(id: 'output', name: 'Output')],
+      parameterSchema: [
+        ParameterSchema(
+          name: 'workflowId',
+          displayName: 'Target Workflow',
+          type: ParameterType.select,
+          required: true,
+          options: [], // populated from saved workflows in the UI
+          description: 'The child workflow to execute.',
+        ),
+        ParameterSchema(
+          name: 'mode',
+          displayName: 'Mode',
+          type: ParameterType.select,
+          defaultValue: 'waitForResult',
+          options: [
+            ParameterOption(label: 'Wait for Result', value: 'waitForResult'),
+            ParameterOption(label: 'Fire and Forget', value: 'fireAndForget'),
+          ],
+          description: 'Whether to wait for the child workflow result or fire and continue.',
+        ),
+      ],
+      description: 'Call another saved workflow and receive its output. Enables workflow composition.',
     ),
   ]);
 }
