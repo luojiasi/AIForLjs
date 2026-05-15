@@ -5,7 +5,7 @@
 删除用户时级联删除其所有关联数据（API Key、日志、配额）。
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, BigInteger
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime, timezone
@@ -17,9 +17,15 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)  # 用户名（唯一）
-    hashed_password = Column(String(128), nullable=False)                   # bcrypt 密码哈希
-    is_active = Column(Boolean, default=True)                               # 账号是否激活
+    username = Column(String(50), unique=True, index=True, nullable=False)
+    email = Column(String(100), nullable=True)
+    hashed_password = Column(String(128), nullable=False)
+    role = Column(String(20), default="user")
+    is_active = Column(Boolean, default=True)
+    is_approved = Column(Boolean, default=False)  # 管理员审批后设为 True
+    quota_total = Column(BigInteger, default=1_000_000)
+    quota_used = Column(BigInteger, default=0)
+    quota_reset_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # 关联关系（级联删除：删除用户时自动删除其所有 Key、日志和配额）

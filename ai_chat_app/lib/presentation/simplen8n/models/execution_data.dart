@@ -31,10 +31,11 @@ class NodeExecutionData {
   });
 
   static NodeExecutionData fromMap(Map<String, dynamic> data) {
-    return NodeExecutionData(
-      json: data,
-    );
+    return NodeExecutionData(json: data);
   }
+
+  factory NodeExecutionData.fromJson(Map<String, dynamic> json) =>
+      NodeExecutionData(json: json);
 
   Map<String, dynamic> toJson() => json;
 }

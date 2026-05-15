@@ -1515,5 +1515,85 @@
   "searchPlaceholder":"搜索占位",
   "sideDrawerToday":"今日",
   "sideDrawerYesterday":"昨日",
-  "sideDrawerDaysAgo":"几天前"
+  "sideDrawerDaysAgo":"几天前",
+  "simplen8nAbout": "关于",
+  "simplen8nNewWorkflow": "新建工作流",
+  "simplen8nTagline": "可视化工作流自动化引擎",
+  "simplen8nCreateFirst": "创建你的第一个工作流",
+  "simplen8nDuplicate": "复制",
+  "simplen8nDelete": "删除",
+  "simplen8nLastRunOk": "上次运行成功",
+  "simplen8nLastRunFailed": "上次运行失败",
+  "simplen8nDismiss": "关闭",
+  "simplen8nRun": "运行",
+  "simplen8nArrange": "整理",
+  "simplen8nSave": "保存",
+  "simplen8nLoad": "加载",
+  "simplen8nImport": "导入",
+  "simplen8nExport": "导出",
+  "simplen8nStop": "停止",
+  "simplen8nActivate": "激活",
+  "simplen8nHistory": "历史",
+  "simplen8nLogs": "日志",
+  "simplen8nRunning": "运行中…",
+  "simplen8nBuildWorkflow": "构建你的工作流",
+  "simplen8nDragNodesHint": "从左侧面板拖入节点，或点击面板中的节点添加",
+  "simplen8nExecuteFromHere": "从此处执行",
+  "simplen8nCopy": "复制",
+  "simplen8nCut": "剪切",
+  "simplen8nExecutionLogs": "执行日志",
+  "simplen8nWorkflowImported": "工作流导入成功",
+  "simplen8nImportFailed": "导入失败: {error}",
+  "@simplen8nImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "simplen8nExportFailed": "导出失败: {error}",
+  "@simplen8nExportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "simplen8nExportWorkflow": "导出工作流",
+  "simplen8nExportedTo": "已导出至 {path}",
+  "@simplen8nExportedTo": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "simplen8nLoadWorkflow": "加载工作流",
+  "simplen8nNoSavedWorkflows": "没有已保存的工作流",
+  "simplen8nClose": "关闭",
+  "simplen8nNodesLabel": "节点",
+  "simplen8nNoNodesFound": "未找到节点",
+  "simplen8nSearchNodes": "搜索节点…",
+  "simplen8nSelectNode": "选择一个节点",
+  "simplen8nSelectNodeHint": "点击画布上的任意节点，即可配置其参数",
+  "simplen8nNodeName": "节点名称",
+  "simplen8nEnterNodeName": "输入节点名称…",
+  "simplen8nNotes": "备注",
+  "simplen8nAddNotes": "添加备注…",
+  "simplen8nParameters": "参数",
+  "simplen8nNoParameters": "无可用参数",
+  "simplen8nExpression": "expr",
+  "simplen8nEnterValue": "输入值…",
+  "simplen8nEnabled": "已启用",
+  "simplen8nDisabled": "已禁用",
+  "simplen8nWorkflowHistory": "工作流历史",
+  "simplen8nAllExecutionHistory": "所有执行历史",
+  "simplen8nNoHistory": "暂无执行历史",
+  "simplen8nUntitled": "未命名",
+  "simplen8nExecutionDetail": "执行详情",
+  "simplen8nSuccess": "成功",
+  "simplen8nFailed": "失败",
+  "simplen8nNodesCount": "节点 ({count})",
+  "@simplen8nNodesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "simplen8nDuration": "耗时",
+  "simplen8nStarted": "开始时间",
+  "simplen8nId": "ID"
 }

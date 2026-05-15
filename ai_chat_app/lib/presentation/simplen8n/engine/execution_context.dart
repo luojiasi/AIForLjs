@@ -1,5 +1,43 @@
 import 'expression_engine.dart';
 
+/// Snapshot of execution context state, serializable for isolate transfer
+/// or for cloning contexts during parallel execution.
+class ContextSnapshot {
+  final Map<String, dynamic> variables;
+  final Map<String, Map<String, dynamic>> nodeOutputs;
+  final Map<String, Map<String, dynamic>> credentials;
+  final Map<String, dynamic>? currentInput;
+
+  const ContextSnapshot({
+    this.variables = const {},
+    this.nodeOutputs = const {},
+    this.credentials = const {},
+    this.currentInput,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'variables': variables,
+        'nodeOutputs': nodeOutputs,
+        'credentials': credentials,
+        'currentInput': currentInput,
+      };
+
+  factory ContextSnapshot.fromJson(Map<String, dynamic> json) =>
+      ContextSnapshot(
+        variables: json['variables'] as Map<String, dynamic>? ?? {},
+        nodeOutputs:
+            (json['nodeOutputs'] as Map<String, dynamic>?)?.map(
+                  (k, v) => MapEntry(k, v as Map<String, dynamic>),
+                ) ??
+                {},
+        credentials: (json['credentials'] as Map<String, dynamic>?)?.map(
+              (k, v) => MapEntry(k, v as Map<String, dynamic>),
+            ) ??
+            {},
+        currentInput: json['currentInput'] as Map<String, dynamic>?,
+      );
+}
+
 /// 执行上下文 — 工作流运行时环境
 /// 承载全局变量、所有节点输出、凭据、表达式求值器
 class ExecutionContext {
@@ -20,9 +58,30 @@ class ExecutionContext {
   ExecutionContext({
     Map<String, dynamic>? initialVariables,
     Map<String, Map<String, dynamic>>? credentials,
-  })  : _variables = initialVariables ?? {},
-        _nodeOutputs = {},
-        _credentials = credentials ?? {};
+    Map<String, Map<String, dynamic>>? nodeOutputs,
+    Map<String, dynamic>? currentInput,
+    ContextSnapshot? snapshot,
+  })  : _variables = snapshot?.variables ?? initialVariables ?? {},
+        _nodeOutputs = snapshot?.nodeOutputs ?? nodeOutputs ?? {},
+        _currentInput = snapshot?.currentInput ?? currentInput ?? {},
+        _credentials = snapshot?.credentials ?? credentials ?? {};
+
+  /// Create an independent copy for parallel execution.
+  /// Each parallel node gets its own context to avoid race conditions.
+  ExecutionContext copy() => ExecutionContext(
+        initialVariables: Map.from(_variables),
+        credentials: Map.from(_credentials),
+        nodeOutputs: _nodeOutputs.map((k, v) => MapEntry(k, Map.from(v))),
+        currentInput: Map.from(_currentInput),
+      );
+
+  /// Export a serializable snapshot for isolate transfer.
+  ContextSnapshot toSnapshot() => ContextSnapshot(
+        variables: Map.from(_variables),
+        nodeOutputs: _nodeOutputs.map((k, v) => MapEntry(k, Map.from(v))),
+        credentials: _credentials.map((k, v) => MapEntry(k, Map.from(v))),
+        currentInput: Map.from(_currentInput),
+      );
 
   // ===========================================================================
   // 变量存取
@@ -59,12 +118,6 @@ class ExecutionContext {
   // ===========================================================================
 
   /// 求值模板字符串，替换所有 {{ ... }} 占位符。
-  /// 上下文内置变量：
-  ///   $json → 当前输入数据
-  ///   $workflow → {id, name}
-  ///   $node → 按名称查询的节点输出
-  ///   $vars → 全局变量
-  ///   $now(), $randomInt(), ... → 内置函数
   String evaluateTemplate(String template) {
     return _evaluator.evaluateTemplate(template, _buildContext());
   }
@@ -77,23 +130,15 @@ class ExecutionContext {
   /// 构建求值上下文 —— 扁平化所有可访问变量到 key → value
   Map<String, dynamic> _buildContext() {
     final ctx = <String, dynamic>{};
-
-    // $json.*
     ctx['json'] = _currentInput;
 
-    // $node [by ID and by name lookup]
     final nodeMap = <String, Map<String, dynamic>>{};
     for (final entry in _nodeOutputs.entries) {
       nodeMap[entry.key] = entry.value;
     }
     ctx['node'] = nodeMap;
-
-    // $vars.*
     ctx['vars'] = _variables;
-
-    // $workflow
     ctx['workflow'] = {};
-
     return ctx;
   }
 
@@ -118,7 +163,6 @@ class ExecutionContext {
   }
 
   String _resolveCredentialTemplate(String value) {
-    // Support both {{ $credential.name }} (uses 'value' field) and {{ $credential.name.field }}
     final regex =
         RegExp(r'\{\{\s*\$credential\.(\w+)(?:\.(\w+))?\s*\}\}');
     return value.replaceAllMapped(regex, (match) {

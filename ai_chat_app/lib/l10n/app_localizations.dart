@@ -8375,6 +8375,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{number} Days Ago'**
   String sideDrawerDaysAgo(Object number);
+
+  /// No description provided for @simplen8nAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get simplen8nAbout;
+
+  /// No description provided for @simplen8nNewWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'New Workflow'**
+  String get simplen8nNewWorkflow;
+
+  /// No description provided for @simplen8nTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual workflow automation engine'**
+  String get simplen8nTagline;
+
+  /// No description provided for @simplen8nCreateFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your First Workflow'**
+  String get simplen8nCreateFirst;
+
+  /// No description provided for @simplen8nDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get simplen8nDuplicate;
+
+  /// No description provided for @simplen8nDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get simplen8nDelete;
+
+  /// No description provided for @simplen8nLastRunOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Last run OK'**
+  String get simplen8nLastRunOk;
+
+  /// No description provided for @simplen8nLastRunFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Last run failed'**
+  String get simplen8nLastRunFailed;
+
+  /// No description provided for @simplen8nDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get simplen8nDismiss;
+
+  /// No description provided for @simplen8nRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Run'**
+  String get simplen8nRun;
+
+  /// No description provided for @simplen8nArrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange'**
+  String get simplen8nArrange;
+
+  /// No description provided for @simplen8nSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get simplen8nSave;
+
+  /// No description provided for @simplen8nLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Load'**
+  String get simplen8nLoad;
+
+  /// No description provided for @simplen8nImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get simplen8nImport;
+
+  /// No description provided for @simplen8nExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get simplen8nExport;
+
+  /// No description provided for @simplen8nStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get simplen8nStop;
+
+  /// No description provided for @simplen8nActivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get simplen8nActivate;
+
+  /// No description provided for @simplen8nHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get simplen8nHistory;
+
+  /// No description provided for @simplen8nLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs'**
+  String get simplen8nLogs;
+
+  /// No description provided for @simplen8nRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running…'**
+  String get simplen8nRunning;
+
+  /// No description provided for @simplen8nBuildWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your workflow'**
+  String get simplen8nBuildWorkflow;
+
+  /// No description provided for @simplen8nDragNodesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag nodes from the left panel\nor click to add from the palette'**
+  String get simplen8nDragNodesHint;
+
+  /// No description provided for @simplen8nExecuteFromHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute From Here'**
+  String get simplen8nExecuteFromHere;
+
+  /// No description provided for @simplen8nCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get simplen8nCopy;
+
+  /// No description provided for @simplen8nCut.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get simplen8nCut;
+
+  /// No description provided for @simplen8nExecutionLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution Logs'**
+  String get simplen8nExecutionLogs;
+
+  /// No description provided for @simplen8nWorkflowImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Workflow imported successfully'**
+  String get simplen8nWorkflowImported;
+
+  /// No description provided for @simplen8nImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String simplen8nImportFailed(String error);
+
+  /// No description provided for @simplen8nExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String simplen8nExportFailed(String error);
+
+  /// No description provided for @simplen8nExportWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Workflow'**
+  String get simplen8nExportWorkflow;
+
+  /// No description provided for @simplen8nExportedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to {path}'**
+  String simplen8nExportedTo(String path);
+
+  /// No description provided for @simplen8nLoadWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Load Workflow'**
+  String get simplen8nLoadWorkflow;
+
+  /// No description provided for @simplen8nNoSavedWorkflows.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved workflows'**
+  String get simplen8nNoSavedWorkflows;
+
+  /// No description provided for @simplen8nClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get simplen8nClose;
+
+  /// No description provided for @simplen8nNodesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nodes'**
+  String get simplen8nNodesLabel;
+
+  /// No description provided for @simplen8nNoNodesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No nodes found'**
+  String get simplen8nNoNodesFound;
+
+  /// No description provided for @simplen8nSearchNodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Search nodes…'**
+  String get simplen8nSearchNodes;
+
+  /// No description provided for @simplen8nSelectNode.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a node'**
+  String get simplen8nSelectNode;
+
+  /// No description provided for @simplen8nSelectNodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Click any node on the canvas\nto configure its parameters'**
+  String get simplen8nSelectNodeHint;
+
+  /// No description provided for @simplen8nNodeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Node Name'**
+  String get simplen8nNodeName;
+
+  /// No description provided for @simplen8nEnterNodeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter node name…'**
+  String get simplen8nEnterNodeName;
+
+  /// No description provided for @simplen8nNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get simplen8nNotes;
+
+  /// No description provided for @simplen8nAddNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Add notes…'**
+  String get simplen8nAddNotes;
+
+  /// No description provided for @simplen8nParameters.
+  ///
+  /// In en, this message translates to:
+  /// **'Parameters'**
+  String get simplen8nParameters;
+
+  /// No description provided for @simplen8nNoParameters.
+  ///
+  /// In en, this message translates to:
+  /// **'No configurable parameters'**
+  String get simplen8nNoParameters;
+
+  /// No description provided for @simplen8nExpression.
+  ///
+  /// In en, this message translates to:
+  /// **'expr'**
+  String get simplen8nExpression;
+
+  /// No description provided for @simplen8nEnterValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter value…'**
+  String get simplen8nEnterValue;
+
+  /// No description provided for @simplen8nEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get simplen8nEnabled;
+
+  /// No description provided for @simplen8nDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get simplen8nDisabled;
+
+  /// No description provided for @simplen8nWorkflowHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Workflow History'**
+  String get simplen8nWorkflowHistory;
+
+  /// No description provided for @simplen8nAllExecutionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'All Execution History'**
+  String get simplen8nAllExecutionHistory;
+
+  /// No description provided for @simplen8nNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No execution history yet'**
+  String get simplen8nNoHistory;
+
+  /// No description provided for @simplen8nUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get simplen8nUntitled;
+
+  /// No description provided for @simplen8nExecutionDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution Detail'**
+  String get simplen8nExecutionDetail;
+
+  /// No description provided for @simplen8nSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get simplen8nSuccess;
+
+  /// No description provided for @simplen8nFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get simplen8nFailed;
+
+  /// No description provided for @simplen8nNodesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Nodes ({count})'**
+  String simplen8nNodesCount(int count);
+
+  /// No description provided for @simplen8nDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get simplen8nDuration;
+
+  /// No description provided for @simplen8nStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get simplen8nStarted;
+
+  /// No description provided for @simplen8nId.
+  ///
+  /// In en, this message translates to:
+  /// **'ID'**
+  String get simplen8nId;
 }
 
 class _AppLocalizationsDelegate

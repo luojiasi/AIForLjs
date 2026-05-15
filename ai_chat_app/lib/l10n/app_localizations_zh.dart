@@ -4340,4 +4340,192 @@ class AppLocalizationsZh extends AppLocalizations {
   String sideDrawerDaysAgo(Object number) {
     return '几天前';
   }
+
+  @override
+  String get simplen8nAbout => '关于';
+
+  @override
+  String get simplen8nNewWorkflow => '新建工作流';
+
+  @override
+  String get simplen8nTagline => '可视化工作流自动化引擎';
+
+  @override
+  String get simplen8nCreateFirst => '创建你的第一个工作流';
+
+  @override
+  String get simplen8nDuplicate => '复制';
+
+  @override
+  String get simplen8nDelete => '删除';
+
+  @override
+  String get simplen8nLastRunOk => '上次运行成功';
+
+  @override
+  String get simplen8nLastRunFailed => '上次运行失败';
+
+  @override
+  String get simplen8nDismiss => '关闭';
+
+  @override
+  String get simplen8nRun => '运行';
+
+  @override
+  String get simplen8nArrange => '整理';
+
+  @override
+  String get simplen8nSave => '保存';
+
+  @override
+  String get simplen8nLoad => '加载';
+
+  @override
+  String get simplen8nImport => '导入';
+
+  @override
+  String get simplen8nExport => '导出';
+
+  @override
+  String get simplen8nStop => '停止';
+
+  @override
+  String get simplen8nActivate => '激活';
+
+  @override
+  String get simplen8nHistory => '历史';
+
+  @override
+  String get simplen8nLogs => '日志';
+
+  @override
+  String get simplen8nRunning => '运行中…';
+
+  @override
+  String get simplen8nBuildWorkflow => '构建你的工作流';
+
+  @override
+  String get simplen8nDragNodesHint => '从左侧面板拖入节点，或点击面板中的节点添加';
+
+  @override
+  String get simplen8nExecuteFromHere => '从此处执行';
+
+  @override
+  String get simplen8nCopy => '复制';
+
+  @override
+  String get simplen8nCut => '剪切';
+
+  @override
+  String get simplen8nExecutionLogs => '执行日志';
+
+  @override
+  String get simplen8nWorkflowImported => '工作流导入成功';
+
+  @override
+  String simplen8nImportFailed(String error) {
+    return '导入失败: $error';
+  }
+
+  @override
+  String simplen8nExportFailed(String error) {
+    return '导出失败: $error';
+  }
+
+  @override
+  String get simplen8nExportWorkflow => '导出工作流';
+
+  @override
+  String simplen8nExportedTo(String path) {
+    return '已导出至 $path';
+  }
+
+  @override
+  String get simplen8nLoadWorkflow => '加载工作流';
+
+  @override
+  String get simplen8nNoSavedWorkflows => '没有已保存的工作流';
+
+  @override
+  String get simplen8nClose => '关闭';
+
+  @override
+  String get simplen8nNodesLabel => '节点';
+
+  @override
+  String get simplen8nNoNodesFound => '未找到节点';
+
+  @override
+  String get simplen8nSearchNodes => '搜索节点…';
+
+  @override
+  String get simplen8nSelectNode => '选择一个节点';
+
+  @override
+  String get simplen8nSelectNodeHint => '点击画布上的任意节点，即可配置其参数';
+
+  @override
+  String get simplen8nNodeName => '节点名称';
+
+  @override
+  String get simplen8nEnterNodeName => '输入节点名称…';
+
+  @override
+  String get simplen8nNotes => '备注';
+
+  @override
+  String get simplen8nAddNotes => '添加备注…';
+
+  @override
+  String get simplen8nParameters => '参数';
+
+  @override
+  String get simplen8nNoParameters => '无可用参数';
+
+  @override
+  String get simplen8nExpression => 'expr';
+
+  @override
+  String get simplen8nEnterValue => '输入值…';
+
+  @override
+  String get simplen8nEnabled => '已启用';
+
+  @override
+  String get simplen8nDisabled => '已禁用';
+
+  @override
+  String get simplen8nWorkflowHistory => '工作流历史';
+
+  @override
+  String get simplen8nAllExecutionHistory => '所有执行历史';
+
+  @override
+  String get simplen8nNoHistory => '暂无执行历史';
+
+  @override
+  String get simplen8nUntitled => '未命名';
+
+  @override
+  String get simplen8nExecutionDetail => '执行详情';
+
+  @override
+  String get simplen8nSuccess => '成功';
+
+  @override
+  String get simplen8nFailed => '失败';
+
+  @override
+  String simplen8nNodesCount(int count) {
+    return '节点 ($count)';
+  }
+
+  @override
+  String get simplen8nDuration => '耗时';
+
+  @override
+  String get simplen8nStarted => '开始时间';
+
+  @override
+  String get simplen8nId => 'ID';
 }

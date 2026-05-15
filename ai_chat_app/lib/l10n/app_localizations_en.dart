@@ -4503,4 +4503,194 @@ class AppLocalizationsEn extends AppLocalizations {
   String sideDrawerDaysAgo(Object number) {
     return '$number Days Ago';
   }
+
+  @override
+  String get simplen8nAbout => 'About';
+
+  @override
+  String get simplen8nNewWorkflow => 'New Workflow';
+
+  @override
+  String get simplen8nTagline => 'Visual workflow automation engine';
+
+  @override
+  String get simplen8nCreateFirst => 'Create Your First Workflow';
+
+  @override
+  String get simplen8nDuplicate => 'Duplicate';
+
+  @override
+  String get simplen8nDelete => 'Delete';
+
+  @override
+  String get simplen8nLastRunOk => 'Last run OK';
+
+  @override
+  String get simplen8nLastRunFailed => 'Last run failed';
+
+  @override
+  String get simplen8nDismiss => 'Dismiss';
+
+  @override
+  String get simplen8nRun => 'Run';
+
+  @override
+  String get simplen8nArrange => 'Arrange';
+
+  @override
+  String get simplen8nSave => 'Save';
+
+  @override
+  String get simplen8nLoad => 'Load';
+
+  @override
+  String get simplen8nImport => 'Import';
+
+  @override
+  String get simplen8nExport => 'Export';
+
+  @override
+  String get simplen8nStop => 'Stop';
+
+  @override
+  String get simplen8nActivate => 'Activate';
+
+  @override
+  String get simplen8nHistory => 'History';
+
+  @override
+  String get simplen8nLogs => 'Logs';
+
+  @override
+  String get simplen8nRunning => 'Running…';
+
+  @override
+  String get simplen8nBuildWorkflow => 'Build your workflow';
+
+  @override
+  String get simplen8nDragNodesHint =>
+      'Drag nodes from the left panel\nor click to add from the palette';
+
+  @override
+  String get simplen8nExecuteFromHere => 'Execute From Here';
+
+  @override
+  String get simplen8nCopy => 'Copy';
+
+  @override
+  String get simplen8nCut => 'Cut';
+
+  @override
+  String get simplen8nExecutionLogs => 'Execution Logs';
+
+  @override
+  String get simplen8nWorkflowImported => 'Workflow imported successfully';
+
+  @override
+  String simplen8nImportFailed(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String simplen8nExportFailed(String error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get simplen8nExportWorkflow => 'Export Workflow';
+
+  @override
+  String simplen8nExportedTo(String path) {
+    return 'Exported to $path';
+  }
+
+  @override
+  String get simplen8nLoadWorkflow => 'Load Workflow';
+
+  @override
+  String get simplen8nNoSavedWorkflows => 'No saved workflows';
+
+  @override
+  String get simplen8nClose => 'Close';
+
+  @override
+  String get simplen8nNodesLabel => 'Nodes';
+
+  @override
+  String get simplen8nNoNodesFound => 'No nodes found';
+
+  @override
+  String get simplen8nSearchNodes => 'Search nodes…';
+
+  @override
+  String get simplen8nSelectNode => 'Select a node';
+
+  @override
+  String get simplen8nSelectNodeHint =>
+      'Click any node on the canvas\nto configure its parameters';
+
+  @override
+  String get simplen8nNodeName => 'Node Name';
+
+  @override
+  String get simplen8nEnterNodeName => 'Enter node name…';
+
+  @override
+  String get simplen8nNotes => 'Notes';
+
+  @override
+  String get simplen8nAddNotes => 'Add notes…';
+
+  @override
+  String get simplen8nParameters => 'Parameters';
+
+  @override
+  String get simplen8nNoParameters => 'No configurable parameters';
+
+  @override
+  String get simplen8nExpression => 'expr';
+
+  @override
+  String get simplen8nEnterValue => 'Enter value…';
+
+  @override
+  String get simplen8nEnabled => 'Enabled';
+
+  @override
+  String get simplen8nDisabled => 'Disabled';
+
+  @override
+  String get simplen8nWorkflowHistory => 'Workflow History';
+
+  @override
+  String get simplen8nAllExecutionHistory => 'All Execution History';
+
+  @override
+  String get simplen8nNoHistory => 'No execution history yet';
+
+  @override
+  String get simplen8nUntitled => 'Untitled';
+
+  @override
+  String get simplen8nExecutionDetail => 'Execution Detail';
+
+  @override
+  String get simplen8nSuccess => 'Success';
+
+  @override
+  String get simplen8nFailed => 'Failed';
+
+  @override
+  String simplen8nNodesCount(int count) {
+    return 'Nodes ($count)';
+  }
+
+  @override
+  String get simplen8nDuration => 'Duration';
+
+  @override
+  String get simplen8nStarted => 'Started';
+
+  @override
+  String get simplen8nId => 'ID';
 }

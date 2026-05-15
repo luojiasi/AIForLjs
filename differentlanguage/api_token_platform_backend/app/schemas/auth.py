@@ -11,12 +11,9 @@ from datetime import datetime
 
 class UserRegister(BaseModel):
     """用户注册请求"""
-    username: str = Field(
-        ..., min_length=3, max_length=50, examples=["testuser"]
-    )  # 用户名：3~50字符
-    password: str = Field(
-        ..., min_length=6, max_length=100
-    )  # 密码：6~100字符
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6, max_length=100)
+    email: str | None = None
 
 
 class UserLogin(BaseModel):
@@ -25,10 +22,28 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserResponse(BaseModel):
+    """用户信息响应"""
+    id: int
+    username: str
+    email: str | None = None
+    role: str = "user"
+    is_active: bool = True
+    is_approved: bool = False
+    quota_total: int = 1_000_000
+    quota_used: int = 0
+    quota_reset_at: datetime | None = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class TokenResponse(BaseModel):
-    """JWT 令牌响应"""
+    """JWT 令牌响应（含用户信息）"""
     access_token: str
     token_type: str = "bearer"
+    user: UserResponse
 
 
 class ApiKeyCreate(BaseModel):

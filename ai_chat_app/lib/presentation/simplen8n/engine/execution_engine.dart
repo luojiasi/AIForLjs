@@ -10,6 +10,7 @@ import 'execution_context.dart';
 import 'dag_analyzer.dart';
 import 'exceptions.dart';
 import 'executor_registry.dart';
+import 'parallel_executor.dart';
 
 // ============================================================================
 // 执行堆栈条目
@@ -53,7 +54,18 @@ class ExecutionEngine {
 
   Future<ExecutionResult> execute(Workflow workflow,
       {String? workflowId, String? workflowName,
-       Map<String, dynamic>? triggerData}) async {
+       Map<String, dynamic>? triggerData,
+       bool useParallel = false,
+       bool useIsolates = false}) async {
+    // Delegate to parallel executor if requested
+    if (useParallel) {
+      final parallel = ParallelExecutor(useIsolates: useIsolates);
+      return parallel.execute(workflow,
+          workflowId: workflowId ?? workflow.id,
+          workflowName: workflowName ?? workflow.name,
+          triggerData: triggerData);
+    }
+
     final executionId = _generateId();
     final startedAt = DateTime.now();
     final wfId = workflowId ?? workflow.id;

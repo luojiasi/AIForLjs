@@ -13,14 +13,40 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.database import init_db
+from app.database import init_db, SessionLocal
 from app.routers import auth, relay, usage, admin
+
+
+def _seed_admin():
+    """
+    启动时确保管理员账号存在，不存在则自动创建。
+
+    管理员用户名固定为 "admin"，密码通过 ADMIN_PASSWORD 环境变量配置，
+    未设置则使用默认值（生产环境务必修改！）。
+    """
+    db = SessionLocal()
+    try:
+        from app.models.user import User
+        from app.services.auth_service import hash_password
+        existing = db.query(User).filter(User.username == "admin").first()
+        if existing is None:
+            admin_user = User(
+                username="admin",
+                hashed_password=hash_password(settings.admin_password),
+                role="super_admin",
+                is_approved=True,
+            )
+            db.add(admin_user)
+            db.commit()
+    finally:
+        db.close()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理：启动时自动初始化数据库表结构"""
+    """应用生命周期管理：启动时自动初始化数据库表结构并创建管理员"""
     init_db()
+    _seed_admin()
     yield
 
 
@@ -35,10 +61,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # CORS 跨域配置（生产环境应限制 allow_origins 为具体域名）
+    # CORS 跨域配置
+    cors_origins = settings.cors_origins.split(",") if settings.cors_origins != "*" else ["*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -52,8 +79,11 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health_check():
-        """健康检查端点，供 Docker / K8s / 负载均衡器探活使用"""
         return {"status": "ok", "service": settings.app_name}
+
+    @app.get("/")
+    def root_info():
+        return {"service": settings.app_name, "version": "1.0.0"}
 
     return app
 

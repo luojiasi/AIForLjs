@@ -19,6 +19,8 @@ from app.config import settings
 from app.schemas.relay import RelayRequest, RelayResponse
 from app.adapters.factory import get_adapter, detect_vendor
 from app.models.request_log import RequestLog
+from app.models.pricing import PricingConfig
+from app.models.wallet import UserWallet, WalletTransaction
 
 logger = logging.getLogger(__name__)
 
@@ -135,10 +137,40 @@ async def 执行中继(
         db.commit()
         raise
 
-    # ===== 第4步：估算费用 =====
-    费用估算 = adapter.estimate_cost(响应)
+    # ===== 第4步：估算费用（优先使用数据库定价配置） =====
+    定价配置 = db.query(PricingConfig).filter(
+        PricingConfig.model_id == request.model,
+        PricingConfig.is_active == True,
+    ).first()
 
-    # ===== 第5步：记录成功审计日志 =====
+    if 定价配置 and 定价配置.sell_input_price > 0:
+        # 使用管理员配置的售价
+        费用估算 = round(
+            (响应.usage.prompt_tokens / 1_000_000) * 定价配置.sell_input_price +
+            (响应.usage.completion_tokens / 1_000_000) * 定价配置.sell_output_price,
+            6,
+        )
+    else:
+        # 使用适配器内置的厂商成本价估算
+        费用估算 = adapter.estimate_cost(响应)
+
+    响应.cost = 费用估算
+
+    # ===== 第5步：从钱包扣款 =====
+    if 费用估算 > 0:
+        钱包 = db.query(UserWallet).filter(UserWallet.user_id == user.id).first()
+        if 钱包 and 钱包.balance >= 费用估算:
+            钱包.balance -= 费用估算
+            钱包.total_spent += 费用估算
+            db.add(WalletTransaction(
+                user_id=user.id,
+                amount=-费用估算,
+                type="consume",
+                description=f"API Call: {request.model}",
+                balance_after=钱包.balance,
+            ))
+
+    # ===== 第6步：记录成功审计日志 =====
     成功日志 = RequestLog(
         user_id=user.id,
         vendor=adapter.vendor_name,
@@ -146,7 +178,7 @@ async def 执行中继(
         model=request.model,
         status_code=200,
         latency_ms=响应.latency_ms,
-        tokens_used=响应.usage.get("total_tokens", 0),
+        tokens_used=响应.usage.total_tokens,
         cost_estimate=费用估算,
     )
     db.add(成功日志)

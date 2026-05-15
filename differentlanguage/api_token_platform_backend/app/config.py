@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-change-in-production"  # JWT 签名密钥 + Fernet 加密派生源
     algorithm: str = "HS256"                              # JWT 签名算法
     access_token_expire_minutes: int = 1440               # JWT 过期时间（默认24小时）
+    admin_password: str = "admin123"                      # 管理员初始密码（仅首次创建时使用）
 
     # ===== 数据库配置 =====
     # SQLite 默认（零配置）；生产环境改为 PostgreSQL 连接字符串
@@ -50,6 +51,17 @@ class Settings(BaseSettings):
 
     # ===== 请求超时控制 =====
     vendor_request_timeout: int = 120   # 调用厂商 API 的超时秒数（AI 响应可能较慢）
+
+    # ===== SMTP 邮件配置 =====
+    smtp_host: str = ""                 # SMTP 服务器地址（留空禁用邮件发送）
+    smtp_port: int = 587                # SMTP 端口（587=TLS, 465=SSL）
+    smtp_user: str = ""                 # SMTP 登录用户名
+    smtp_password: str = ""             # SMTP 登录密码
+    smtp_from: str = "noreply@tokenrelay.com"  # 发件人地址
+    frontend_url: str = "http://localhost:5173"  # 前端URL（用于邮件中的链接）
+
+    # ===== CORS 配置 =====
+    cors_origins: str = "*"             # 允许的跨域来源，生产环境改为具体域名如 "https://example.com"
 
     # pydantic-settings 配置：从 .env 文件加载（UTF-8 编码）
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}

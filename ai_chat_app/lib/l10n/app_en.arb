@@ -1895,5 +1895,85 @@
   "sideDrawerDaysAgo":"{number} Days Ago",
   "@sideDrawerDaysAgo":{
     "number": {"type": "int"}
-  }
+  },
+  "simplen8nAbout": "About",
+  "simplen8nNewWorkflow": "New Workflow",
+  "simplen8nTagline": "Visual workflow automation engine",
+  "simplen8nCreateFirst": "Create Your First Workflow",
+  "simplen8nDuplicate": "Duplicate",
+  "simplen8nDelete": "Delete",
+  "simplen8nLastRunOk": "Last run OK",
+  "simplen8nLastRunFailed": "Last run failed",
+  "simplen8nDismiss": "Dismiss",
+  "simplen8nRun": "Run",
+  "simplen8nArrange": "Arrange",
+  "simplen8nSave": "Save",
+  "simplen8nLoad": "Load",
+  "simplen8nImport": "Import",
+  "simplen8nExport": "Export",
+  "simplen8nStop": "Stop",
+  "simplen8nActivate": "Activate",
+  "simplen8nHistory": "History",
+  "simplen8nLogs": "Logs",
+  "simplen8nRunning": "Running…",
+  "simplen8nBuildWorkflow": "Build your workflow",
+  "simplen8nDragNodesHint": "Drag nodes from the left panel\nor click to add from the palette",
+  "simplen8nExecuteFromHere": "Execute From Here",
+  "simplen8nCopy": "Copy",
+  "simplen8nCut": "Cut",
+  "simplen8nExecutionLogs": "Execution Logs",
+  "simplen8nWorkflowImported": "Workflow imported successfully",
+  "simplen8nImportFailed": "Import failed: {error}",
+  "@simplen8nImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "simplen8nExportFailed": "Export failed: {error}",
+  "@simplen8nExportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "simplen8nExportWorkflow": "Export Workflow",
+  "simplen8nExportedTo": "Exported to {path}",
+  "@simplen8nExportedTo": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "simplen8nLoadWorkflow": "Load Workflow",
+  "simplen8nNoSavedWorkflows": "No saved workflows",
+  "simplen8nClose": "Close",
+  "simplen8nNodesLabel": "Nodes",
+  "simplen8nNoNodesFound": "No nodes found",
+  "simplen8nSearchNodes": "Search nodes…",
+  "simplen8nSelectNode": "Select a node",
+  "simplen8nSelectNodeHint": "Click any node on the canvas\nto configure its parameters",
+  "simplen8nNodeName": "Node Name",
+  "simplen8nEnterNodeName": "Enter node name…",
+  "simplen8nNotes": "Notes",
+  "simplen8nAddNotes": "Add notes…",
+  "simplen8nParameters": "Parameters",
+  "simplen8nNoParameters": "No configurable parameters",
+  "simplen8nExpression": "expr",
+  "simplen8nEnterValue": "Enter value…",
+  "simplen8nEnabled": "Enabled",
+  "simplen8nDisabled": "Disabled",
+  "simplen8nWorkflowHistory": "Workflow History",
+  "simplen8nAllExecutionHistory": "All Execution History",
+  "simplen8nNoHistory": "No execution history yet",
+  "simplen8nUntitled": "Untitled",
+  "simplen8nExecutionDetail": "Execution Detail",
+  "simplen8nSuccess": "Success",
+  "simplen8nFailed": "Failed",
+  "simplen8nNodesCount": "Nodes ({count})",
+  "@simplen8nNodesCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "simplen8nDuration": "Duration",
+  "simplen8nStarted": "Started",
+  "simplen8nId": "ID"
 }

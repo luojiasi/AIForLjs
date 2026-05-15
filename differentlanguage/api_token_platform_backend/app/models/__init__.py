@@ -10,5 +10,7 @@ from app.models.api_key import PlatformApiKey
 from app.models.vendor_key import VendorKey
 from app.models.request_log import RequestLog
 from app.models.usage_quota import UsageQuota
+from app.models.pricing import PricingConfig
+from app.models.wallet import UserWallet, WalletTransaction
 
-__all__ = ["User", "PlatformApiKey", "VendorKey", "RequestLog", "UsageQuota"]
+__all__ = ["User", "PlatformApiKey", "VendorKey", "RequestLog", "UsageQuota", "PricingConfig", "UserWallet", "WalletTransaction"]

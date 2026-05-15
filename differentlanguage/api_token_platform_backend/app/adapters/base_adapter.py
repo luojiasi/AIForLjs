@@ -88,7 +88,4 @@ class BaseVendorAdapter(ABC):
 
         子类可重写此方法，使用厂商定价表做精确计算。
         """
-        usage = response.usage
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", 0)
         return 0.0
