@@ -1,7 +1,25 @@
+import 'package:ai_chat_app/core/providers/settings_provider.dart';
 import 'package:ai_chat_app/desktop/setting/about_pane.dart';
+import 'package:ai_chat_app/desktop/setting/backup_pane.dart';
+import 'package:ai_chat_app/desktop/setting/default_model_pane.dart';
+import 'package:ai_chat_app/desktop/setting/hotkeys_pane.dart';
+import 'package:ai_chat_app/desktop/setting/instruction_injection_pane.dart';
+import 'package:ai_chat_app/desktop/setting/mcp_pane.dart';
+import 'package:ai_chat_app/desktop/setting/network_proxy_pane.dart';
+import 'package:ai_chat_app/desktop/setting/quick_phrases_pane.dart';
+import 'package:ai_chat_app/desktop/setting/search_service_pane.dart';
+import 'package:ai_chat_app/desktop/setting/tts_services_pane.dart';
+import 'package:ai_chat_app/desktop/setting/world_book_pane.dart';
 import 'package:ai_chat_app/icons/lucide_adapter.dart' as lucide;
 import 'package:ai_chat_app/l10n/app_localizations.dart';
+import 'package:ai_chat_app/shared/widgets/ios_switch.dart';
+import 'package:ai_chat_app/theme/palettes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+part 'setting/display_pane.dart';
+// part 'setting/assistants_pane.dart';
+// part 'setting/providers_pane.dart';
 
 class DesktopSettingsPage extends StatefulWidget {
   const DesktopSettingsPage({
@@ -16,11 +34,31 @@ class DesktopSettingsPage extends StatefulWidget {
 }
 enum _SettingsMenuItem {
   display,
+  assistant,
+  providers,
+  defaultModel,
+  search,
+  mcp,
+  quickPhrases,
+  instructionInjection,
+  worldBook,
+  tts,
+  networkProxy,
+  backup,
+  hotkeys,
   about,
 }
 class _DesktopSettingsPageState extends State<DesktopSettingsPage>{
   _SettingsMenuItem _selected = _SettingsMenuItem.display;
-
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialProviderKey != null) {
+      // 根据 initialProviderKey 设置初始选项
+      // 这里假设 providers 对应的菜单项是 _SettingsMenuItem.providers
+      _selected = _SettingsMenuItem.providers;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -73,9 +111,35 @@ class _DesktopSettingsPageState extends State<DesktopSettingsPage>{
                     child:(){
                       switch(_selected){
                         case _SettingsMenuItem.display:
-                          return const SizedBox.shrink(); // TODO: 显示显示设置界面
+                          return const _DisplaySettingsBody(key: ValueKey('display')); 
+                        case _SettingsMenuItem.assistant:
+                        return const SizedBox.shrink();
+                          // return const _DesktopAssistantsBody(key: ValueKey('assistant')); // TODO: 显示助手设置界面
+                        case _SettingsMenuItem.providers:
+                        return const SizedBox.shrink();
+                          // return const _DesktopProvidersBody(key: ValueKey('providers')); // TODO: 显示提供商设置界面
+                        case _SettingsMenuItem.defaultModel:
+                          return const DesktopDefaultModelPane(key: ValueKey('defaultModel')); // TODO: 显示默认模型设置界面
+                        case _SettingsMenuItem.search:
+                          return const DesktopSearchServicesPane(key: ValueKey('search')); // TODO: 显示搜索设置界面
+                        case _SettingsMenuItem.mcp:
+                          return const DesktopMcpPane(key: ValueKey('mcp')); // TODO: 显示MCP设置界面
+                        case _SettingsMenuItem.quickPhrases:
+                          return const DesktopQuickPhrasesPane(key: ValueKey('quickPhrases')); // TODO: 显示快捷短语设置界面
+                        case _SettingsMenuItem.instructionInjection:
+                          return const DesktopInstructionInjectionPane(key: ValueKey('instructionInjection')); // TODO: 显示指令注入设置界面
+                        case _SettingsMenuItem.worldBook:
+                          return const DesktopWorldBookPane(key: ValueKey('worldBook')); // TODO: 显示世界百科设置界面
+                        case _SettingsMenuItem.tts:
+                          return const DesktopTtsServicesPane(key: ValueKey('tts')); // TODO: 显示TTS设置界面
+                        case _SettingsMenuItem.networkProxy:
+                          return const DesktopNetworkProxyPane(key: ValueKey('networkProxy')); // TODO: 显示网络代理设置界面
+                        case _SettingsMenuItem.backup:
+                          return const DesktopBackupPane(key: ValueKey('backup')); // TODO: 显示备份设置界面
+                        case _SettingsMenuItem.hotkeys: 
+                          return const DesktopHotkeysPane(key: ValueKey('hotkeys')); 
                         case _SettingsMenuItem.about:
-                           return const DesktopAboutPane(key: ValueKey('about')); // TODO: 显示关于界面
+                           return const DesktopAboutPane(key: ValueKey('about')); 
                       }
                     }()
                   ),
@@ -107,54 +171,54 @@ class _SettingsMenu extends StatelessWidget {
         lucide.Lucide.Monitor,
         l10n.settingsPageDisplay,
       ),
-      // (
-      //   _SettingsMenuItem.providers,
-      //   lucide.Lucide.Boxes,
-      //   l10n.settingsPageProviders,
-      // ),
-      // (
-      //   _SettingsMenuItem.assistant,
-      //   lucide.Lucide.Bot,
-      //   l10n.settingsPageAssistant,
-      // ),
-      // (
-      //   _SettingsMenuItem.defaultModel,
-      //   lucide.Lucide.Heart,
-      //   l10n.settingsPageDefaultModel,
-      // ),
-      // (_SettingsMenuItem.search, lucide.Lucide.Earth, l10n.settingsPageSearch),
-      // (_SettingsMenuItem.mcp, lucide.Lucide.Terminal, l10n.settingsPageMcp),
-      // (
-      //   _SettingsMenuItem.quickPhrases,
-      //   lucide.Lucide.Zap,
-      //   l10n.settingsPageQuickPhrase,
-      // ),
-      // (
-      //   _SettingsMenuItem.instructionInjection,
-      //   lucide.Lucide.Layers,
-      //   l10n.settingsPageInstructionInjection,
-      // ),
-      // (
-      //   _SettingsMenuItem.worldBook,
-      //   lucide.Lucide.BookOpen,
-      //   l10n.settingsPageWorldBook,
-      // ),
-      // (_SettingsMenuItem.tts, lucide.Lucide.Volume2, l10n.settingsPageTts),
-      // (
-      //   _SettingsMenuItem.networkProxy,
-      //   lucide.Lucide.EthernetPort,
-      //   l10n.settingsPageNetworkProxy,
-      // ),
-      // (
-      //   _SettingsMenuItem.backup,
-      //   lucide.Lucide.Database,
-      //   l10n.settingsPageBackup,
-      // ),
-      // (
-      //   _SettingsMenuItem.hotkeys,
-      //   lucide.Lucide.Keyboard,
-      //   l10n.settingsPageHotkeys,
-      // ),
+      (
+        _SettingsMenuItem.assistant,
+        lucide.Lucide.Bot,
+        l10n.settingsPageAssistant,
+      ),
+      (
+        _SettingsMenuItem.providers,
+        lucide.Lucide.Boxes,
+        l10n.settingsPageProviders,
+      ),
+      (
+        _SettingsMenuItem.defaultModel,
+        lucide.Lucide.Heart,
+        l10n.settingsPageDefaultModel,
+      ),
+      (_SettingsMenuItem.search, lucide.Lucide.Earth, l10n.settingsPageSearch),
+      (_SettingsMenuItem.mcp, lucide.Lucide.Terminal, l10n.settingsPageMcp),
+      (
+        _SettingsMenuItem.quickPhrases,
+        lucide.Lucide.Zap,
+        l10n.settingsPageQuickPhrase,
+      ),
+      (
+        _SettingsMenuItem.instructionInjection,
+        lucide.Lucide.Layers,
+        l10n.settingsPageInstructionInjection,
+      ),
+      (
+        _SettingsMenuItem.worldBook,
+        lucide.Lucide.BookOpen,
+        l10n.settingsPageWorldBook,
+      ),
+      (_SettingsMenuItem.tts, lucide.Lucide.Volume2, l10n.settingsPageTts),
+      (
+        _SettingsMenuItem.networkProxy,
+        lucide.Lucide.EthernetPort,
+        l10n.settingsPageNetworkProxy,
+      ),
+      (
+        _SettingsMenuItem.backup,
+        lucide.Lucide.Database,
+        l10n.settingsPageBackup,
+      ),
+      (
+        _SettingsMenuItem.hotkeys,
+        lucide.Lucide.Keyboard,
+        l10n.settingsPageHotkeys,
+      ),
       (
         _SettingsMenuItem.about,
         lucide.Lucide.BadgeInfo,
@@ -187,6 +251,7 @@ class _SettingsMenu extends StatelessWidget {
     );
   }
 }
+
 class _MenuItem extends StatefulWidget {
   const _MenuItem({
     required this.icon,

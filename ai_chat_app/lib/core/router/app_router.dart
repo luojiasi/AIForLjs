@@ -24,6 +24,7 @@ import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/a
 import 'package:ai_chat_app/presentation/differentlanguage/agent_architectures/agent_architectures_data.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/python_crawler/python_crawler_detail_page.dart';
+import 'package:ai_chat_app/presentation/QOMOAppLicense/qomo_license_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_home.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_detail_page.dart';
 import 'package:ai_chat_app/presentation/differentlanguage/api_token_platform/api_token_platform_data.dart';
@@ -55,8 +56,8 @@ final GoRouter appRouter = GoRouter(
   initialLocation: '/',
   observers: [routeObserver],
   routes: [
-    GoRoute(path: '/', builder: (context, state) => _homePage()),
-    // GoRoute(path: '/',builder: (context, state) => const AboutPage()),
+    // GoRoute(path: '/', builder: (context, state) => _homePage()),
+    GoRoute(path: '/',builder: (context, state) => const AboutPage()),
     GoRoute(path: '/study', builder: (context, state) => const StudyHome()),
 
     

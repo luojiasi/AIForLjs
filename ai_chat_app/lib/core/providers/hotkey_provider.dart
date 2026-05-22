@@ -135,7 +135,8 @@ class HotkeyProvider extends ChangeNotifier {
     await prefs.setStringList(_prefsKeyEnabled, enabledList);
     await prefs.setStringList(_prefsKeyCommands, cmdList);
   }
-   Future<void> resetAllToDefaults() async {
+  
+  Future<void> resetAllToDefaults() async {
     final isMac = Platform.isMacOS;
     for (final e in _items.values) {
       final def = (isMac ? e.defaultMac : e.defaultWinLinux) ?? '';
@@ -146,6 +147,41 @@ class HotkeyProvider extends ChangeNotifier {
     await _rebindAll();
     notifyListeners();
   }
+  
+  Future<void> resetToDefault(String id) async {
+    final item = _items[id]!;
+    final def =
+        (Platform.isMacOS ? item.defaultMac : item.defaultWinLinux) ?? '';
+    item.command = def.isEmpty ? null : def;
+    await _persist();
+    await _rebindAll();
+    notifyListeners();
+  }
+
+  Future<void> clearCommand(String id) async {
+    final item = _items[id]!;
+    item.command = null;
+    await _persist();
+    await _rebindAll();
+    notifyListeners();
+  }
+
+  Future<void> setCommand(String id, String command) async {
+    final item = _items[id]!;
+    item.command = command.trim().isEmpty ? null : command.trim();
+    await _persist();
+    await _rebindAll();
+    notifyListeners();
+  }
+
+  Future<void> setEnabled(String id, bool value) async {
+    final item = _items[id]!;
+    item.enabled = value;
+    await _persist();
+    await _rebindAll();
+    notifyListeners();
+  }
+
   ///  _rebindAll()
   ///   ├─ 先 unregisterAll() 全部注销（防止残留）
   ///   ├─ 遍历 _items：

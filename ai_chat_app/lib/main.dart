@@ -82,6 +82,7 @@ class AiChatApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => HotkeyProvider()),
       ],
       child: Builder(
         builder: (context) {
