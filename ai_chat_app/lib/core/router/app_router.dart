@@ -132,6 +132,9 @@ final GoRouter appRouter = GoRouter(
       return PythonCrawlerDetailPage(projectIndex: idx);
     }),
 
+    // Qomo 许可证管理 — 授权密钥解码与验证
+    GoRoute(path: '/qomo_license', builder: (context, state) => const QomoLicensePage()),
+
     // API Token 中转平台 — 统一多厂商AI API网关
     GoRoute(path: '/api_token_platform', builder: (context, state) => const ApiTokenPlatformHome()),
     GoRoute(path: '/api_token_platform/detail', builder: (context, state) {

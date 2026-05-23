@@ -658,6 +658,13 @@ class _AboutPageState extends State<AboutPage>{
                 label: '故障排除',
                 onTap: () => context.push('/commonproblems'), // informational only
               ),
+              _iosDivider(context),
+              _iosNavRow(
+                context,
+                icon: Lucide.KeyRound,
+                label: 'Qomo 许可证',
+                onTap: () => context.push('/qomo_license'),
+              ),
             ],
           ),
 

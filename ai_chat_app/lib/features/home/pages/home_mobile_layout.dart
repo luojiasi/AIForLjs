@@ -46,7 +46,9 @@ class HomeMobileScaffold extends StatelessWidget{
       scrimColor: cs.onSurface,
       maxScrimOpacity: 0.12,
       barrierDismissible: true,
-      drawer: SideDrawer(),
+      drawer: SideDrawer(
+
+      ),
       child: Scaffold(
         key: scaffoldKey,
         resizeToAvoidBottomInset: true,

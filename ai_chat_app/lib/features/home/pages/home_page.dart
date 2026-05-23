@@ -1,4 +1,5 @@
 import 'package:ai_chat_app/core/providers/settings_provider.dart';
+import 'package:ai_chat_app/features/home/controllers/home_page_controller.dart';
 import 'package:ai_chat_app/features/home/pages/home_mobile_layout.dart';
 import 'package:ai_chat_app/l10n/app_localizations.dart';
 import 'package:ai_chat_app/shared/responsive/breakpoints.dart';
@@ -44,7 +45,7 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
   // ============================================================================
   // Page Controller (manages all business logic and state)
   // 核心控制器，管理所有聊天状态、消息列表、会话切换、流式输出、选择模式等业务逻
-  // late HomePageController _controller;
+  late HomePageController _controller;
   // ============================================================================
   
   // ============================================================================
@@ -58,86 +59,36 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
   // 4. 调用 _controller.initChat() 初始化聊天
   // 5. 调用 _initProcessText() 设置 Android 进程文本
   // 6. 在下一帧执行：测量输入栏高度 + 初始化 WorldBookProvider
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   try {
-  //     // WidgetsBinding.instance.addObserver(this);
-  //   } catch (_) {}
-
-  // }
-
-
-  // 有新页面 push 到当前页面之上时调用，委托给 controller（如暂停音频播放）
-  // @override
-  // void didPushNext() {
-  //   _controller.onDidPushNext();
-  // }
-  // 上层页面被 pop 后恢复时调用，委托给 controller（如恢复音频播放）
-  // @override
-  // void didPopNext() {
-  //   _controller.onDidPopNext();
-  // }
-
-  // 依次释放所有资源：移除 Observer → 取消订阅 → 移除监听器 → disposeFocusNode/TextEditingController/ScrollController/Controller → 取消路由订阅。
-  // @override
-  // void dispose() {
-  //   try {
-  //     WidgetsBinding.instance.removeObserver(this);
-  //   } catch (_) {}
-  //   _processTextSub?.cancel();
-  //   _controller.removeListener(_onControllerChanged);
-  //   _drawerController.removeListener(_onDrawerValueChanged);
-  //   _inputFocus.dispose();
-  //   _inputController.dispose();
-  //   _scrollController.dispose();
-  //   _controller.dispose();
-  //   routeObserver.unsubscribe(this);
-  //   super.dispose();
-  // }
-  // Controller 状态变化时调用 setState 触发重建。所有 UI 更新的入口
-  // void _onControllerChanged() {
-  //   if (mounted) setState(() {});
-  // }
-
-  // 抽屉动画值变化回调：
-  // - 通知 controller 抽屉值变化（用于计算侧栏宽度等）
-  // - 当抽屉值 < 0.95 时（接近关闭），根据设置决定是否关闭助手选择器
-
-  // void _onDrawerValueChanged() {
-  //   _controller.onDrawerValueChanged(_drawerController.value);
-  //   // Close assistant picker when drawer closes
-  //   if (_drawerController.value < 0.95) {
-  //     final sp = context.read<SettingsProvider>();
-  //     if (!sp.keepAssistantListExpandedOnSidebarClose) {
-  //       _assistantPickerCloseTick.value++;
-  //     }
-  //   }
-  // }
-  //  Android 专属：初始化 AndroidProcessText，监听其他 App 分享文本到本应用的流，并获取初始文本（冷启动时传入的文本）
-  // void _initProcessText() {
-  //   if (!PlatformUtils.isAndroid) return;
-  //   AndroidProcessText.ensureInitialized();
-  //   _processTextSub = AndroidProcessText.stream.listen(_handleProcessText);
-  //   AndroidProcessText.getInitialText().then((text) {
-  //     if (text != null) {
-  //       _handleProcessText(text);
-  //     }
-  //   });
-  // }
 
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final cs = Theme.of(context).colorScheme;
-    final title ='asist';
+    final settings = context.watch<SettingsProvider>();
+    // final assistant = context.watch<AssistantProvider>().currentAssistant;
+    // final modelInfo = getModelDisplayInfo(settings, assistant: assistant);
+    // final title =
+    //     ((_controller.currentConversation?.title ?? '').trim().isNotEmpty)
+    //     ? _controller.currentConversation!.title
+    //     : _controller.titleForLocale();
+    final title = "SYCTB";
+
+
     if(width >= AppBreakpoints.tablet){
-      return _buildTabletLayout();
+      return _buildTabletLayout(
+        context,
+        title:title,
+        // providerName: modelInfo.providerName,
+        // modelDisplay: modelInfo.modelDisplay,
+        cs: cs,
+      );
     }
     return _buildMobileLayout(
       context,
       title: title,
+      // providerName: modelInfo.providerName,
+      // modelDisplay: modelInfo.modelDisplay,
       cs: cs,
     );
 
@@ -146,13 +97,16 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
   Widget _buildMobileLayout(
     BuildContext context,{
       required ColorScheme cs,
+      // required String? providerName,
+      // required String? modelDisplay,
       required String title,
     }) {
     return HomeMobileScaffold(
       scaffoldKey: _scaffoldKey,
-      drawerController: _drawerController,
       title: title,
       onToggleDrawer: () => _drawerController.toggle(),
+      
+      drawerController: _drawerController,
       body: _buildBody(),
     );
   }
@@ -187,7 +141,13 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
 
   
   // 平板/桌面布局入口
-  Widget _buildTabletLayout() {
+  Widget _buildTabletLayout(
+    BuildContext context, {
+    required String title,
+    // required String? providerName,
+    // required String? modelDisplay,
+    required ColorScheme cs,
+  }){
       return Scaffold(
       body: Row(
         children: [
@@ -204,7 +164,7 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
     );
   }
   // // 平板端主体内容
-    Widget _buildTabletBody() {
+  Widget _buildTabletBody() {
     return Stack(
       children: [
         Padding(
@@ -236,23 +196,10 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
   // // ============================================================================
   // // UI Component Builders
   // // ============================================================================
-  // // 选择模式迷你地图
-  // Widget _buildChatBackground(BuildContext context, ColorScheme cs){
 
-  // }
-  // // 聊天背景图
-  // Widget _buildAssistantBackground(BuildContext context){
 
-  // }
-  // // 消息列表
-  // Widget _buildMessageListView(BuildContext context, {required EdgeInsetsGeometry dividerPadding,}){
 
-  // }
-  
-  // //  输入栏
-  // Widget _buildChatInputBar(BuildContext context, {required bool isTablet}){
 
-  // }
   Widget _buildInputBar(){
     return Container(
       padding: const EdgeInsets.all(12),
@@ -274,22 +221,7 @@ class _HomePage extends State<HomePage> with SingleTickerProviderStateMixin, Rou
       ),
     );
   }
-  // // 助手侧栏背景
-  // Widget _buildAssistantBackground(BuildContext context){
 
-  // }
-  // // 滚动导航按钮
-  // Widget _buildScrollButtons(){
-
-  // }
-  // // 桌面拖拽上传  仅桌面端生效（!_controller.isDesktopPlatform 直接返回 child）
-  // Widget _wrapWithDropTarget(Widget child){
-
-  // }
-
-  // int _computeTruncCollapsedIndex(){
-
-  // }
 
   // ============================================================================
   // 交互处理方法
