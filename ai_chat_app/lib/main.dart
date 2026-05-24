@@ -1,13 +1,28 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:ai_chat_app/core/providers/assistant_provider.dart';
+import 'package:ai_chat_app/core/providers/backup_provider.dart';
+import 'package:ai_chat_app/core/providers/chat_provider.dart';
 import 'package:ai_chat_app/core/providers/hotkey_provider.dart';
+import 'package:ai_chat_app/core/providers/instruction_injection_group_provider.dart';
+import 'package:ai_chat_app/core/providers/instruction_injection_provider.dart';
+import 'package:ai_chat_app/core/providers/mcp_provider.dart';
+import 'package:ai_chat_app/core/providers/memory_provider.dart';
+import 'package:ai_chat_app/core/providers/quick_phrase_provider.dart';
+import 'package:ai_chat_app/core/providers/s3_backup_provider.dart';
+import 'package:ai_chat_app/core/providers/tag_provider.dart';
+import 'package:ai_chat_app/core/providers/tts_provider.dart';
 import 'package:ai_chat_app/core/providers/update_provider.dart';
 import 'package:ai_chat_app/core/providers/user_provider.dart';
+import 'package:ai_chat_app/core/providers/world_book_provider.dart';
 import 'package:ai_chat_app/core/services/android_background.dart';
+import 'package:ai_chat_app/core/services/chat/chat_service.dart';
+import 'package:ai_chat_app/core/services/mcp/mcp_tool_service.dart';
 import 'package:ai_chat_app/core/services/notification_service.dart';
 import 'package:ai_chat_app/core/services/system_fonts.dart';
 import 'package:ai_chat_app/desktop/desktop_tray_controller.dart';
 import 'package:ai_chat_app/desktop/desktop_window_controller.dart';
+import 'package:ai_chat_app/features/home/services/tool_approval_service.dart';
 import 'package:ai_chat_app/features/settings/pages/snackbar.dart';
 import 'package:ai_chat_app/utils/sandbox_path_resolver.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +42,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/router/app_router.dart';
+
 bool _didCheckUpdates = false;
 bool _didEnsureAssistants = false; 
 void main() async {
@@ -80,9 +96,30 @@ class AiChatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => HotkeyProvider()),
+
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),  //全局设置
+        ChangeNotifierProvider(create: (_) => UserProvider()),      //用户信息、登陆状态--done
+        ChangeNotifierProvider(create: (_) => HotkeyProvider()),    //桌面端快捷键管理--done
+        ChangeNotifierProvider(create: (_) => UpdateProvider()),    //更新检查和下载--done
+        ChangeNotifierProvider(create: (_) => AssistantProvider()), //AI 助手配置管理
+        ChangeNotifierProvider(create: (_) => ChatProvider()),      //聊天消息状态管理 
+        ChangeNotifierProvider(create: (_) => MemoryProvider()),    //记忆管理
+        ChangeNotifierProvider(create: (_) => TagProvider()),       //标签管理
+        ChangeNotifierProvider(create: (_) => QuickPhraseProvider()),//快捷提示语管理
+        ChangeNotifierProvider(create: (_) => InstructionInjectionProvider()),//指令注入（prompt 注入）
+        ChangeNotifierProvider(create: (_) => InstructionInjectionGroupProvider()),//指令注入分组管理
+        ChangeNotifierProvider(create: (_) => McpProvider()),       //MCP（多模型切换）管理
+        ChangeNotifierProvider(create: (_) => WorldBookProvider()), //世界百科管理
+        ChangeNotifierProvider(create: (_) => TtsProvider()),       //TTS（文本转语音）管理
+        ChangeNotifierProvider(create: (_) => BackupProvider()),    //备份管理
+        ChangeNotifierProvider(create: (_) => S3BackupProvider()),  //记忆管理
+
+        ChangeNotifierProvider(create: (_) => ChatService()),
+        ChangeNotifierProvider(create: (_) => McpToolService()),
+        ChangeNotifierProvider(create: (_) => ToolApprovalService()),
+        
+
+
       ],
       child: Builder(
         builder: (context) {

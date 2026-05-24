@@ -1,5 +1,5 @@
-import 'package:ai_chat_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'emoji_text.dart';
 
 /// A reusable emoji picker dialog used by both mobile and desktop.

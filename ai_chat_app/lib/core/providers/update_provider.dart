@@ -90,7 +90,7 @@ class UpdateProvider extends ChangeNotifier {
     try {
       final ts = DateTime.now().millisecondsSinceEpoch;
       final url = Uri.parse(
-        'https://baidu.com/update.json?kelivo=$ts',
+        'https://baidu.com/update.json?baidu=$ts',
       );
       final resp = await http.get(url);
       if (resp.statusCode != 200) {

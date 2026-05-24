@@ -61,8 +61,10 @@ class HomeMobileScaffold extends StatelessWidget{
 
   String _getAssistantName(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final a = context.watch<AssistantProvider>().currentAssistant;
-    final n = a?.name.trim();
+    // TODO
+    // final a = context.watch<AssistantProvider>().currentAssistant;
+    // final n = a?.name.trim();
+    final n = "wellcome";
     return (n == null || n.isEmpty) ? l10n.homePageDefaultAssistant : n;
   }
 
@@ -170,7 +172,9 @@ class MobileBackgroundLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final bg = context.watch<AssistantProvider>().currentAssistant?.background;
+    // TODO
+    final bg = null;
+    // final bg = context.watch<AssistantProvider>().currentAssistant?.background;
     final maskStrength = context.watch<SettingsProvider>().chatBackgroundMaskStrength;
 
     if (bg == null || bg.trim().isEmpty) return const SizedBox.shrink();

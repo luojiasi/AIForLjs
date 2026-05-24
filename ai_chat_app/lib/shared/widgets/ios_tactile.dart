@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/settings_provider.dart';
-import '../../../core/services/haptics.dart';
+import '../../core/providers/settings_provider.dart';
+import '../../core/services/haptics.dart';
 
 /// iOS-style icon button: no ripple, color tween on press, no scale.
 class IosIconButton extends StatefulWidget {
