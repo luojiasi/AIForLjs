@@ -21,12 +21,12 @@ import 'mermaid_bridge.dart';
 import 'export_capture_scope.dart';
 import 'mermaid_image_cache.dart';
 import 'plantuml_block.dart';
-import 'package:Kelivo/l10n/app_localizations.dart';
-import 'package:Kelivo/theme/theme_factory.dart' show getPlatformFontFallback;
+import '../../l10n/app_localizations.dart';
+import '../../theme/theme_factory.dart' show getPlatformFontFallback;
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/providers/settings_provider.dart';
-import 'package:Kelivo/desktop/html_preview_dialog.dart';
+import '../../desktop/html_preview_dialog.dart';
 
 /// gpt_markdown with custom code block highlight and inline code styling.
 class MarkdownWithCodeHighlight extends StatelessWidget {
@@ -168,7 +168,7 @@ class MarkdownWithCodeHighlight extends StatelessWidget {
       onLinkTap: (url, title) => _handleLinkTap(context, url),
       components: components,
       inlineComponents: inlineComponents,
-      imageBuilder: (ctx, url) {
+      imageBuilder: (ctx, url, width, height) {
         final imgs = imageUrls.isNotEmpty ? imageUrls : <String>[url];
         final idx = imgs.indexOf(url);
         final initial = idx >= 0 ? idx : 0;
@@ -201,25 +201,21 @@ class MarkdownWithCodeHighlight extends StatelessWidget {
               ),
             );
           },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: () {
-                  if (provider == null) {
-                    // Missing or unsupported source: show a broken image indicator
-                    return const Icon(Icons.broken_image);
-                  }
-                  return Image(
-                    image: provider,
-                    width: constraints.maxWidth,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stack) =>
-                        const Icon(Icons.broken_image),
-                  );
-                }(),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: () {
+              if (provider == null) {
+                return const Icon(Icons.broken_image);
+              }
+              return Image(
+                image: provider,
+                width: width,
+                height: height,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stack) =>
+                    const Icon(Icons.broken_image),
               );
-            },
+            }(),
           ),
         );
       },

@@ -131,7 +131,6 @@ class SettingsProvider extends ChangeNotifier {
   static const String _logSaveOutputKey = 'log_save_output_v1';
   static const String _logAutoDeleteDaysKey = 'log_auto_delete_days_v1';
   static const String _logMaxSizeMBKey = 'log_max_size_mb_v1';
-
   ///=======
   bool _requestLogEnabled = false;
   bool get requestLogEnabled => _requestLogEnabled;
@@ -333,7 +332,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get codeFontIsGoogle => _codeFontIsGoogle;
 
   ///=======
-  ///Display
+  ///消息显示设置
   static const String _displayShowMessageNavKey = 'display_show_message_nav_v1';
   static const String _displayChatBackgroundMaskStrengthKey ='display_chat_background_mask_strength_v1';
   ///=======
@@ -358,6 +357,103 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setDouble(_displayChatBackgroundMaskStrengthKey,_chatBackgroundMaskStrength,);
   }
 
+  ///================
+  ///Markdown/数学渲染
+  static const String _displayEnableMathRenderingKey = 'display_enable_math_rendering_v1';
+  static const String _displayEnableDollarLatexKey = 'display_enable_dollar_latex_v1';
+  static const String _displayEnableUserMarkdownKey = 'display_enable_user_markdown_v1';
+  static const String _displayEnableReasoningMarkdownKey = 'display_enable_reasoning_markdown_v1';
+  static const String _displayEnableAssistantMarkdownKey = 'display_enable_assistant_markdown_v1';
+  ///================
+  // LaTeX 数学公式渲染
+  bool _enableMathRendering = true;
+  bool get enableMathRendering => _enableMathRendering;
+  Future<void> setEnableMathRendering(bool v) async {
+    if (_enableMathRendering == v) return;
+    _enableMathRendering = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayEnableMathRenderingKey, v);
+  }
+
+  // `$...$` 行内 LaTeX
+  bool _enableDollarLatex = true;
+  bool get enableDollarLatex => _enableDollarLatex;
+  Future<void> setEnableDollarLatex(bool v) async {
+    if (_enableDollarLatex == v) return;
+    _enableDollarLatex = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayEnableDollarLatexKey, v);
+  }
+  // 用户消息的MarkDown
+  bool _enableUserMarkdown = true;
+  bool get enableUserMarkdown => _enableUserMarkdown;
+  Future<void> setEnableUserMarkdown(bool v) async {
+    if (_enableUserMarkdown == v) return;
+    _enableUserMarkdown = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayEnableUserMarkdownKey, v);
+  }
+  // 推理过程的MarkDown
+  bool _enableReasoningMarkdown = true;
+  bool get enableReasoningMarkdown => _enableReasoningMarkdown;
+  Future<void> setEnableReasoningMarkdown(bool v) async {
+    if (_enableReasoningMarkdown == v) return;
+    _enableReasoningMarkdown = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayEnableReasoningMarkdownKey, v);
+  }
+  // 助手消息的MarkDown
+  bool _enableAssistantMarkdown = true;
+  bool get enableAssistantMarkdown => _enableAssistantMarkdown;
+  Future<void> setEnableAssistantMarkdown(bool v) async {
+    if (_enableAssistantMarkdown == v) return;
+    _enableAssistantMarkdown = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayEnableAssistantMarkdownKey, v);
+  }
+
+  ///=========
+  ///代码块设置
+  static const String _displayAutoCollapseCodeBlockKey = 'display_auto_collapse_code_block_v1';
+  static const String _displayAutoCollapseCodeBlockLinesKey = 'display_auto_collapse_code_block_lines_v1';
+  static const String _displayMobileCodeBlockWrapKey = 'display_mobile_code_block_wrap_v1';
+  ///=========
+  //自动折叠过长代码块
+  bool _autoCollapseCodeBlock = false;
+  bool get autoCollapseCodeBlock => _autoCollapseCodeBlock;
+  Future<void> setAutoCollapseCodeBlock(bool v) async {
+    if (_autoCollapseCodeBlock == v) return;
+    _autoCollapseCodeBlock = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayAutoCollapseCodeBlockKey, v);
+  }
+  //折叠阈值（行数，默认2）
+  int _autoCollapseCodeBlockLines = 2;
+  int get autoCollapseCodeBlockLines => _autoCollapseCodeBlockLines;
+  Future<void> setAutoCollapseCodeBlockLines(int lines) async {
+    final nextLines = lines.clamp(1, 100);
+    if (_autoCollapseCodeBlockLines == nextLines) return;
+    _autoCollapseCodeBlockLines = nextLines;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_displayAutoCollapseCodeBlockLinesKey, nextLines);
+  }
+  // 移动端代码块自动换行
+  bool _mobileCodeBlockWrap = false;
+  bool get mobileCodeBlockWrap => _mobileCodeBlockWrap;
+  Future<void> setMobileCodeBlockWrap(bool v) async {
+    if (_mobileCodeBlockWrap == v) return;
+    _mobileCodeBlockWrap = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_displayMobileCodeBlockWrapKey, v);
+  }
 
 }
 enum AndroidBackgroundChatMode { off, on, onNotify }

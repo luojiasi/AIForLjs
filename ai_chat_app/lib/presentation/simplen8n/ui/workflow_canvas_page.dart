@@ -680,7 +680,7 @@ class _WorkflowCanvasPageState extends State<WorkflowCanvasPage> {
 
   Future<void> _importWorkflow(BuildContext context, WorkflowProvider provider) async {
     try {
-      final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
+      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['json'], withData: true);
       if (result == null || result.files.isEmpty) return;
 
       String content;
@@ -722,7 +722,7 @@ class _WorkflowCanvasPageState extends State<WorkflowCanvasPage> {
     try {
       final jsonStr = await provider.exportToJson();
       final name = provider.workflow.name.replaceAll(RegExp(r'[^\w\s-]'), '_');
-      final outputPath = await FilePicker.saveFile(
+      final outputPath = await FilePicker.platform.saveFile(
         dialogTitle: AppLocalizations.of(context)!.simplen8nExportWorkflow,
         fileName: '$name.json',
         type: FileType.custom,

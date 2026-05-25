@@ -246,7 +246,7 @@ class _UserProfileDialogBodyState extends State<_UserProfileDialogBody> {
           onTap: () async {
             // Desktop: choose an image file and persist it into app's avatars folder
             try {
-              final res = await FilePicker.pickFiles(
+              final res = await FilePicker.platform.pickFiles(
                 allowMultiple: false,
                 withData: false,
                 type: FileType.custom,
